@@ -26,15 +26,16 @@ class DashboardController extends Controller
             ->get();
 
         // Peminjaman yang akan jatuh tempo dalam 7 hari
-        $upcomingDueDate = Borrow::where('status', 'borrowed')
+        $upcomingDueDate = Borrow::with(['user', 'item'])
+            ->where('status', 'borrowed')
+            ->where('due_date', '>', Carbon::now())
             ->where('due_date', '<=', Carbon::now()->addDays(7))
-            ->with(['user', 'item'])
             ->get();
 
         // Peminjaman terlambat
-        $overdueItems = Borrow::where('status', 'borrowed')
+        $overdueItems = Borrow::with(['user', 'item'])
+            ->where('status', 'borrowed')
             ->where('due_date', '<', Carbon::now())
-            ->with(['user', 'item'])
             ->get();
 
         // 5 barang yang paling sering dipinjam
