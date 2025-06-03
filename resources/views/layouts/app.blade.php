@@ -21,6 +21,7 @@
                         </div>
 
                         <!-- Navigation Links -->
+                        @auth
                         <div class="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex">
                             <a href="{{ route('dashboard') }}" 
                                class="inline-flex items-center px-1 pt-1 border-b-2 {{ request()->routeIs('dashboard') ? 'border-indigo-500 text-gray-900' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }}">
@@ -39,10 +40,12 @@
                                 Peminjaman
                             </a>
                         </div>
+                        @endauth
                     </div>
 
                     <!-- User Menu -->
                     <div class="flex items-center">
+                        @auth
                         <div class="ml-3 relative">
                             <div class="flex items-center">
                                 <span class="text-gray-700 mr-2">{{ Auth::user()->name }}</span>
@@ -54,6 +57,16 @@
                                 </form>
                             </div>
                         </div>
+                        @else
+                        <div class="ml-3 relative">
+                            <div class="flex items-center space-x-4">
+                                <a href="{{ route('login') }}" class="text-sm text-gray-500 hover:text-gray-700">Masuk</a>
+                                @if (Route::has('register'))
+                                <a href="{{ route('register') }}" class="text-sm text-gray-500 hover:text-gray-700">Daftar</a>
+                                @endif
+                            </div>
+                        </div>
+                        @endauth
                     </div>
                 </div>
             </div>

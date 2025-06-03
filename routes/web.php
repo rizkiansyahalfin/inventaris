@@ -6,6 +6,7 @@ use App\Http\Controllers\BorrowController;
 use App\Http\Controllers\DashboardController;
 use Illuminate\Support\Facades\Route;
 
+Route::middleware(['auth'])->group(function () {
     // Dashboard
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
 
@@ -18,4 +19,4 @@ use Illuminate\Support\Facades\Route;
     // Borrows
     Route::resource('borrows', BorrowController::class);
     Route::patch('borrows/{borrow}/return', [BorrowController::class, 'return'])->name('borrows.return');
-
+});
