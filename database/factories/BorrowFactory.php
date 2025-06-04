@@ -58,6 +58,7 @@ class BorrowFactory extends Factory
             return [
                 'borrow_date' => $borrowDate,
                 'due_date' => $dueDate,
+                'status' => 'overdue',
                 'created_at' => $borrowDate,
                 'updated_at' => $borrowDate,
             ];

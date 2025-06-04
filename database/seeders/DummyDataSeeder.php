@@ -16,7 +16,7 @@ class DummyDataSeeder extends Seeder
     public function run(): void
     {
         // Create regular users
-        User::factory()
+        $users = User::factory()
             ->count(10)
             ->create();
 
@@ -26,7 +26,7 @@ class DummyDataSeeder extends Seeder
             ->create();
 
         // Create items and attach random categories
-        Item::factory()
+        $items = Item::factory()
             ->count(30)
             ->create()
             ->each(function ($item) use ($categories) {
@@ -36,7 +36,7 @@ class DummyDataSeeder extends Seeder
             });
 
         // Create some items with low stock
-        Item::factory()
+        $lowStockItems = Item::factory()
             ->count(5)
             ->lowStock()
             ->create()
@@ -46,20 +46,47 @@ class DummyDataSeeder extends Seeder
                 );
             });
 
+        // Combine all items
+        $allItems = $items->merge($lowStockItems);
+
         // Create active borrows
         Borrow::factory()
             ->count(15)
+            ->state(function () use ($users, $allItems) {
+                $item = $allItems->random();
+                return [
+                    'user_id' => $users->random()->id,
+                    'item_id' => $item->id,
+                    'quantity' => fake()->numberBetween(1, min(3, $item->quantity))
+                ];
+            })
             ->create();
 
         // Create returned borrows
         Borrow::factory()
             ->count(20)
+            ->state(function () use ($users, $allItems) {
+                $item = $allItems->random();
+                return [
+                    'user_id' => $users->random()->id,
+                    'item_id' => $item->id,
+                    'quantity' => fake()->numberBetween(1, min(3, $item->quantity))
+                ];
+            })
             ->returned()
             ->create();
 
         // Create overdue borrows
         Borrow::factory()
             ->count(5)
+            ->state(function () use ($users, $allItems) {
+                $item = $allItems->random();
+                return [
+                    'user_id' => $users->random()->id,
+                    'item_id' => $item->id,
+                    'quantity' => fake()->numberBetween(1, min(3, $item->quantity))
+                ];
+            })
             ->overdue()
             ->create();
     }

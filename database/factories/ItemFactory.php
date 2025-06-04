@@ -15,11 +15,13 @@ class ItemFactory extends Factory
         
         return [
             'name' => fake()->words(3, true),
+            'code' => strtoupper(fake()->unique()->bothify('INV-####??')),
             'description' => fake()->paragraph(),
             'quantity' => fake()->numberBetween(0, 50),
             'condition' => fake()->randomElement($conditions),
             'location' => fake()->words(2, true),
-            'acquisition_date' => fake()->dateTimeBetween('-2 years', 'now'),
+            'purchase_price' => fake()->optional()->randomFloat(2, 10000, 10000000),
+            'purchase_date' => fake()->optional()->dateTimeBetween('-2 years', 'now'),
             'created_at' => fake()->dateTimeBetween('-1 year', 'now'),
             'updated_at' => function (array $attributes) {
                 return fake()->dateTimeBetween($attributes['created_at'], 'now');
