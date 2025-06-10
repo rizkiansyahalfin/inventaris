@@ -12,8 +12,8 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('code')->unique();
+            $table->string('qr_code')->unique()->nullable();
             $table->text('description')->nullable();
-            $table->integer('quantity');
             $table->string('condition');
             $table->string('location')->nullable();
             $table->decimal('purchase_price', 10, 2)->nullable();
