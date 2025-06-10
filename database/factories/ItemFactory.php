@@ -15,9 +15,8 @@ class ItemFactory extends Factory
         
         return [
             'name' => fake()->words(3, true),
-            'code' => strtoupper(fake()->unique()->bothify('INV-####??')),
+            'qr_code' => null,
             'description' => fake()->paragraph(),
-            'quantity' => fake()->numberBetween(0, 50),
             'condition' => fake()->randomElement($conditions),
             'location' => fake()->words(2, true),
             'purchase_price' => fake()->optional()->randomFloat(2, 10000, 10000000),
@@ -36,16 +35,6 @@ class ItemFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'condition' => 'baik',
-        ]);
-    }
-
-    /**
-     * Indicate that the item has low stock.
-     */
-    public function lowStock(): static
-    {
-        return $this->state(fn (array $attributes) => [
-            'quantity' => fake()->numberBetween(0, 4),
         ]);
     }
 } 

@@ -35,29 +35,13 @@ class DummyDataSeeder extends Seeder
                 );
             });
 
-        // Create some items with low stock
-        $lowStockItems = Item::factory()
-            ->count(5)
-            ->lowStock()
-            ->create()
-            ->each(function ($item) use ($categories) {
-                $item->categories()->attach(
-                    $categories->random(rand(1, 3))->pluck('id')->toArray()
-                );
-            });
-
-        // Combine all items
-        $allItems = $items->merge($lowStockItems);
-
         // Create active borrows
         Borrow::factory()
             ->count(15)
-            ->state(function () use ($users, $allItems) {
-                $item = $allItems->random();
+            ->state(function () use ($users, $items) {
                 return [
                     'user_id' => $users->random()->id,
-                    'item_id' => $item->id,
-                    'quantity' => fake()->numberBetween(1, min(3, $item->quantity))
+                    'item_id' => $items->random()->id,
                 ];
             })
             ->create();
@@ -65,12 +49,10 @@ class DummyDataSeeder extends Seeder
         // Create returned borrows
         Borrow::factory()
             ->count(20)
-            ->state(function () use ($users, $allItems) {
-                $item = $allItems->random();
+            ->state(function () use ($users, $items) {
                 return [
                     'user_id' => $users->random()->id,
-                    'item_id' => $item->id,
-                    'quantity' => fake()->numberBetween(1, min(3, $item->quantity))
+                    'item_id' => $items->random()->id,
                 ];
             })
             ->returned()
@@ -79,12 +61,10 @@ class DummyDataSeeder extends Seeder
         // Create overdue borrows
         Borrow::factory()
             ->count(5)
-            ->state(function () use ($users, $allItems) {
-                $item = $allItems->random();
+            ->state(function () use ($users, $items) {
                 return [
                     'user_id' => $users->random()->id,
-                    'item_id' => $item->id,
-                    'quantity' => fake()->numberBetween(1, min(3, $item->quantity))
+                    'item_id' => $items->random()->id,
                 ];
             })
             ->overdue()
