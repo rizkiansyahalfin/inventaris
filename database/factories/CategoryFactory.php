@@ -11,8 +11,13 @@ class CategoryFactory extends Factory
 
     public function definition(): array
     {
+        $categories = [
+            'Elektronik', 'Furnitur', 'Alat Tulis Kantor', 'Komputer & Aksesoris',
+            'Proyektor & Layar', 'Peralatan Kebersihan', 'Peralatan Dapur', 'Buku & Dokumen'
+        ];
+        
         return [
-            'name' => fake()->unique()->words(2, true),
+            'name' => $this->faker->unique()->randomElement($categories),
             'description' => fake()->sentence(),
             'created_at' => fake()->dateTimeBetween('-1 year', 'now'),
             'updated_at' => function (array $attributes) {
