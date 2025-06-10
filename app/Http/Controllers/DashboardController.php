@@ -20,11 +20,6 @@ class DashboardController extends Controller
             'total_borrows' => Borrow::count(),
         ];
 
-        // Barang dengan stok menipis (kurang dari 5)
-        $lowStockItems = Item::where('quantity', '<', 5)
-            ->with('categories')
-            ->get();
-
         // Peminjaman yang akan jatuh tempo dalam 7 hari
         $upcomingDueDate = Borrow::with(['user', 'item'])
             ->where('status', 'borrowed')
@@ -55,7 +50,6 @@ class DashboardController extends Controller
 
         return view('dashboard', compact(
             'stats',
-            'lowStockItems',
             'upcomingDueDate',
             'overdueItems',
             'mostBorrowedItems',
