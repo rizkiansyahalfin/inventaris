@@ -20,17 +20,29 @@
                 </div>
             </div>
 
-            <div class="mt-6 flex justify-center">
-                @if($item->image)
-                    <img src="{{ asset('storage/items/' . $item->image) }}" alt="{{ $item->name }}" class="w-full max-w-lg h-auto object-cover rounded-lg shadow-md">
-                @else
-                    <div class="w-full max-w-lg h-80 bg-gray-200 flex items-center justify-center rounded-lg shadow-md">
-                        <p class="text-gray-500">Tidak ada gambar</p>
+            <div x-data="{ showModal: false, imageUrl: '' }" class="mt-6 flex justify-center">
+                <div class="w-full max-w-2xl p-4 border rounded-lg shadow-inner bg-gray-50">
+                    @if($item->image)
+                        <img @click="showModal = true; imageUrl = '{{ asset('storage/items/' . $item->image) }}'" src="{{ asset('storage/items/' . $item->image) }}" alt="{{ $item->name }}" class="w-full h-auto max-h-[500px] object-contain rounded-md cursor-pointer hover:opacity-90 transition-opacity">
+                    @else
+                        <div class="w-full h-80 bg-gray-200 flex items-center justify-center rounded-lg">
+                            <p class="text-gray-500">Tidak ada gambar</p>
+                        </div>
+                    @endif
+                </div>
+
+                <!-- Modal -->
+                <div x-show="showModal" @keydown.escape.window="showModal = false" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-75" style="display: none;">
+                    <div @click.away="showModal = false" class="relative bg-white rounded-lg max-w-4xl max-h-full overflow-auto">
+                        <button @click="showModal = false" class="absolute top-2 right-2 text-gray-300 hover:text-white focus:outline-none z-10">
+                            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                        </button>
+                        <img :src="imageUrl" class="w-full h-auto">
                     </div>
-                @endif
+                </div>
             </div>
 
-            <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                     <h3 class="text-lg font-medium text-gray-900">Informasi Umum</h3>
                     <dl class="mt-2 space-y-3">

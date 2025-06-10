@@ -76,19 +76,33 @@
                 </div>
             </div>
 
-            <div>
-                <label for="image" class="block text-sm font-medium text-gray-700">Gambar Barang</label>
-                <input type="file" name="image" id="image"
-                    class="mt-1 block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none @error('image') border-red-500 @enderror">
-                @error('image')
-                <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
-                @enderror
-                @if ($item->image)
-                    <div class="mt-4">
-                        <p class="text-sm text-gray-600">Gambar saat ini:</p>
-                        <img src="{{ asset('storage/items/' . $item->image) }}" alt="{{ $item->name }}" class="mt-2 h-32 w-auto object-cover rounded-md">
+            <div x-data="{ showModal: false, imageUrl: '' }">
+                <div>
+                    <label for="image" class="block text-sm font-medium text-gray-700">Gambar Barang</label>
+                    <input type="file" name="image" id="image"
+                        class="mt-1 block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none @error('image') border-red-500 @enderror">
+                    @error('image')
+                    <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
+                    @enderror
+                    @if ($item->image)
+                        <div class="mt-4">
+                            <p class="text-sm text-gray-600">Gambar saat ini:</p>
+                            <div class="mt-2 p-2 border rounded-lg inline-block">
+                                <img @click="showModal = true; imageUrl = '{{ asset('storage/items/' . $item->image) }}'" src="{{ asset('storage/items/' . $item->image) }}" alt="{{ $item->name }}" class="h-40 w-auto object-cover rounded-md cursor-pointer hover:opacity-90 transition-opacity">
+                            </div>
+                        </div>
+                    @endif
+                </div>
+
+                <!-- Modal -->
+                <div x-show="showModal" @keydown.escape.window="showModal = false" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-75" style="display: none;">
+                    <div @click.away="showModal = false" class="relative bg-white rounded-lg max-w-4xl max-h-full overflow-auto">
+                        <button type="button" @click="showModal = false" class="absolute top-2 right-2 text-gray-300 hover:text-white focus:outline-none z-10">
+                            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                        </button>
+                        <img :src="imageUrl" class="w-full h-auto">
                     </div>
-                @endif
+                </div>
             </div>
 
             <div>
