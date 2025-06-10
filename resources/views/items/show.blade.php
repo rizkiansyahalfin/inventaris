@@ -25,8 +25,12 @@
                     <h3 class="text-lg font-medium text-gray-900">Informasi Umum</h3>
                     <dl class="mt-2 space-y-3">
                         <div>
-                            <dt class="text-sm font-medium text-gray-500">Stok</dt>
-                            <dd class="mt-1 text-sm text-gray-900">{{ $item->quantity }}</dd>
+                            <dt class="text-sm font-medium text-gray-500">QR Code</dt>
+                            <dd class="mt-1">
+                                <div class="qrcode-container">
+                                    {!! QrCode::size(120)->generate($item->code) !!}
+                                </div>
+                            </dd>
                         </div>
                         <div>
                             <dt class="text-sm font-medium text-gray-500">Kondisi</dt>

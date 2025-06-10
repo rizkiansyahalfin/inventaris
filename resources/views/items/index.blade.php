@@ -47,7 +47,6 @@
                     <tr>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kode</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stok</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kondisi</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kategori</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
@@ -58,11 +57,6 @@
                     <tr>
                         <td class="px-6 py-4 whitespace-nowrap text-sm">{{ $item->code }}</td>
                         <td class="px-6 py-4 whitespace-nowrap">{{ $item->name }}</td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $item->quantity < 5 ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800' }}">
-                                {{ $item->quantity }}
-                            </span>
-                        </td>
                         <td class="px-6 py-4 whitespace-nowrap">{{ $item->condition }}</td>
                         <td class="px-6 py-4">
                             @foreach($item->categories as $category)
@@ -85,7 +79,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="6" class="px-6 py-4 text-center text-gray-500">
+                        <td colspan="5" class="px-6 py-4 text-center text-gray-500">
                             Tidak ada barang yang ditemukan
                         </td>
                     </tr>

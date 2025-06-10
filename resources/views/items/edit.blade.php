@@ -29,22 +29,7 @@
 
                 <div>
                     <label for="code" class="block text-sm font-medium text-gray-700">Kode Barang</label>
-                    <input type="text" name="code" id="code" value="{{ old('code', $item->code) }}"
-                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm @error('code') border-red-500 @enderror"
-                        required>
-                    @error('code')
-                    <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
-                    @enderror
-                </div>
-
-                <div>
-                    <label for="quantity" class="block text-sm font-medium text-gray-700">Jumlah</label>
-                    <input type="number" name="quantity" id="quantity" value="{{ old('quantity', $item->quantity) }}"
-                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm @error('quantity') border-red-500 @enderror"
-                        required min="0">
-                    @error('quantity')
-                    <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
-                    @enderror
+                    <p class="mt-1 text-gray-900">{{ $item->code }}</p>
                 </div>
 
                 <div>
