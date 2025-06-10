@@ -45,6 +45,7 @@
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">
                     <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Gambar</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kode</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kondisi</th>
@@ -55,6 +56,15 @@
                 <tbody class="bg-white divide-y divide-gray-200">
                     @forelse($items as $item)
                     <tr>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm">
+                            @if($item->image)
+                                <img src="{{ asset('storage/items/' . $item->image) }}" alt="{{ $item->name }}" class="h-10 w-10 object-cover rounded-md">
+                            @else
+                                <div class="h-10 w-10 bg-gray-200 rounded-md flex items-center justify-center">
+                                    <svg class="h-6 w-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l-1-1m6-3l-2-2"></path></svg>
+                                </div>
+                            @endif
+                        </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm">{{ $item->code }}</td>
                         <td class="px-6 py-4 whitespace-nowrap">{{ $item->name }}</td>
                         <td class="px-6 py-4 whitespace-nowrap">{{ $item->condition }}</td>
@@ -79,7 +89,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="5" class="px-6 py-4 text-center text-gray-500">
+                        <td colspan="6" class="px-6 py-4 text-center text-gray-500">
                             Tidak ada barang yang ditemukan
                         </td>
                     </tr>

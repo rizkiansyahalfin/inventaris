@@ -44,7 +44,13 @@ class ItemController extends Controller
             'purchase_date' => 'nullable|date',
             'category_ids' => 'required|array',
             'category_ids.*' => 'exists:categories,id',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
+
+        if ($request->hasFile('image')) {
+            $path = $request->file('image')->store('items', 'public');
+            $validated['image'] = basename($path);
+        }
 
         $item = Item::create($validated);
         $item->categories()->attach($request->category_ids);
@@ -77,7 +83,16 @@ class ItemController extends Controller
             'purchase_date' => 'nullable|date',
             'category_ids' => 'required|array',
             'category_ids.*' => 'exists:categories,id',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
+
+        if ($request->hasFile('image')) {
+            if ($item->image) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete('items/' . $item->image);
+            }
+            $path = $request->file('image')->store('items', 'public');
+            $validated['image'] = basename($path);
+        }
 
         $item->update($validated);
         $item->categories()->sync($request->category_ids);
@@ -91,6 +106,10 @@ class ItemController extends Controller
     {
         if ($item->borrows()->where('status', 'borrowed')->exists()) {
             return back()->with('error', 'Tidak dapat menghapus barang yang sedang dipinjam');
+        }
+
+        if ($item->image) {
+            \Illuminate\Support\Facades\Storage::disk('public')->delete('items/' . $item->image);
         }
 
         $item->delete();

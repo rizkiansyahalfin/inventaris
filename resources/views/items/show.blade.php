@@ -20,6 +20,16 @@
                 </div>
             </div>
 
+            <div class="mt-6 flex justify-center">
+                @if($item->image)
+                    <img src="{{ asset('storage/items/' . $item->image) }}" alt="{{ $item->name }}" class="w-full max-w-lg h-auto object-cover rounded-lg shadow-md">
+                @else
+                    <div class="w-full max-w-lg h-80 bg-gray-200 flex items-center justify-center rounded-lg shadow-md">
+                        <p class="text-gray-500">Tidak ada gambar</p>
+                    </div>
+                @endif
+            </div>
+
             <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                     <h3 class="text-lg font-medium text-gray-900">Informasi Umum</h3>

@@ -16,6 +16,7 @@ class Item extends Model
         'name',
         'code',
         'qr_code',
+        'image',
         'description',
         'condition',
         'location',

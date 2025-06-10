@@ -12,7 +12,7 @@
             </div>
         </div>
 
-        <form action="{{ route('items.update', $item) }}" method="POST" class="space-y-6">
+        <form action="{{ route('items.update', $item) }}" method="POST" class="space-y-6" enctype="multipart/form-data">
             @csrf
             @method('PUT')
 
@@ -74,6 +74,21 @@
                     <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
                     @enderror
                 </div>
+            </div>
+
+            <div>
+                <label for="image" class="block text-sm font-medium text-gray-700">Gambar Barang</label>
+                <input type="file" name="image" id="image"
+                    class="mt-1 block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none @error('image') border-red-500 @enderror">
+                @error('image')
+                <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
+                @enderror
+                @if ($item->image)
+                    <div class="mt-4">
+                        <p class="text-sm text-gray-600">Gambar saat ini:</p>
+                        <img src="{{ asset('storage/items/' . $item->image) }}" alt="{{ $item->name }}" class="mt-2 h-32 w-auto object-cover rounded-md">
+                    </div>
+                @endif
             </div>
 
             <div>

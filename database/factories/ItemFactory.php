@@ -29,6 +29,7 @@ class ItemFactory extends Factory
         return [
             'name' => $this->faker->unique()->randomElement($itemNames),
             'qr_code' => null,
+            'image' => null,
             'description' => fake()->paragraph(),
             'condition' => fake()->randomElement($conditions),
             'location' => fake()->randomElement($locations),
