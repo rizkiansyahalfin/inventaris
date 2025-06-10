@@ -41,6 +41,18 @@ class Item extends Model
             }
             $item->code = $initial . str_pad($number, 3, '0', STR_PAD_LEFT);
         });
+
+        static::updating(function ($item) {
+            if ($item->isDirty('name')) {
+                $initial = strtoupper(substr($item->name, 0, 1));
+                $lastItem = self::where('code', 'like', $initial . '%')->orderBy('code', 'desc')->first();
+                $number = 1;
+                if ($lastItem) {
+                    $number = (int)substr($lastItem->code, 1) + 1;
+                }
+                $item->code = $initial . str_pad($number, 3, '0', STR_PAD_LEFT);
+            }
+        });
     }
 
     public function categories(): BelongsToMany
