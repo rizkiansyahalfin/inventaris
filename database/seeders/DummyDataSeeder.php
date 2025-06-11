@@ -35,13 +35,15 @@ class DummyDataSeeder extends Seeder
                 );
             });
 
+        $availableItems = $items->shuffle();
+
         // Create active borrows
         Borrow::factory()
             ->count(15)
-            ->state(function () use ($users, $items) {
+            ->state(function () use ($users, &$availableItems) {
                 return [
                     'user_id' => $users->random()->id,
-                    'item_id' => $items->random()->id,
+                    'item_id' => $availableItems->pop()->id,
                 ];
             })
             ->create();

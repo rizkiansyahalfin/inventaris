@@ -12,7 +12,6 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->foreignId('item_id')->constrained()->onDelete('cascade');
-            $table->integer('quantity');
             $table->dateTime('borrow_date');
             $table->dateTime('due_date');
             $table->dateTime('return_date')->nullable();

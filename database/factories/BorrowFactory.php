@@ -19,7 +19,6 @@ class BorrowFactory extends Factory
         return [
             'user_id' => User::factory(),
             'item_id' => Item::factory(),
-            'quantity' => fake()->numberBetween(1, 5),
             'borrow_date' => $borrowDate,
             'due_date' => $dueDate,
             'return_date' => null,

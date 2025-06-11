@@ -30,7 +30,9 @@ class BorrowController extends Controller
 
     public function create()
     {
-        $items = Item::where('quantity', '>', 0)
+        $items = Item::whereDoesntHave('borrows', function ($query) {
+                $query->where('status', 'borrowed');
+            })
             ->orderBy('name')
             ->get();
 
@@ -41,47 +43,31 @@ class BorrowController extends Controller
     {
         $validated = $request->validate([
             'item_id' => 'required|exists:items,id',
-            'quantity' => 'required|integer|min:1',
             'borrow_date' => 'required|date',
-            'due_date' => 'required|date|after:borrow_date',
+            'due_date' => 'required|date|after_or_equal:borrow_date',
             'notes' => 'nullable|string',
         ]);
 
-        try {
-            DB::beginTransaction();
+        $item = Item::findOrFail($validated['item_id']);
 
-            $item = Item::findOrFail($validated['item_id']);
-            
-            if ($item->quantity < $validated['quantity']) {
-                return back()
-                    ->withInput()
-                    ->with('error', 'Stok barang tidak mencukupi');
-            }
-
-            $item->decrement('quantity', $validated['quantity']);
-
-            $borrow = Borrow::create([
-                'user_id' => auth()->id(),
-                'item_id' => $validated['item_id'],
-                'quantity' => $validated['quantity'],
-                'borrow_date' => $validated['borrow_date'],
-                'due_date' => $validated['due_date'],
-                'status' => 'borrowed',
-                'notes' => $validated['notes'],
-            ]);
-
-            DB::commit();
-
-            return redirect()
-                ->route('borrows.show', $borrow)
-                ->with('success', 'Peminjaman berhasil dibuat');
-
-        } catch (\Exception $e) {
-            DB::rollBack();
+        if ($item->borrows()->where('status', 'borrowed')->exists()) {
             return back()
                 ->withInput()
-                ->with('error', 'Terjadi kesalahan saat membuat peminjaman');
+                ->with('error', 'Barang ini sedang dipinjam.');
         }
+
+        $borrow = Borrow::create([
+            'user_id' => auth()->id(),
+            'item_id' => $validated['item_id'],
+            'borrow_date' => $validated['borrow_date'],
+            'due_date' => $validated['due_date'],
+            'status' => 'borrowed',
+            'notes' => $validated['notes'],
+        ]);
+
+        return redirect()
+            ->route('borrows.show', $borrow)
+            ->with('success', 'Peminjaman berhasil dibuat');
     }
 
     public function show(Borrow $borrow)
@@ -98,8 +84,6 @@ class BorrowController extends Controller
 
         try {
             DB::beginTransaction();
-
-            $borrow->item->increment('quantity', $borrow->quantity);
 
             $borrow->update([
                 'return_date' => Carbon::now(),

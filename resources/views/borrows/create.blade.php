@@ -21,23 +21,12 @@
                         required>
                         <option value="">Pilih Barang</option>
                         @foreach($items as $item)
-                        <option value="{{ $item->id }}" {{ old('item_id') == $item->id ? 'selected' : '' }}
-                            data-max-quantity="{{ $item->quantity }}">
-                            {{ $item->name }} ({{ $item->code }}) - Stok: {{ $item->quantity }}
+                        <option value="{{ $item->id }}" {{ old('item_id') == $item->id ? 'selected' : '' }}>
+                            {{ $item->name }} ({{ $item->code }})
                         </option>
                         @endforeach
                     </select>
                     @error('item_id')
-                    <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
-                    @enderror
-                </div>
-
-                <div>
-                    <label for="quantity" class="block text-sm font-medium text-gray-700">Jumlah</label>
-                    <input type="number" name="quantity" id="quantity" value="{{ old('quantity') }}"
-                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm @error('quantity') border-red-500 @enderror"
-                        required min="1">
-                    @error('quantity')
                     <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
                     @enderror
                 </div>
@@ -83,17 +72,6 @@
 
 @push('scripts')
 <script>
-document.getElementById('item_id').addEventListener('change', function() {
-    const selectedOption = this.options[this.selectedIndex];
-    const maxQuantity = selectedOption.dataset.maxQuantity;
-    const quantityInput = document.getElementById('quantity');
-    
-    quantityInput.max = maxQuantity;
-    if (parseInt(quantityInput.value) > parseInt(maxQuantity)) {
-        quantityInput.value = maxQuantity;
-    }
-});
-
 document.getElementById('borrow_date').addEventListener('change', function() {
     const borrowDate = new Date(this.value);
     const dueDate = document.getElementById('due_date');
