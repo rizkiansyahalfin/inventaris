@@ -5,6 +5,7 @@ use App\Http\Controllers\ItemController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\BorrowController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\AttachmentController;
 use Illuminate\Support\Facades\Route;
 
 require __DIR__.'/auth.php';
@@ -16,10 +17,11 @@ Route::get('/', function () {
 Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     
-    Route::resource('items', ItemController::class);
     Route::resource('categories', CategoryController::class);
+    Route::resource('items', ItemController::class);
     Route::resource('borrows', BorrowController::class);
-    Route::patch('/borrows/{borrow}/return', [BorrowController::class, 'return'])->name('borrows.return');
+    Route::post('/borrows/{borrow}/status', [BorrowController::class, 'updateStatus'])->name('borrows.update_status');
+    Route::resource('attachments', AttachmentController::class)->only(['destroy']);
     
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');

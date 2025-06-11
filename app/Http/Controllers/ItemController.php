@@ -62,7 +62,7 @@ class ItemController extends Controller
 
     public function show(Item $item)
     {
-        $item->load(['categories', 'attachments', 'borrows.user']);
+        $item->load(['categories', 'attachments', 'borrows.user'])->loadCount('borrows');
         return view('items.show', compact('item'));
     }
 

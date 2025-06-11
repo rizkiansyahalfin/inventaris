@@ -10,33 +10,43 @@
                     <h2 class="text-2xl font-bold text-gray-900">Detail Peminjaman</h2>
                     <p class="text-sm text-gray-500">Status:
                         @if($borrow->status === 'borrowed')
-                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
-                            Dipinjam
-                        </span>
-                        @else
-                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                            Dikembalikan
-                        </span>
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">Dipinjam</span>
+                        @elseif($borrow->status === 'returned')
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Dikembalikan</span>
+                        @elseif($borrow->status === 'overdue')
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">Terlambat</span>
+                        @elseif($borrow->status === 'lost')
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">Hilang</span>
                         @endif
                     </p>
                 </div>
                 <div class="flex space-x-3">
-                    @if($borrow->status === 'borrowed')
-                    <form action="{{ route('borrows.return', $borrow) }}" method="POST">
-                        @csrf
-                        @method('PATCH')
-                        <button type="submit"
-                            class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700"
-                            onclick="return confirm('Apakah Anda yakin ingin mengembalikan barang ini?')">
-                            Kembalikan
-                        </button>
-                    </form>
-                    @endif
                     <a href="{{ route('borrows.index') }}" class="bg-gray-100 text-gray-800 px-4 py-2 rounded-md hover:bg-gray-200">
-                        Kembali
+                        Kembali ke Daftar
                     </a>
                 </div>
             </div>
+
+            @if(in_array($borrow->status, ['borrowed', 'overdue']))
+                <div class="mt-6 border-t pt-6">
+                    <h3 class="text-lg font-medium text-gray-900">Perbarui Status Peminjaman</h3>
+                    <form action="{{ route('borrows.update_status', $borrow) }}" method="POST" class="mt-4 flex items-center space-x-4">
+                        @csrf
+                        <div>
+                            <label for="status" class="sr-only">Status</label>
+                            <select name="status" id="status" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                                <option value="returned">Dikembalikan</option>
+                                <option value="lost">Hilang</option>
+                            </select>
+                        </div>
+                        <button type="submit"
+                            class="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700"
+                            onclick="return confirm('Apakah Anda yakin ingin memperbarui status peminjaman ini?')">
+                            Perbarui
+                        </button>
+                    </form>
+                </div>
+            @endif
 
             <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
@@ -49,10 +59,6 @@
                         <div>
                             <dt class="text-sm font-medium text-gray-500">Kode Barang</dt>
                             <dd class="mt-1 text-sm text-gray-900">{{ $borrow->item->code }}</dd>
-                        </div>
-                        <div>
-                            <dt class="text-sm font-medium text-gray-500">Jumlah Dipinjam</dt>
-                            <dd class="mt-1 text-sm text-gray-900">{{ $borrow->quantity }}</dd>
                         </div>
                         <div>
                             <dt class="text-sm font-medium text-gray-500">Kondisi Barang</dt>

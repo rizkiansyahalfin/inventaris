@@ -76,29 +76,38 @@ class BorrowController extends Controller
         return view('borrows.show', compact('borrow'));
     }
 
-    public function return(Borrow $borrow)
+    public function updateStatus(Request $request, Borrow $borrow)
     {
-        if ($borrow->status === 'returned') {
-            return back()->with('error', 'Peminjaman ini sudah dikembalikan');
+        $validated = $request->validate([
+            'status' => 'required|string|in:returned,lost',
+        ]);
+
+        if (in_array($borrow->status, ['returned', 'lost'])) {
+            return back()->with('error', 'Status peminjaman ini sudah final.');
         }
 
         try {
             DB::beginTransaction();
 
-            $borrow->update([
-                'return_date' => Carbon::now(),
-                'status' => 'returned',
-            ]);
+            $updateData = [
+                'status' => $validated['status'],
+            ];
+
+            if ($validated['status'] === 'returned') {
+                $updateData['return_date'] = Carbon::now();
+            }
+
+            $borrow->update($updateData);
 
             DB::commit();
 
             return redirect()
                 ->route('borrows.show', $borrow)
-                ->with('success', 'Barang berhasil dikembalikan');
+                ->with('success', 'Status peminjaman berhasil diperbarui.');
 
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->with('error', 'Terjadi kesalahan saat mengembalikan barang');
+            return back()->with('error', 'Terjadi kesalahan saat memperbarui status.');
         }
     }
 
