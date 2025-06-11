@@ -15,6 +15,10 @@ class DashboardController extends Controller
         // Statistik umum
         $stats = [
             'total_items' => Item::count(),
+            'available_items' => Item::where('status', 'Tersedia')->count(),
+            'borrowed_items' => Item::where('status', 'Dipinjam')->count(),
+            'damaged_items' => Item::where('status', 'Rusak')->count(),
+            'lost_items' => Item::where('status', 'Hilang')->count(),
             'total_categories' => Category::count(),
             'active_borrows' => Borrow::where('status', 'borrowed')->count(),
             'total_borrows' => Borrow::count(),

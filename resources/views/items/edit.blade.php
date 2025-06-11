@@ -33,7 +33,22 @@
                 </div>
 
                 <div>
-                    <label for="condition" class="block text-sm font-medium text-gray-700">Kondisi</label>
+                    <label class="block text-sm font-medium text-gray-700">Status Saat Ini</label>
+                    <p class="mt-1 text-gray-900">
+                        @if($item->status == 'Tersedia')
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Tersedia</span>
+                        @elseif($item->status == 'Dipinjam')
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">Dipinjam</span>
+                        @elseif($item->status == 'Rusak')
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-orange-100 text-orange-800">Rusak</span>
+                        @elseif($item->status == 'Hilang')
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">Hilang</span>
+                        @endif
+                    </p>
+                </div>
+
+                <div>
+                    <label for="condition" class="block text-sm font-medium text-gray-700">Kondisi Fisik</label>
                     <select name="condition" id="condition"
                         class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm @error('condition') border-red-500 @enderror"
                         required>

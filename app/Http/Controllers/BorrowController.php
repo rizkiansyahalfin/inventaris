@@ -30,9 +30,7 @@ class BorrowController extends Controller
 
     public function create()
     {
-        $items = Item::whereDoesntHave('borrows', function ($query) {
-                $query->where('status', 'borrowed');
-            })
+        $items = Item::where('status', 'Tersedia')
             ->orderBy('name')
             ->get();
 
@@ -42,32 +40,43 @@ class BorrowController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'item_id' => 'required|exists:items,id',
+            'item_id' => ['required', 'exists:items,id', function ($attribute, $value, $fail) {
+                $item = Item::find($value);
+                if ($item && $item->status !== 'Tersedia') {
+                    $fail('Barang ini tidak tersedia untuk dipinjam.');
+                }
+            }],
             'borrow_date' => 'required|date',
             'due_date' => 'required|date|after_or_equal:borrow_date',
             'notes' => 'nullable|string',
         ]);
 
-        $item = Item::findOrFail($validated['item_id']);
+        try {
+            DB::beginTransaction();
+            
+            $item = Item::findOrFail($validated['item_id']);
 
-        if ($item->borrows()->where('status', 'borrowed')->exists()) {
-            return back()
-                ->withInput()
-                ->with('error', 'Barang ini sedang dipinjam.');
+            $borrow = Borrow::create([
+                'user_id' => auth()->id(),
+                'item_id' => $validated['item_id'],
+                'borrow_date' => $validated['borrow_date'],
+                'due_date' => $validated['due_date'],
+                'status' => 'borrowed',
+                'notes' => $validated['notes'],
+            ]);
+
+            $item->update(['status' => 'Dipinjam']);
+
+            DB::commit();
+
+            return redirect()
+                ->route('borrows.show', $borrow)
+                ->with('success', 'Peminjaman berhasil dibuat');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->withInput()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
-
-        $borrow = Borrow::create([
-            'user_id' => auth()->id(),
-            'item_id' => $validated['item_id'],
-            'borrow_date' => $validated['borrow_date'],
-            'due_date' => $validated['due_date'],
-            'status' => 'borrowed',
-            'notes' => $validated['notes'],
-        ]);
-
-        return redirect()
-            ->route('borrows.show', $borrow)
-            ->with('success', 'Peminjaman berhasil dibuat');
     }
 
     public function show(Borrow $borrow)
@@ -79,7 +88,8 @@ class BorrowController extends Controller
     public function updateStatus(Request $request, Borrow $borrow)
     {
         $validated = $request->validate([
-            'status' => 'required|string|in:returned,lost',
+            'action' => 'required|string|in:returned,lost',
+            'condition_on_return' => 'required_if:action,returned|string|in:Baik,Rusak Ringan,Rusak Berat'
         ]);
 
         if (in_array($borrow->status, ['returned', 'lost'])) {
@@ -88,16 +98,31 @@ class BorrowController extends Controller
 
         try {
             DB::beginTransaction();
+            
+            $item = $borrow->item;
+            $borrowStatus = 'returned'; // Default status
+            $itemStatus = 'Tersedia'; // Default status
 
-            $updateData = [
-                'status' => $validated['status'],
-            ];
+            if ($validated['action'] === 'lost') {
+                $borrowStatus = 'lost';
+                $itemStatus = 'Hilang';
+                $item->update(['status' => $itemStatus]);
 
-            if ($validated['status'] === 'returned') {
-                $updateData['return_date'] = Carbon::now();
+            } else { // action is 'returned'
+                $item->update([
+                    'condition' => $validated['condition_on_return']
+                ]);
+
+                if ($validated['condition_on_return'] !== 'Baik') {
+                    $itemStatus = 'Rusak';
+                }
+                $item->update(['status' => $itemStatus]);
             }
-
-            $borrow->update($updateData);
+            
+            $borrow->update([
+                'status' => $borrowStatus,
+                'return_date' => Carbon::now()
+            ]);
 
             DB::commit();
 

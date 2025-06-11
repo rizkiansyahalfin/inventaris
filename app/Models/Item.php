@@ -19,6 +19,7 @@ class Item extends Model
         'image',
         'description',
         'condition',
+        'status',
         'location',
         'purchase_price',
         'purchase_date',

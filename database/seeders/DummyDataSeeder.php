@@ -41,9 +41,11 @@ class DummyDataSeeder extends Seeder
         Borrow::factory()
             ->count(15)
             ->state(function () use ($users, &$availableItems) {
+                $item = $availableItems->pop();
+                $item->update(['status' => 'Dipinjam']);
                 return [
                     'user_id' => $users->random()->id,
-                    'item_id' => $availableItems->pop()->id,
+                    'item_id' => $item->id,
                 ];
             })
             ->create();

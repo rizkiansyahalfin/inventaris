@@ -19,6 +19,9 @@ class ItemController extends Controller
                 return $query->whereHas('categories', function ($q) use ($categoryId) {
                     $q->where('categories.id', $categoryId);
                 });
+            })
+            ->when($request->status, function ($query, $status) {
+                return $query->where('status', $status);
             });
 
         $items = $query->orderBy('name')->paginate(10);

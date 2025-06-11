@@ -28,22 +28,34 @@
             </div>
 
             @if(in_array($borrow->status, ['borrowed', 'overdue']))
-                <div class="mt-6 border-t pt-6">
+                <div x-data="{ action: 'returned' }" class="mt-6 border-t pt-6">
                     <h3 class="text-lg font-medium text-gray-900">Perbarui Status Peminjaman</h3>
-                    <form action="{{ route('borrows.update_status', $borrow) }}" method="POST" class="mt-4 flex items-center space-x-4">
+                    <form action="{{ route('borrows.update_status', $borrow) }}" method="POST" class="mt-4 space-y-4">
                         @csrf
                         <div>
-                            <label for="status" class="sr-only">Status</label>
-                            <select name="status" id="status" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                            <label for="action" class="block text-sm font-medium text-gray-700">Tindakan</label>
+                            <select name="action" id="action" x-model="action" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
                                 <option value="returned">Dikembalikan</option>
                                 <option value="lost">Hilang</option>
                             </select>
                         </div>
-                        <button type="submit"
-                            class="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700"
-                            onclick="return confirm('Apakah Anda yakin ingin memperbarui status peminjaman ini?')">
-                            Perbarui
-                        </button>
+
+                        <div x-show="action === 'returned'">
+                            <label for="condition_on_return" class="block text-sm font-medium text-gray-700">Kondisi Saat Kembali</label>
+                            <select name="condition_on_return" id="condition_on_return" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                                <option value="Baik">Baik</option>
+                                <option value="Rusak Ringan">Rusak Ringan</option>
+                                <option value="Rusak Berat">Rusak Berat</option>
+                            </select>
+                        </div>
+                        
+                        <div class="flex justify-end">
+                            <button type="submit"
+                                class="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700"
+                                onclick="return confirm('Apakah Anda yakin ingin memperbarui status peminjaman ini?')">
+                                Perbarui
+                            </button>
+                        </div>
                     </form>
                 </div>
             @endif
