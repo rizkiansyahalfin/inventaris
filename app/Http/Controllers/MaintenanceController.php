@@ -15,7 +15,7 @@ class MaintenanceController extends Controller
      */
     public function index()
     {
-        $maintenances = Maintenance::with(['item', 'user'])->orderBy('maintenance_date', 'desc')->paginate(10);
+        $maintenances = Maintenance::with(['item', 'user'])->orderBy('start_date', 'desc')->paginate(10);
         return view('maintenances.index', compact('maintenances'));
     }
 
