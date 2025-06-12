@@ -25,6 +25,9 @@
                     <x-nav-link :href="route('borrows.index')" :active="request()->routeIs('borrows.*')">
                         {{ __('Peminjaman') }}
                     </x-nav-link>
+                    <x-nav-link :href="route('maintenances.index')" :active="request()->routeIs('maintenances.*')">
+                        {{ __('Pemeliharaan') }}
+                    </x-nav-link>
                 </div>
             </div>
 
@@ -88,6 +91,9 @@
             </x-responsive-nav-link>
             <x-responsive-nav-link :href="route('borrows.index')" :active="request()->routeIs('borrows.*')">
                 {{ __('Peminjaman') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('maintenances.index')" :active="request()->routeIs('maintenances.*')">
+                {{ __('Pemeliharaan') }}
             </x-responsive-nav-link>
         </div>
 
