@@ -73,9 +73,15 @@
                             <dd class="mt-1 text-sm text-gray-900">{{ $borrow->item->code }}</dd>
                         </div>
                         <div>
-                            <dt class="text-sm font-medium text-gray-500">Kondisi Barang</dt>
-                            <dd class="mt-1 text-sm text-gray-900">{{ $borrow->item->condition }}</dd>
+                            <dt class="text-sm font-medium text-gray-500">Kondisi Saat Pinjam</dt>
+                            <dd class="mt-1 text-sm text-gray-900">{{ $borrow->condition_at_borrow }}</dd>
                         </div>
+                        @if($borrow->condition_on_return)
+                        <div>
+                            <dt class="text-sm font-medium text-gray-500">Kondisi Saat Kembali</dt>
+                            <dd class="mt-1 text-sm text-gray-900">{{ $borrow->condition_on_return }}</dd>
+                        </div>
+                        @endif
                     </dl>
                 </div>
 

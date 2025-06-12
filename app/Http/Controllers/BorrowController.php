@@ -63,6 +63,7 @@ class BorrowController extends Controller
                 'due_date' => $validated['due_date'],
                 'status' => 'borrowed',
                 'notes' => $validated['notes'],
+                'condition_at_borrow' => $item->condition,
             ]);
 
             $item->update(['status' => 'Dipinjam']);
@@ -109,6 +110,8 @@ class BorrowController extends Controller
                 $item->update(['status' => $itemStatus]);
 
             } else { // action is 'returned'
+                $borrow->condition_on_return = $validated['condition_on_return'];
+                
                 $item->update([
                     'condition' => $validated['condition_on_return']
                 ]);

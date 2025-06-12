@@ -156,36 +156,38 @@
                 <table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">
                         <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Peminjam</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal Pinjam</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jatuh Tempo</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal Kembali</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                            <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
+                                Peminjam</th>
+                            <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
+                                Tgl Pinjam</th>
+                            <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
+                                Kondisi Pinjam</th>
+                            <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
+                                Tgl Kembali</th>
+                            <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
+                                Kondisi Kembali</th>
+                            <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
+                                Status</th>
+                            <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-0">
+                                <span class="sr-only">Detail</span>
+                            </th>
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
                         @foreach($item->borrows as $borrow)
                         <tr>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm">{{ $borrow->user->name }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm">{{ $borrow->borrow_date->format('d/m/Y') }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm">{{ $borrow->due_date->format('d/m/Y') }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm">
-                                {{ $borrow->return_date ? $borrow->return_date->format('d/m/Y') : '-' }}
+                            <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{{ $borrow->user->name }}</td>
+                            <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{{ $borrow->borrow_date->format('d/m/Y') }}</td>
+                            <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{{ $borrow->condition_at_borrow }}</td>
+                            <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{{ $borrow->return_date ? $borrow->return_date->format('d/m/Y') : '-' }}</td>
+                            <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{{ $borrow->condition_on_return ?? '-' }}</td>
+                            <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                                <span class="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium {{ $borrow->status === 'borrowed' ? 'bg-yellow-50 text-yellow-800 ring-1 ring-inset ring-yellow-600/20' : ($borrow->status === 'returned' ? 'bg-green-50 text-green-700 ring-1 ring-inset ring-green-600/20' : 'bg-red-50 text-red-700 ring-1 ring-inset ring-red-600/10') }}">
+                                    {{ ucfirst($borrow->status) }}
+                                </span>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                @if($borrow->status === 'borrowed')
-                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
-                                    Dipinjam
-                                </span>
-                                @elseif($borrow->status === 'returned')
-                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                                    Dikembalikan
-                                </span>
-                                @else
-                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
-                                    Terlambat
-                                </span>
-                                @endif
+                            <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                                <a href="{{ route('borrows.show', $borrow) }}" class="text-indigo-600 hover:text-indigo-900">Detail</a>
                             </td>
                         </tr>
                         @endforeach
