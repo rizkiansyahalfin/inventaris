@@ -6,6 +6,7 @@ use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\BorrowController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\AttachmentController;
+use App\Http\Controllers\MaintenanceController;
 use Illuminate\Support\Facades\Route;
 
 require __DIR__.'/auth.php';
@@ -22,6 +23,7 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('borrows', BorrowController::class);
     Route::post('/borrows/{borrow}/status', [BorrowController::class, 'updateStatus'])->name('borrows.update_status');
     Route::resource('attachments', AttachmentController::class)->only(['destroy']);
+    Route::resource('maintenances', MaintenanceController::class);
     
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');

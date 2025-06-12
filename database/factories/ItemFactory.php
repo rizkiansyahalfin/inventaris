@@ -25,7 +25,7 @@ class ItemFactory extends Factory
         
         $conditions = ['Baik', 'Rusak Ringan', 'Rusak Berat'];
         $locations = ['Gudang A', 'Ruang Rapat 1', 'Lantai 2', 'Area Produksi', 'Kantor Pemasaran'];
-
+        
         return [
             'name' => $this->faker->unique()->randomElement($itemNames),
             'qr_code' => null,

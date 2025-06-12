@@ -53,7 +53,7 @@ class BorrowController extends Controller
 
         try {
             DB::beginTransaction();
-            
+
             $item = Item::findOrFail($validated['item_id']);
 
             $borrow = Borrow::create([
@@ -99,7 +99,7 @@ class BorrowController extends Controller
 
         try {
             DB::beginTransaction();
-            
+
             $item = $borrow->item;
             $borrowStatus = 'returned'; // Default status
             $itemStatus = 'Tersedia'; // Default status
@@ -121,7 +121,7 @@ class BorrowController extends Controller
                 }
                 $item->update(['status' => $itemStatus]);
             }
-            
+
             $borrow->update([
                 'status' => $borrowStatus,
                 'return_date' => Carbon::now()

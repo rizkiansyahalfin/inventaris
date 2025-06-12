@@ -70,6 +70,11 @@ class Item extends Model
 
     public function borrows(): HasMany
     {
-        return $this->hasMany(Borrow::class);
+        return $this->hasMany(Borrow::class)->orderBy('borrow_date', 'desc');
+    }
+
+    public function maintenances()
+    {
+        return $this->hasMany(Maintenance::class)->orderBy('maintenance_date', 'desc');
     }
 } 
