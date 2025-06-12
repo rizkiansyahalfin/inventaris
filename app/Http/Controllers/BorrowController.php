@@ -31,6 +31,7 @@ class BorrowController extends Controller
     public function create()
     {
         $items = Item::where('status', 'Tersedia')
+            ->where('condition', '!=', 'Rusak Berat')
             ->orderBy('name')
             ->get();
 
@@ -42,8 +43,12 @@ class BorrowController extends Controller
         $validated = $request->validate([
             'item_id' => ['required', 'exists:items,id', function ($attribute, $value, $fail) {
                 $item = Item::find($value);
-                if ($item && $item->status !== 'Tersedia') {
+                if (!$item) return; // 'exists' rule already covers this
+                if ($item->status !== 'Tersedia') {
                     $fail('Barang ini tidak tersedia untuk dipinjam.');
+                }
+                if ($item->condition === 'Rusak Berat') {
+                    $fail('Barang dengan kondisi "Rusak Berat" tidak dapat dipinjam.');
                 }
             }],
             'borrow_date' => 'required|date',

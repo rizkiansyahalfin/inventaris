@@ -96,4 +96,41 @@
         </form>
     </div>
 </div>
+
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const itemsData = @json($itemsWithCondition);
+        const itemSelect = document.getElementById('item_id');
+        const typeSelect = document.getElementById('type');
+        const perbaikanOption = typeSelect.querySelector('option[value="Perbaikan"]');
+
+        function togglePerbaikanOption() {
+            const selectedItemId = itemSelect.value;
+            if (!selectedItemId || !itemsData[selectedItemId]) {
+                // Show all options if no item is selected
+                perbaikanOption.style.display = 'block';
+                return;
+            }
+
+            const condition = itemsData[selectedItemId].condition;
+
+            if (condition === 'Baik') {
+                // If selected type was 'Perbaikan', reset it
+                if (typeSelect.value === 'Perbaikan') {
+                    typeSelect.value = 'Perawatan';
+                }
+                perbaikanOption.style.display = 'none';
+            } else {
+                perbaikanOption.style.display = 'block';
+            }
+        }
+
+        itemSelect.addEventListener('change', togglePerbaikanOption);
+
+        // Initial check on page load
+        togglePerbaikanOption();
+    });
+</script>
+@endpush
 @endsection 

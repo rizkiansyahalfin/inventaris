@@ -25,8 +25,11 @@ class MaintenanceController extends Controller
     public function create(Request $request)
     {
         $items = Item::orderBy('name')->get();
+        $itemsWithCondition = $items->keyBy('id')->map(function ($item) {
+            return ['condition' => $item->condition];
+        });
         $selectedItem = $request->get('item_id');
-        return view('maintenances.create', compact('items', 'selectedItem'));
+        return view('maintenances.create', compact('items', 'selectedItem', 'itemsWithCondition'));
     }
 
     /**
