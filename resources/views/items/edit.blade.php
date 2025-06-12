@@ -144,14 +144,19 @@
             </div>
 
             <div>
-                <label for="category_ids" class="block text-sm font-medium text-gray-700">Kategori</label>
-                <select name="category_ids[]" id="category_ids" multiple class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                <label class="block text-sm font-medium text-gray-700">Kategori</label>
+                <div class="mt-2 space-y-2 rounded-md border border-gray-300 p-4 h-40 overflow-y-auto">
                     @foreach($categories as $category)
-                    <option value="{{ $category->id }}" @selected(in_array($category->id, old('category_ids', $item->categories->pluck('id')->toArray())))>
-                        {{ $category->name }}
-                    </option>
+                    <div class="flex items-center">
+                        <input type="checkbox" name="category_ids[]" id="category_{{ $category->id }}"
+                               value="{{ $category->id }}" class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                               {{ in_array($category->id, old('category_ids', $item->categories->pluck('id')->toArray())) ? 'checked' : '' }}>
+                        <label for="category_{{ $category->id }}" class="ml-3 block text-sm text-gray-900">
+                            {{ $category->name }}
+                        </label>
+                    </div>
                     @endforeach
-                </select>
+                </div>
                 @error('category_ids')
                 <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
                 @enderror
