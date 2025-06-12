@@ -15,14 +15,20 @@ class DatabaseSeeder extends Seeder
     {
         // User::factory(10)->create();
 
+        // Create a default regular user for testing
         User::factory()->create([
             'name' => 'Test User',
             'email' => 'test@example.com',
+            'is_admin' => false,
         ]);
 
         $this->call([
-            AdminSeeder::class,
-            DummyDataSeeder::class,
+            AdminSeeder::class, // Call the new AdminSeeder
+            CategorySeeder::class,
+            ItemSeeder::class,
+            BorrowSeeder::class,
+            MaintenanceSeeder::class,
+            // You can add BorrowSeeder and MaintenanceSeeder here if you create them
         ]);
     }
 }

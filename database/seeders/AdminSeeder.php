@@ -2,8 +2,9 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
+use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 
 class AdminSeeder extends Seeder
@@ -13,19 +14,12 @@ class AdminSeeder extends Seeder
      */
     public function run(): void
     {
-        // Create main admin
         User::create([
-            'name' => 'Administrator',
-            'email' => 'admin@pesantren.id',
+            'name' => 'Admin',
+            'email' => 'admin@gmail.com',
             'email_verified_at' => now(),
-            'password' => Hash::make('admin123'),
+            'password' => Hash::make('password'), // default password is 'password'
             'is_admin' => true,
-        ]);
-
-        // Create additional admin users using factory
-        User::factory()->count(3)->create([
-            'is_admin' => true,
-            'email_verified_at' => now(),
         ]);
     }
 } 
