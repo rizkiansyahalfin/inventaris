@@ -20,6 +20,8 @@ class Borrow extends Model
         'return_date',
         'status',
         'notes',
+        'condition_at_borrow',
+        'condition_on_return',
     ];
 
     protected $casts = [

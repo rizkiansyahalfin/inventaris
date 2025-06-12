@@ -122,7 +122,7 @@ class BorrowController extends Controller
                 ]);
 
                 if ($validated['condition_on_return'] !== 'Baik') {
-                    $itemStatus = 'Rusak';
+                    $itemStatus = 'Perlu Servis'; // More specific status
                 }
                 $item->update(['status' => $itemStatus]);
             }

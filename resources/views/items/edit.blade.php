@@ -83,10 +83,24 @@
 
                 <div>
                     <label for="purchase_date" class="block text-sm font-medium text-gray-700">Tanggal Pembelian</label>
-                    <input type="date" name="purchase_date" id="purchase_date" value="{{ old('purchase_date', optional($item->purchase_date)->format('Y-m-d')) }}"
-                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm @error('purchase_date') border-red-500 @enderror">
+                    <input type="date" name="purchase_date" id="purchase_date" value="{{ old('purchase_date', $item->purchase_date->format('Y-m-d')) }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
                     @error('purchase_date')
-                    <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
+                        <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div>
+                    <label for="status" class="block text-sm font-medium text-gray-700">Status</label>
+                    <select name="status" id="status" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                        <option value="Tersedia" @selected(old('status', $item->status) == 'Tersedia')>Tersedia</option>
+                        <option value="Dipinjam" @selected(old('status', $item->status) == 'Dipinjam')>Dipinjam</option>
+                        <option value="Hilang" @selected(old('status', $item->status) == 'Hilang')>Hilang</option>
+                        <option value="Perlu Servis" @selected(old('status', $item->status) == 'Perlu Servis')>Perlu Servis</option>
+                        <option value="Rusak" @selected(old('status', $item->status) == 'Rusak')>Rusak</option>
+                        <option value="Perlu Ganti" @selected(old('status', $item->status) == 'Perlu Ganti')>Perlu Ganti</option>
+                    </select>
+                    @error('status')
+                        <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
                     @enderror
                 </div>
             </div>
@@ -130,19 +144,14 @@
             </div>
 
             <div>
-                <label class="block text-sm font-medium text-gray-700">Kategori</label>
-                <div class="mt-2 space-y-2">
+                <label for="category_ids" class="block text-sm font-medium text-gray-700">Kategori</label>
+                <select name="category_ids[]" id="category_ids" multiple class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
                     @foreach($categories as $category)
-                    <div class="flex items-center">
-                        <input type="checkbox" name="category_ids[]" id="category_{{ $category->id }}"
-                            value="{{ $category->id }}" class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
-                            {{ in_array($category->id, old('category_ids', $item->categories->pluck('id')->toArray())) ? 'checked' : '' }}>
-                        <label for="category_{{ $category->id }}" class="ml-2 text-sm text-gray-700">
-                            {{ $category->name }}
-                        </label>
-                    </div>
+                    <option value="{{ $category->id }}" @selected(in_array($category->id, old('category_ids', $item->categories->pluck('id')->toArray())))>
+                        {{ $category->name }}
+                    </option>
                     @endforeach
-                </div>
+                </select>
                 @error('category_ids')
                 <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
                 @enderror
