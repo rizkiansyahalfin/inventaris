@@ -20,4 +20,18 @@ class Category extends Model
         return $this->belongsToMany(Item::class)
             ->withTimestamps();
     }
+
+    public function getCodeAttribute(): string
+    {
+        $words = explode(' ', $this->name);
+        if (count($words) === 1 && strlen($this->name) > 2) {
+            // Handle single words like "Elektronik" -> "ELK" as per user example
+             return strtoupper(substr($this->name, 0, 2) . substr($this->name, -1));
+        }
+        $initials = array_map(function ($word) {
+            return strtoupper(substr($word, 0, 1));
+        }, $words);
+
+        return implode('', $initials);
+    }
 } 

@@ -30,33 +30,6 @@ class Item extends Model
         'purchase_price' => 'decimal:2',
     ];
 
-    protected static function boot()
-    {
-        parent::boot();
-
-        static::creating(function ($item) {
-            $initial = strtoupper(substr($item->name, 0, 1));
-            $lastItem = self::where('code', 'like', $initial . '%')->orderBy('code', 'desc')->first();
-            $number = 1;
-            if ($lastItem) {
-                $number = (int)substr($lastItem->code, 1) + 1;
-            }
-            $item->code = $initial . str_pad($number, 3, '0', STR_PAD_LEFT);
-        });
-
-        static::updating(function ($item) {
-            if ($item->isDirty('name')) {
-                $initial = strtoupper(substr($item->name, 0, 1));
-                $lastItem = self::where('code', 'like', $initial . '%')->orderBy('code', 'desc')->first();
-                $number = 1;
-                if ($lastItem) {
-                    $number = (int)substr($lastItem->code, 1) + 1;
-                }
-                $item->code = $initial . str_pad($number, 3, '0', STR_PAD_LEFT);
-            }
-        });
-    }
-
     public function categories(): BelongsToMany
     {
         return $this->belongsToMany(Category::class)
@@ -75,6 +48,6 @@ class Item extends Model
 
     public function maintenances()
     {
-        return $this->hasMany(Maintenance::class)->orderBy('maintenance_date', 'desc');
+        return $this->hasMany(Maintenance::class)->orderBy('start_date', 'desc');
     }
 } 
