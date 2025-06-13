@@ -30,8 +30,9 @@ class BorrowController extends Controller
 
     public function create()
     {
-        $items = Item::where('status', 'Tersedia')
+        $items = Item::where('status', Item::STATUS_AVAILABLE)
             ->where('condition', '!=', 'Rusak Berat')
+            ->where('quantity', '>', 0)
             ->orderBy('name')
             ->get();
 
@@ -43,12 +44,15 @@ class BorrowController extends Controller
         $validated = $request->validate([
             'item_id' => ['required', 'exists:items,id', function ($attribute, $value, $fail) {
                 $item = Item::find($value);
-                if (!$item) return; // 'exists' rule already covers this
-                if ($item->status !== 'Tersedia') {
+                if (!$item) return;
+                if ($item->status !== Item::STATUS_AVAILABLE) {
                     $fail('Barang ini tidak tersedia untuk dipinjam.');
                 }
                 if ($item->condition === 'Rusak Berat') {
                     $fail('Barang dengan kondisi "Rusak Berat" tidak dapat dipinjam.');
+                }
+                if ($item->quantity < 1) {
+                    $fail('Stok barang tidak mencukupi.');
                 }
             }],
             'borrow_date' => 'required|date',
@@ -71,7 +75,13 @@ class BorrowController extends Controller
                 'condition_at_borrow' => $item->condition,
             ]);
 
-            $item->update(['status' => 'Dipinjam']);
+            // Kurangi jumlah dan perbarui status
+            $item->decrement('quantity');
+            
+            // Jika jumlah menjadi 0, update status menjadi 'Dipinjam'
+            if ($item->quantity === 0) {
+                $item->updateStatus(Item::STATUS_BORROWED);
+            }
 
             DB::commit();
 
@@ -106,31 +116,39 @@ class BorrowController extends Controller
             DB::beginTransaction();
 
             $item = $borrow->item;
-            $borrowStatus = 'returned'; // Default status
-            $itemStatus = 'Tersedia'; // Default status
-
+            
             if ($validated['action'] === 'lost') {
-                $borrowStatus = 'lost';
-                $itemStatus = 'Hilang';
-                $item->update(['status' => $itemStatus]);
-
-            } else { // action is 'returned'
-                $borrow->condition_on_return = $validated['condition_on_return'];
-                
-                $item->update([
-                    'condition' => $validated['condition_on_return']
+                // Update status peminjaman menjadi hilang
+                $borrow->update([
+                    'status' => 'lost',
+                    'return_date' => Carbon::now()
                 ]);
-
-                if ($validated['condition_on_return'] !== 'Baik') {
-                    $itemStatus = 'Perlu Servis'; // More specific status
+                
+                // Update status item menjadi hilang jika semua stok hilang
+                if ($item->quantity == 0) {
+                    $item->updateStatus(Item::STATUS_LOST);
                 }
-                $item->update(['status' => $itemStatus]);
+            } else {
+                // Kembalikan barang
+                $borrow->update([
+                    'status' => 'returned',
+                    'return_date' => Carbon::now(),
+                    'condition_on_return' => $validated['condition_on_return']
+                ]);
+                
+                // Tambah jumlah karena barang dikembalikan
+                $item->increment('quantity');
+                
+                // Perbarui kondisi barang berdasarkan kondisi saat dikembalikan
+                if ($validated['condition_on_return'] !== $item->condition) {
+                    $item->updateCondition($validated['condition_on_return']);
+                } else {
+                    // Jika kondisi sama tapi barang baru dikembalikan,
+                    // perbarui status berdasarkan kondisi
+                    $item->updateStatusFromCondition();
+                    $item->save();
+                }
             }
-
-            $borrow->update([
-                'status' => $borrowStatus,
-                'return_date' => Carbon::now()
-            ]);
 
             DB::commit();
 
@@ -140,7 +158,7 @@ class BorrowController extends Controller
 
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->with('error', 'Terjadi kesalahan saat memperbarui status.');
+            return back()->with('error', 'Terjadi kesalahan saat memperbarui status: ' . $e->getMessage());
         }
     }
 

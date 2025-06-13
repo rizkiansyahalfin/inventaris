@@ -12,6 +12,7 @@ class Category extends Model
 
     protected $fillable = [
         'name',
+        'code',
         'description',
     ];
 
@@ -21,13 +22,13 @@ class Category extends Model
             ->withTimestamps();
     }
 
-    public function getCodeAttribute(): string
+    public static function generateCode($name): string
     {
-        $words = explode(' ', $this->name);
-        if (count($words) === 1 && strlen($this->name) > 2) {
-            // Handle single words like "Elektronik" -> "ELK" as per user example
-             return strtoupper(substr($this->name, 0, 2) . substr($this->name, -1));
+        $words = explode(' ', $name);
+        if (count($words) === 1 && strlen($name) > 2) {
+            return strtoupper(substr($name, 0, 2) . substr($name, -1));
         }
+        
         $initials = array_map(function ($word) {
             return strtoupper(substr($word, 0, 1));
         }, $words);

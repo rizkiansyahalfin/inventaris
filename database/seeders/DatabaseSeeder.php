@@ -23,9 +23,9 @@ class DatabaseSeeder extends Seeder
         ]);
 
         $this->call([
-            AdminSeeder::class, // Call the new AdminSeeder
             CategorySeeder::class,
             ItemSeeder::class,
+            AdminSeeder::class, // Call the new AdminSeeder
             BorrowSeeder::class,
             MaintenanceSeeder::class,
             // You can add BorrowSeeder and MaintenanceSeeder here if you create them

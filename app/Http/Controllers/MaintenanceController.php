@@ -24,10 +24,15 @@ class MaintenanceController extends Controller
      */
     public function create(Request $request)
     {
-        $items = Item::orderBy('name')->get();
+        // Tampilkan semua item yang tidak hilang dan tidak rusak berat
+        $items = Item::where('status', '!=', Item::STATUS_LOST)
+                    ->orderBy('name')
+                    ->get();
+                    
         $itemsWithCondition = $items->keyBy('id')->map(function ($item) {
-            return ['condition' => $item->condition];
+            return ['condition' => $item->condition, 'status' => $item->status];
         });
+        
         $selectedItem = $request->get('item_id');
         return view('maintenances.create', compact('items', 'selectedItem', 'itemsWithCondition'));
     }
@@ -45,12 +50,15 @@ class MaintenanceController extends Controller
             'cost' => 'nullable|numeric|min:0',
             'start_date' => 'required|date',
             'completion_date' => 'nullable|date|after_or_equal:start_date',
-            'update_item_status' => 'nullable|string|in:Perlu Servis,Rusak,Perlu Ganti,Tersedia',
+            'update_condition' => 'nullable|string|in:Baik,Rusak Ringan,Rusak Berat',
         ]);
 
         try {
             DB::beginTransaction();
 
+            $item = Item::findOrFail($validated['item_id']);
+            
+            // Buat catatan perawatan
             $maintenance = Maintenance::create([
                 'item_id' => $validated['item_id'],
                 'user_id' => Auth::id(),
@@ -61,15 +69,24 @@ class MaintenanceController extends Controller
                 'start_date' => $validated['start_date'],
                 'completion_date' => $validated['completion_date'],
             ]);
-
-            if (isset($validated['update_item_status'])) {
-                $item = Item::find($validated['item_id']);
-                $item->update(['status' => $validated['update_item_status']]);
+            
+            // Jika belum selesai, update status menjadi dalam perawatan
+            if (empty($validated['completion_date'])) {
+                // Hanya update jika item tidak sedang dipinjam
+                if ($item->status !== Item::STATUS_BORROWED) {
+                    $item->updateStatus(Item::STATUS_MAINTENANCE);
+                }
+            }
+            // Jika sudah selesai dan ada update kondisi
+            elseif (isset($validated['update_condition'])) {
+                // Update kondisi, yang akan mengupdate status otomatis sesuai kondisi
+                $item->updateCondition($validated['update_condition']);
             }
 
             DB::commit();
 
-            return redirect()->route('maintenances.show', $maintenance)->with('success', 'Data pemeliharaan berhasil ditambahkan.');
+            return redirect()->route('maintenances.show', $maintenance)
+                ->with('success', 'Data pemeliharaan berhasil ditambahkan.');
 
         } catch (\Exception $e) {
             DB::rollBack();
@@ -99,7 +116,36 @@ class MaintenanceController extends Controller
      */
     public function update(Request $request, Maintenance $maintenance)
     {
-        //
+        $validated = $request->validate([
+            'completion_date' => 'nullable|date|after_or_equal:start_date',
+            'notes' => 'nullable|string',
+            'update_condition' => 'nullable|string|in:Baik,Rusak Ringan,Rusak Berat',
+        ]);
+        
+        try {
+            DB::beginTransaction();
+            
+            $maintenance->update([
+                'completion_date' => $validated['completion_date'] ?? $maintenance->completion_date,
+                'notes' => $validated['notes'] ?? $maintenance->notes,
+            ]);
+            
+            // Jika menyelesaikan perawatan dan ada update kondisi
+            if (!empty($validated['completion_date']) && isset($validated['update_condition'])) {
+                $item = $maintenance->item;
+                // Update kondisi, yang akan mengupdate status otomatis
+                $item->updateCondition($validated['update_condition']);
+            }
+            
+            DB::commit();
+            
+            return redirect()->route('maintenances.show', $maintenance)
+                ->with('success', 'Data pemeliharaan berhasil diperbarui.');
+                
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->withInput()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+        }
     }
 
     /**

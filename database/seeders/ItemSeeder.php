@@ -16,30 +16,109 @@ class ItemSeeder extends Seeder
      */
     public function run()
     {
-        $categories = Category::all();
-        $conditions = ['Baik', 'Rusak Ringan', 'Rusak Berat'];
-        $statuses = ['Tersedia', 'Dipinjam'];
+        $items = [
+            // Elektronik
+            [
+                'name' => 'Laptop Dell XPS 15',
+                'description' => 'Laptop Dell XPS 15 dengan spesifikasi tinggi untuk kebutuhan desain dan programming.',
+                'quantity' => 3,
+                'condition' => 'Baik',
+                'status' => 'Tersedia',
+                'location' => 'Ruang IT',
+                'purchase_price' => 25000000,
+                'purchase_date' => Carbon::now()->subMonths(6),
+                'category' => 'Elektronik'
+            ],
+            [
+                'name' => 'Printer HP LaserJet Pro',
+                'description' => 'Printer laser untuk kebutuhan cetak dokumen kantor.',
+                'quantity' => 2,
+                'condition' => 'Baik',
+                'status' => 'Tersedia',
+                'location' => 'Ruang Admin',
+                'purchase_price' => 3500000,
+                'purchase_date' => Carbon::now()->subMonths(3),
+                'category' => 'Elektronik'
+            ],
+            // Furnitur
+            [
+                'name' => 'Meja Kerja Adjustable',
+                'description' => 'Meja kerja dengan tinggi yang dapat diatur.',
+                'quantity' => 5,
+                'condition' => 'Baik',
+                'status' => 'Tersedia',
+                'location' => 'Gudang A',
+                'purchase_price' => 1500000,
+                'purchase_date' => Carbon::now()->subMonths(2),
+                'category' => 'Furnitur'
+            ],
+            [
+                'name' => 'Kursi Ergonomis',
+                'description' => 'Kursi kantor ergonomis untuk kenyamanan kerja.',
+                'quantity' => 8,
+                'condition' => 'Baik',
+                'status' => 'Tersedia',
+                'location' => 'Gudang A',
+                'purchase_price' => 1200000,
+                'purchase_date' => Carbon::now()->subMonths(2),
+                'category' => 'Furnitur'
+            ],
+            // Alat Tulis
+            [
+                'name' => 'Stapler Max HD-10',
+                'description' => 'Stapler kantor dengan kapasitas besar.',
+                'quantity' => 10,
+                'condition' => 'Baik',
+                'status' => 'Tersedia',
+                'location' => 'Ruang Admin',
+                'purchase_price' => 75000,
+                'purchase_date' => Carbon::now()->subMonths(1),
+                'category' => 'Alat Tulis'
+            ],
+            // Perlengkapan Jaringan
+            [
+                'name' => 'Router TP-Link Archer C6',
+                'description' => 'Router WiFi dual band untuk jaringan kantor.',
+                'quantity' => 2,
+                'condition' => 'Baik',
+                'status' => 'Tersedia',
+                'location' => 'Ruang IT',
+                'purchase_price' => 850000,
+                'purchase_date' => Carbon::now()->subMonths(4),
+                'category' => 'Perlengkapan Jaringan'
+            ],
+            // Perlengkapan Audio Visual
+            [
+                'name' => 'Proyektor Epson EB-S41',
+                'description' => 'Proyektor untuk presentasi dan meeting.',
+                'quantity' => 1,
+                'condition' => 'Baik',
+                'status' => 'Tersedia',
+                'location' => 'Ruang Meeting',
+                'purchase_price' => 4500000,
+                'purchase_date' => Carbon::now()->subMonths(5),
+                'category' => 'Perlengkapan Audio Visual'
+            ],
+        ];
 
-        for ($i = 0; $i < 30; $i++) {
-            $itemCategory = $categories->random();
-            $purchaseDate = Carbon::now()->subMonths(rand(1, 24));
-            
-            // Temporary item to generate code
-            $tempItemData = [
-                'name' => 'Barang Dummy ' . ($i + 1),
-                'description' => 'Ini adalah deskripsi untuk barang dummy.',
-                'condition' => $conditions[array_rand($conditions)],
-                'status' => 'Tersedia', // Default to available first
-                'location' => 'Gudang ' . rand(1, 5),
-                'purchase_price' => rand(50000, 2000000),
-                'purchase_date' => $purchaseDate,
-                'code' => 'TEMP' // Temporary code
-            ];
+        foreach ($items as $itemData) {
+            $category = Category::where('name', $itemData['category'])->first();
+            if (!$category) continue;
 
-            $item = Item::create($tempItemData);
-            $item->categories()->attach($itemCategory->id);
+            $item = Item::create([
+                'name' => $itemData['name'],
+                'description' => $itemData['description'],
+                'quantity' => $itemData['quantity'],
+                'condition' => $itemData['condition'],
+                'status' => $itemData['status'],
+                'location' => $itemData['location'],
+                'purchase_price' => $itemData['purchase_price'],
+                'purchase_date' => $itemData['purchase_date'],
+            ]);
+
+            $item->categories()->attach($category->id);
             
-            // Generate real code
+            // Generate kode item
             $item->code = $this->generateItemCode($item);
             $item->save();
         }
@@ -48,10 +127,9 @@ class ItemSeeder extends Seeder
     private function generateItemCode(Item $item): string
     {
         $primaryCategory = $item->categories()->first();
-        if (!$primaryCategory) return "NO-CAT-" . time(); 
+        if (!$primaryCategory) return "NO-CAT-" . time();
 
-        // Access the new attribute from the Category model
-        $categoryCode = $primaryCategory->code; 
+        $categoryCode = $primaryCategory->code;
         $dateCode = $item->purchase_date->format('ym');
         $codePrefix = "{$categoryCode}/{$dateCode}/";
 

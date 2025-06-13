@@ -11,9 +11,10 @@ return new class extends Migration
         Schema::create('items', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->string('code')->unique();
+            $table->string('code')->nullable();
             $table->string('qr_code')->unique()->nullable();
             $table->text('description')->nullable();
+            $table->integer('quantity')->default(1);
             $table->string('condition');
             $table->string('location')->nullable();
             $table->decimal('purchase_price', 10, 2)->nullable();

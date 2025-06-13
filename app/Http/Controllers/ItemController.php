@@ -28,14 +28,16 @@ class ItemController extends Controller
 
         $items = $query->orderBy('name')->paginate(10);
         $categories = Category::orderBy('name')->get();
+        $statuses = Item::getStatuses();
 
-        return view('items.index', compact('items', 'categories'));
+        return view('items.index', compact('items', 'categories', 'statuses'));
     }
 
     public function create()
     {
         $categories = Category::orderBy('name')->get();
-        return view('items.create', compact('categories'));
+        $statuses = Item::getStatuses();
+        return view('items.create', compact('categories', 'statuses'));
     }
 
     public function store(Request $request)
@@ -43,8 +45,9 @@ class ItemController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
+            'quantity' => 'required|integer|min:1',
             'condition' => 'required|string|in:Baik,Rusak Ringan,Rusak Berat',
-            'status' => 'required|string|in:Tersedia,Dipinjam,Hilang,Perlu Servis,Rusak,Perlu Ganti',
+            'status' => 'required|string|in:Tersedia,Dipinjam,Dalam Perbaikan,Rusak,Hilang',
             'location' => 'nullable|string',
             'purchase_price' => 'nullable|numeric|min:0',
             'purchase_date' => 'required|date',
@@ -54,38 +57,63 @@ class ItemController extends Controller
         ]);
 
         $item = null;
+        $unitCodes = [];
 
-        DB::transaction(function () use ($validated, $request, &$item) {
+        DB::transaction(function () use ($validated, $request, &$item, &$unitCodes) {
             if ($request->hasFile('image')) {
                 $path = $request->file('image')->store('items', 'public');
                 $validated['image'] = basename($path);
             }
     
-            // Create item without code first
+            // Buat item tanpa kode terlebih dahulu
             $item = Item::create($validated);
             $item->categories()->attach($request->category_ids);
 
-            // Now, generate and save the code
+            // Generate kode dasar
             $item->code = $this->generateItemCode($item);
             $item->save();
+
+            // Generate kode unit jika jumlah > 1
+            if ($item->quantity > 1) {
+                $unitCodes = $item->generateUnitCodes();
+            } else {
+                $unitCodes = [$item->code];
+            }
+            
+            // Pastikan status sesuai dengan kondisi
+            if ($item->condition !== 'Baik' && $item->status === Item::STATUS_AVAILABLE) {
+                $item->updateStatusFromCondition();
+                $item->save();
+            }
         });
 
+        $message = 'Barang berhasil ditambahkan';
+        if (count($unitCodes) > 1) {
+            $message .= ' dengan kode unit: ' . implode(', ', array_slice($unitCodes, 0, 3));
+            if (count($unitCodes) > 3) {
+                $message .= ' dan ' . (count($unitCodes) - 3) . ' lainnya';
+            }
+        } else {
+            $message .= ' dengan kode: ' . $unitCodes[0];
+        }
 
         return redirect()
             ->route('items.show', $item)
-            ->with('success', 'Barang berhasil ditambahkan dengan kode: ' . $item->code);
+            ->with('success', $message);
     }
 
     public function show(Item $item)
     {
         $item->load(['categories', 'attachments', 'borrows.user'])->loadCount('borrows');
-        return view('items.show', compact('item'));
+        $unitCodes = $item->generateUnitCodes();
+        return view('items.show', compact('item', 'unitCodes'));
     }
 
     public function edit(Item $item)
     {
         $categories = Category::orderBy('name')->get();
-        return view('items.edit', compact('item', 'categories'));
+        $statuses = Item::getStatuses();
+        return view('items.edit', compact('item', 'categories', 'statuses'));
     }
 
     public function update(Request $request, Item $item)
@@ -93,8 +121,9 @@ class ItemController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
+            'quantity' => 'required|integer|min:1',
             'condition' => 'required|string|in:Baik,Rusak Ringan,Rusak Berat',
-            'status' => 'required|string|in:Tersedia,Dipinjam,Hilang,Perlu Servis,Rusak,Perlu Ganti',
+            'status' => 'required|string|in:Tersedia,Dipinjam,Dalam Perbaikan,Rusak,Hilang',
             'location' => 'nullable|string',
             'purchase_price' => 'nullable|numeric|min:0',
             'purchase_date' => 'required|date',
@@ -103,13 +132,14 @@ class ItemController extends Controller
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
-        // Check if code needs regeneration
+        // Periksa apakah kode perlu dibuat ulang
         $purchaseDateChanged = Carbon::parse($validated['purchase_date'])->notEqualTo($item->purchase_date);
-        $categoriesChanged = !empty(array_diff($item->categories->pluck('id')->all(), $validated['category_ids']));
+        $categoriesChanged = !empty(array_diff($request->category_ids, $item->categories->pluck('id')->all()));
         
         $regenerateCode = $purchaseDateChanged || $categoriesChanged;
+        $oldQuantity = $item->quantity;
 
-        DB::transaction(function() use ($request, $item, $validated, $regenerateCode) {
+        DB::transaction(function() use ($request, $item, $validated, $regenerateCode, $oldQuantity) {
             if ($request->hasFile('image')) {
                 if ($item->image) {
                     \Illuminate\Support\Facades\Storage::disk('public')->delete('items/' . $item->image);
@@ -122,17 +152,38 @@ class ItemController extends Controller
             $item->categories()->sync($request->category_ids);
 
             if ($regenerateCode) {
-                // Reload the item to get fresh relations
+                // Muat ulang item untuk mendapatkan relasi terbaru
                 $item->refresh(); 
                 $item->code = $this->generateItemCode($item);
                 $item->save();
             }
+            
+            // Jika ada perubahan kondisi, pastikan status diperbarui kecuali sedang dipinjam
+            if ($item->status !== Item::STATUS_BORROWED) {
+                $item->updateStatusFromCondition();
+                $item->save();
+            }
         });
-
+        
+        $message = 'Barang berhasil diperbarui';
+        
+        // Jika jumlah berubah, tampilkan kode unit baru
+        if ($item->quantity !== $oldQuantity || $regenerateCode) {
+            $unitCodes = $item->generateUnitCodes();
+            
+            if (count($unitCodes) > 1) {
+                $message .= ' dengan kode unit: ' . implode(', ', array_slice($unitCodes, 0, 3));
+                if (count($unitCodes) > 3) {
+                    $message .= ' dan ' . (count($unitCodes) - 3) . ' lainnya';
+                }
+            } else {
+                $message .= ' dengan kode: ' . $unitCodes[0];
+            }
+        }
 
         return redirect()
             ->route('items.show', $item)
-            ->with('success', 'Barang berhasil diperbarui');
+            ->with('success', $message);
     }
 
     public function destroy(Item $item)
@@ -154,22 +205,22 @@ class ItemController extends Controller
 
     private function generateItemCode(Item $item): string
     {
-        // 1. Get Category Code
+        // 1. Ambil Kode Kategori
         $primaryCategory = $item->categories()->first();
         if (!$primaryCategory) {
-            // Fallback or throw error if no category is assigned
+            // Fallback jika tidak ada kategori
             return "NO-CAT-" . time(); 
         }
         $categoryCode = $primaryCategory->code;
 
-        // 2. Get Purchase Date Code
+        // 2. Ambil Kode Tanggal Pembelian
         $dateCode = $item->purchase_date->format('ym');
 
-        // 3. Find Sequence
+        // 3. Cari Urutan
         $codePrefix = "{$categoryCode}/{$dateCode}/";
         
         $latestItem = Item::where('code', 'like', $codePrefix . '%')
-            ->where('id', '!=', $item->id) // Exclude self
+            ->where('id', '!=', $item->id) // Kecuali item ini
             ->orderBy('code', 'desc')
             ->first();
 
