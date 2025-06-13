@@ -203,6 +203,92 @@ class ItemController extends Controller
             ->with('success', 'Barang berhasil dihapus');
     }
 
+    public function showAddStockForm(Item $item)
+    {
+        return view('items.add-stock', compact('item'));
+    }
+
+    public function addStock(Request $request, Item $item)
+    {
+        $validated = $request->validate([
+            'quantity_to_add' => 'required|integer|min:1',
+            'condition' => 'required|string|in:Baik,Rusak Ringan,Rusak Berat',
+            'notes' => 'nullable|string',
+            'purchase_date' => 'nullable|date',
+            'purchase_price' => 'nullable|numeric|min:0',
+        ]);
+
+        try {
+            DB::beginTransaction();
+            
+            // Simpan jumlah lama untuk menghitung kode unit baru
+            $oldQuantity = $item->quantity;
+            $newQuantity = $oldQuantity + $validated['quantity_to_add'];
+            
+            // Update jumlah barang
+            $item->quantity = $newQuantity;
+            
+            // Jika ada tanggal pembelian baru, simpan sebagai catatan
+            $purchaseInfo = '';
+            if (!empty($validated['purchase_date'])) {
+                $purchaseInfo = " (Tanggal: " . $validated['purchase_date'] . ")";
+            }
+            
+            // Jika ada harga pembelian baru, simpan sebagai catatan
+            if (!empty($validated['purchase_price'])) {
+                $purchaseInfo .= " (Harga: Rp" . number_format($validated['purchase_price'], 0, ',', '.') . ")";
+            }
+            
+            // Tambahkan catatan (jika ada)
+            if (!empty($validated['notes'])) {
+                $item->notes = ($item->notes ? $item->notes . "\n" : '') . 
+                    "Penambahan stok " . $validated['quantity_to_add'] . " unit pada " . 
+                    date('Y-m-d H:i:s') . $purchaseInfo . "\n" . 
+                    "Kondisi: " . $validated['condition'] . "\n" . 
+                    "Catatan: " . $validated['notes'];
+            } else {
+                $item->notes = ($item->notes ? $item->notes . "\n" : '') . 
+                    "Penambahan stok " . $validated['quantity_to_add'] . " unit pada " . 
+                    date('Y-m-d H:i:s') . $purchaseInfo . "\n" . 
+                    "Kondisi: " . $validated['condition'];
+            }
+            
+            // Perbarui status jika barang sebelumnya tidak tersedia karena stok 0
+            if ($oldQuantity == 0 && $item->status !== Item::STATUS_BORROWED) {
+                if ($validated['condition'] === 'Baik') {
+                    $item->status = Item::STATUS_AVAILABLE;
+                } else {
+                    $item->condition = $validated['condition'];
+                    $item->updateStatusFromCondition();
+                }
+            }
+            
+            $item->save();
+            
+            // Generate kode unit yang baru ditambahkan
+            $unitCodes = $item->generateUnitCodes();
+            $newUnitCodes = array_slice($unitCodes, $oldQuantity, $validated['quantity_to_add']);
+            
+            DB::commit();
+            
+            $message = 'Penambahan stok berhasil sebanyak ' . $validated['quantity_to_add'] . ' unit';
+            if (count($newUnitCodes) > 0) {
+                $message .= ' dengan kode unit baru: ' . implode(', ', array_slice($newUnitCodes, 0, 3));
+                if (count($newUnitCodes) > 3) {
+                    $message .= ' dan ' . (count($newUnitCodes) - 3) . ' lainnya';
+                }
+            }
+            
+            return redirect()
+                ->route('items.show', $item)
+                ->with('success', $message);
+            
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->withInput()->with('error', 'Terjadi kesalahan saat menambah stok: ' . $e->getMessage());
+        }
+    }
+
     private function generateItemCode(Item $item): string
     {
         // 1. Ambil Kode Kategori

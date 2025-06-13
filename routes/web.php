@@ -21,6 +21,9 @@ Route::middleware(['auth'])->group(function () {
     
     Route::resource('categories', CategoryController::class);
     Route::resource('items', ItemController::class);
+    Route::get('/items/{item}/add-stock', [ItemController::class, 'showAddStockForm'])->name('items.add-stock.form');
+    Route::post('/items/{item}/add-stock', [ItemController::class, 'addStock'])->name('items.add-stock');
+    
     Route::resource('borrows', BorrowController::class);
     Route::post('/borrows/{borrow}/status', [BorrowController::class, 'updateStatus'])->name('borrows.update_status');
     Route::resource('attachments', AttachmentController::class)->only(['destroy']);

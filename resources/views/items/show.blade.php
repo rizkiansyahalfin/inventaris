@@ -11,6 +11,9 @@
                     <p class="text-sm text-gray-500">Kode: {{ $item->code }}</p>
                 </div>
                 <div class="flex space-x-3">
+                    <a href="{{ route('items.add-stock.form', $item) }}" class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700">
+                        Tambah Stok
+                    </a>
                     <a href="{{ route('items.edit', $item) }}" class="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700">
                         Edit
                     </a>
