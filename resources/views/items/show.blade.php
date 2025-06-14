@@ -121,18 +121,41 @@
 
             @if($item->quantity > 1)
             <div class="mt-6">
-                <h3 class="text-lg font-medium text-gray-900">Kode Unit</h3>
-                <div class="mt-2">
-                    <div class="flex flex-wrap gap-2">
-                        @foreach($unitCodes as $index => $unitCode)
-                            <span class="inline-flex items-center px-2.5 py-1.5 rounded-md text-xs font-medium bg-blue-50 text-blue-700 border border-blue-100">
-                                {{ $unitCode }}
-                            </span>
-                        @endforeach
-                    </div>
-                    @if(count($unitCodes) > 20)
-                        <p class="mt-2 text-sm text-gray-500">Menampilkan {{ count($unitCodes) }} kode unit.</p>
-                    @endif
+                <h3 class="text-lg font-medium text-gray-900">Daftar Unit Barang</h3>
+                <div class="mt-2 overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
+                                    Kode Unit</th>
+                                <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
+                                    Status</th>
+                                <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
+                                    Kondisi</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            @foreach($relatedItems as $unit)
+                            <tr>
+                                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-900 font-medium">{{ $unit->code }}</td>
+                                <td class="whitespace-nowrap px-3 py-4 text-sm">
+                                    @if($unit->status == 'Tersedia')
+                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Tersedia</span>
+                                    @elseif($unit->status == 'Dipinjam')
+                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">Dipinjam</span>
+                                    @elseif($unit->status == 'Dalam Perbaikan')
+                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-orange-100 text-orange-800">Dalam Perbaikan</span>
+                                    @elseif($unit->status == 'Rusak')
+                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-orange-100 text-orange-800">Rusak</span>
+                                    @elseif($unit->status == 'Hilang')
+                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">Hilang</span>
+                                    @endif
+                                </td>
+                                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{{ $unit->condition }}</td>
+                            </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
                 </div>
             </div>
             @endif

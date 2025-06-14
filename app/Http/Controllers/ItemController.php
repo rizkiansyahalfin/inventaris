@@ -57,33 +57,72 @@ class ItemController extends Controller
         ]);
 
         $item = null;
+        $createdItems = [];
         $unitCodes = [];
 
-        DB::transaction(function () use ($validated, $request, &$item, &$unitCodes) {
+        DB::transaction(function () use ($validated, $request, &$item, &$createdItems, &$unitCodes) {
+            // Proses upload gambar jika ada
+            $imagePath = null;
             if ($request->hasFile('image')) {
                 $path = $request->file('image')->store('items', 'public');
-                $validated['image'] = basename($path);
-            }
-    
-            // Buat item tanpa kode terlebih dahulu
-            $item = Item::create($validated);
-            $item->categories()->attach($request->category_ids);
-
-            // Generate kode dasar
-            $item->code = $this->generateItemCode($item);
-            $item->save();
-
-            // Generate kode unit jika jumlah > 1
-            if ($item->quantity > 1) {
-                $unitCodes = $item->generateUnitCodes();
-            } else {
-                $unitCodes = [$item->code];
+                $imagePath = basename($path);
             }
             
-            // Pastikan status sesuai dengan kondisi
-            if ($item->condition !== 'Baik' && $item->status === Item::STATUS_AVAILABLE) {
-                $item->updateStatusFromCondition();
-                $item->save();
+            // Buat item induk terlebih dahulu untuk mendapatkan kode dasar
+            $mainItem = new Item();
+            $mainItem->fill(array_merge($validated, [
+                'image' => $imagePath
+            ]));
+            $mainItem->save();
+            $mainItem->categories()->attach($request->category_ids);
+            
+            // Generate kode dasar
+            $mainItem->code = $this->generateItemCode($mainItem);
+            $mainItem->save();
+            
+            // Set item untuk response
+            $item = $mainItem;
+            
+            // Jika quantity lebih dari 1, buat record terpisah untuk setiap unit
+            if ($validated['quantity'] > 1) {
+                // Simpan item induk sebagai item pertama dengan kode unit -001
+                $mainItem->code = $mainItem->code . '-001';
+                $mainItem->quantity = 1; // Set quantity ke 1 untuk item induk
+                $mainItem->save();
+                
+                $createdItems[] = $mainItem;
+                $unitCodes[] = $mainItem->code;
+                
+                // Buat item-item turunan
+                $baseCode = preg_replace('/-\d+$/', '', $mainItem->code);
+                for ($i = 2; $i <= $validated['quantity']; $i++) {
+                    $childItem = new Item();
+                    $childItem->fill(array_merge($validated, [
+                        'quantity' => 1, // Set quantity ke 1 untuk setiap unit
+                        'image' => $imagePath,
+                        'code' => $baseCode . '-' . str_pad($i, 3, '0', STR_PAD_LEFT)
+                    ]));
+                    $childItem->save();
+                    $childItem->categories()->attach($request->category_ids);
+                    
+                    $createdItems[] = $childItem;
+                    $unitCodes[] = $childItem->code;
+                }
+            } else {
+                // Jika quantity hanya 1, gunakan item yang sudah dibuat
+                $mainItem->quantity = 1;
+                $mainItem->save();
+                
+                $createdItems[] = $mainItem;
+                $unitCodes[] = $mainItem->code;
+            }
+            
+            // Pastikan status sesuai dengan kondisi untuk semua item
+            foreach ($createdItems as $createdItem) {
+                if ($createdItem->condition !== 'Baik' && $createdItem->status === Item::STATUS_AVAILABLE) {
+                    $createdItem->updateStatusFromCondition();
+                    $createdItem->save();
+                }
             }
         });
 
@@ -105,8 +144,19 @@ class ItemController extends Controller
     public function show(Item $item)
     {
         $item->load(['categories', 'attachments', 'borrows.user'])->loadCount('borrows');
-        $unitCodes = $item->generateUnitCodes();
-        return view('items.show', compact('item', 'unitCodes'));
+        
+        // Cari semua unit dengan kode dasar yang sama
+        $baseCode = preg_replace('/-\d+$/', '', $item->code);
+        $relatedItems = Item::where(function($query) use ($baseCode) {
+                $query->where('code', 'like', $baseCode . '-%')
+                    ->orWhere('code', $baseCode);
+            })
+            ->orderBy('code')
+            ->get();
+            
+        $unitCodes = $relatedItems->pluck('code')->toArray();
+        
+        return view('items.show', compact('item', 'unitCodes', 'relatedItems'));
     }
 
     public function edit(Item $item)
@@ -138,16 +188,22 @@ class ItemController extends Controller
         
         $regenerateCode = $purchaseDateChanged || $categoriesChanged;
         $oldQuantity = $item->quantity;
+        $newQuantity = $validated['quantity'];
+        $imagePath = $item->image;
+        $unitCodes = [];
+        $createdItems = [];
 
-        DB::transaction(function() use ($request, $item, $validated, $regenerateCode, $oldQuantity) {
+        DB::transaction(function() use ($request, $item, $validated, $regenerateCode, $oldQuantity, $newQuantity, &$imagePath, &$unitCodes, &$createdItems) {
             if ($request->hasFile('image')) {
                 if ($item->image) {
                     \Illuminate\Support\Facades\Storage::disk('public')->delete('items/' . $item->image);
                 }
                 $path = $request->file('image')->store('items', 'public');
-                $validated['image'] = basename($path);
+                $imagePath = basename($path);
+                $validated['image'] = $imagePath;
             }
 
+            // Update item utama
             $item->update($validated);
             $item->categories()->sync($request->category_ids);
 
@@ -158,19 +214,77 @@ class ItemController extends Controller
                 $item->save();
             }
             
+            // Jika jumlah berubah, perbarui atau buat record baru
+            if ($newQuantity != $oldQuantity) {
+                // Cari item-item yang memiliki kode dasar yang sama
+                $baseCode = preg_replace('/-\d+$/', '', $item->code);
+                $relatedItems = Item::where('code', 'like', $baseCode . '-%')
+                    ->orWhere('code', $baseCode)
+                    ->get();
+                
+                // Jika jumlah baru lebih besar, tambahkan item baru
+                if ($newQuantity > $relatedItems->count()) {
+                    // Mulai dari nomor urut terakhir + 1
+                    $startIndex = $relatedItems->count() + 1;
+                    
+                    for ($i = $startIndex; $i <= $newQuantity; $i++) {
+                        $newItem = new Item();
+                        $newItem->fill($validated);
+                        $newItem->quantity = 1;
+                        $newItem->code = $baseCode . '-' . str_pad($i, 3, '0', STR_PAD_LEFT);
+                        $newItem->save();
+                        $newItem->categories()->attach($request->category_ids);
+                        
+                        $createdItems[] = $newItem;
+                        $unitCodes[] = $newItem->code;
+                    }
+                }
+                // Jika jumlah baru lebih kecil, hapus item yang tidak diperlukan
+                elseif ($newQuantity < $relatedItems->count()) {
+                    // Urutkan item berdasarkan kode
+                    $sortedItems = $relatedItems->sortBy('code');
+                    
+                    // Hapus item dari belakang
+                    $itemsToRemove = $sortedItems->slice($newQuantity);
+                    foreach ($itemsToRemove as $itemToRemove) {
+                        // Pastikan tidak menghapus item yang sedang dipinjam
+                        if ($itemToRemove->status !== Item::STATUS_BORROWED) {
+                            $itemToRemove->delete();
+                        } else {
+                            // Jika ada item yang dipinjam, tambahkan catatan
+                            $item->notes = $item->notes 
+                                ? $item->notes . "\n\nTidak dapat menghapus unit " . $itemToRemove->code . " karena sedang dipinjam."
+                                : "Tidak dapat menghapus unit " . $itemToRemove->code . " karena sedang dipinjam.";
+                            $item->save();
+                        }
+                    }
+                }
+                
+                // Perbarui jumlah item utama
+                $item->quantity = $newQuantity;
+                $item->save();
+            }
+            
             // Jika ada perubahan kondisi, pastikan status diperbarui kecuali sedang dipinjam
             if ($item->status !== Item::STATUS_BORROWED) {
                 $item->updateStatusFromCondition();
                 $item->save();
+            }
+            
+            // Simpan kode unit untuk pesan sukses
+            $allItems = Item::where('code', 'like', $baseCode . '-%')
+                ->orWhere('code', $baseCode)
+                ->get();
+            
+            foreach ($allItems as $relatedItem) {
+                $unitCodes[] = $relatedItem->code;
             }
         });
         
         $message = 'Barang berhasil diperbarui';
         
         // Jika jumlah berubah, tampilkan kode unit baru
-        if ($item->quantity !== $oldQuantity || $regenerateCode) {
-            $unitCodes = $item->generateUnitCodes();
-            
+        if ($newQuantity !== $oldQuantity || $regenerateCode) {
             if (count($unitCodes) > 1) {
                 $message .= ' dengan kode unit: ' . implode(', ', array_slice($unitCodes, 0, 3));
                 if (count($unitCodes) > 3) {
@@ -224,51 +338,76 @@ class ItemController extends Controller
             // Simpan jumlah lama untuk menghitung kode unit baru
             $oldQuantity = $item->quantity;
             $newQuantity = $oldQuantity + $validated['quantity_to_add'];
+            $baseCode = preg_replace('/-\d+$/', '', $item->code);
+            $newUnitCodes = [];
             
-            // Update jumlah barang
-            $item->quantity = $newQuantity;
-            
-            // Jika ada tanggal pembelian baru, simpan sebagai catatan
+            // Siapkan catatan untuk penambahan stok
             $purchaseInfo = '';
             if (!empty($validated['purchase_date'])) {
                 $purchaseInfo = " (Tanggal: " . $validated['purchase_date'] . ")";
             }
             
-            // Jika ada harga pembelian baru, simpan sebagai catatan
             if (!empty($validated['purchase_price'])) {
                 $purchaseInfo .= " (Harga: Rp" . number_format($validated['purchase_price'], 0, ',', '.') . ")";
             }
             
-            // Siapkan catatan baru
             $newNotes = "Penambahan stok " . $validated['quantity_to_add'] . " unit pada " . 
                     date('Y-m-d H:i:s') . $purchaseInfo . "\n" . 
                     "Kondisi: " . $validated['condition'];
                     
-            // Tambahkan catatan tambahan jika ada
             if (!empty($validated['notes'])) {
                 $newNotes .= "\nCatatan: " . $validated['notes'];
             }
             
-            // Update notes dengan catatan baru
+            // Cari item-item yang sudah ada dengan kode dasar yang sama
+            $existingItems = Item::where('code', 'like', $baseCode . '-%')
+                ->orWhere('code', $baseCode)
+                ->get();
+            
+            // Hitung nomor urut terakhir
+            $lastIndex = $existingItems->count();
+            
+            // Buat record baru untuk setiap unit yang ditambahkan
+            for ($i = 1; $i <= $validated['quantity_to_add']; $i++) {
+                $newItem = new Item();
+                $newItem->fill([
+                    'name' => $item->name,
+                    'description' => $item->description,
+                    'quantity' => 1,
+                    'condition' => $validated['condition'],
+                    'location' => $item->location,
+                    'purchase_price' => $validated['purchase_price'] ?? $item->purchase_price,
+                    'purchase_date' => $validated['purchase_date'] ?? now(),
+                    'image' => $item->image,
+                    'notes' => $newNotes,
+                ]);
+                
+                // Set status berdasarkan kondisi
+                if ($validated['condition'] === 'Baik') {
+                    $newItem->status = Item::STATUS_AVAILABLE;
+                } else {
+                    $newItem->status = $validated['condition'] === 'Rusak Ringan' ? 
+                        Item::STATUS_MAINTENANCE : Item::STATUS_DAMAGED;
+                }
+                
+                // Generate kode unit baru
+                $newIndex = $lastIndex + $i;
+                $newItem->code = $baseCode . '-' . str_pad($newIndex, 3, '0', STR_PAD_LEFT);
+                
+                $newItem->save();
+                $newItem->categories()->attach($item->categories->pluck('id')->toArray());
+                
+                $newUnitCodes[] = $newItem->code;
+            }
+            
+            // Update catatan pada item utama
             $item->notes = $item->notes 
                 ? $item->notes . "\n\n" . $newNotes 
                 : $newNotes;
             
-            // Perbarui status jika barang sebelumnya tidak tersedia karena stok 0
-            if ($oldQuantity == 0 && $item->status !== Item::STATUS_BORROWED) {
-                if ($validated['condition'] === 'Baik') {
-                    $item->status = Item::STATUS_AVAILABLE;
-                } else {
-                    $item->condition = $validated['condition'];
-                    $item->updateStatusFromCondition();
-                }
-            }
-            
+            // Update jumlah total pada item utama
+            $item->quantity = $newQuantity;
             $item->save();
-            
-            // Generate kode unit yang baru ditambahkan
-            $unitCodes = $item->generateUnitCodes();
-            $newUnitCodes = array_slice($unitCodes, $oldQuantity, $validated['quantity_to_add']);
             
             DB::commit();
             

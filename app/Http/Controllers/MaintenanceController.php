@@ -69,7 +69,7 @@ class MaintenanceController extends Controller
                 'start_date' => $validated['start_date'],
                 'completion_date' => $validated['completion_date'],
             ]);
-            
+
             // Jika belum selesai, update status menjadi dalam perawatan
             if (empty($validated['completion_date'])) {
                 // Hanya update jika item tidak sedang dipinjam

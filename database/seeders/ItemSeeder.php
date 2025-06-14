@@ -127,9 +127,9 @@ class ItemSeeder extends Seeder
     private function generateItemCode(Item $item): string
     {
         $primaryCategory = $item->categories()->first();
-        if (!$primaryCategory) return "NO-CAT-" . time();
+        if (!$primaryCategory) return "NO-CAT-" . time(); 
 
-        $categoryCode = $primaryCategory->code;
+        $categoryCode = $primaryCategory->code; 
         $dateCode = $item->purchase_date->format('ym');
         $codePrefix = "{$categoryCode}/{$dateCode}/";
 

@@ -116,7 +116,7 @@ class BorrowController extends Controller
             DB::beginTransaction();
 
             $item = $borrow->item;
-            
+
             if ($validated['action'] === 'lost') {
                 // Update status peminjaman menjadi hilang
                 $borrow->update([
