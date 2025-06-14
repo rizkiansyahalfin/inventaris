@@ -86,7 +86,8 @@ class ItemController extends Controller
             // Jika quantity lebih dari 1, buat record terpisah untuk setiap unit
             if ($validated['quantity'] > 1) {
                 // Simpan item induk sebagai item pertama dengan kode unit -001
-                $mainItem->code = $mainItem->code . '-001';
+                $baseCode = $mainItem->code;
+                $mainItem->code = $baseCode . '-001';
                 $mainItem->quantity = 1; // Set quantity ke 1 untuk item induk
                 $mainItem->save();
                 
@@ -94,7 +95,6 @@ class ItemController extends Controller
                 $unitCodes[] = $mainItem->code;
                 
                 // Buat item-item turunan
-                $baseCode = preg_replace('/-\d+$/', '', $mainItem->code);
                 for ($i = 2; $i <= $validated['quantity']; $i++) {
                     $childItem = new Item();
                     $childItem->fill(array_merge($validated, [
@@ -214,24 +214,40 @@ class ItemController extends Controller
                 $item->save();
             }
             
+            // Ambil kode dasar
+            $baseCode = preg_replace('/-\d+$/', '', $item->code);
+            
             // Jika jumlah berubah, perbarui atau buat record baru
             if ($newQuantity != $oldQuantity) {
                 // Cari item-item yang memiliki kode dasar yang sama
-                $baseCode = preg_replace('/-\d+$/', '', $item->code);
                 $relatedItems = Item::where('code', 'like', $baseCode . '-%')
                     ->orWhere('code', $baseCode)
                     ->get();
                 
                 // Jika jumlah baru lebih besar, tambahkan item baru
                 if ($newQuantity > $relatedItems->count()) {
-                    // Mulai dari nomor urut terakhir + 1
-                    $startIndex = $relatedItems->count() + 1;
+                    // Cari nomor unit tertinggi yang pernah ada
+                    $highestUnitNumber = Item::where('code', 'like', $baseCode . '-%')
+                        ->orderByRaw('CAST(SUBSTRING_INDEX(code, "-", -1) AS UNSIGNED) DESC')
+                        ->value(DB::raw('CAST(SUBSTRING_INDEX(code, "-", -1) AS UNSIGNED)'));
                     
-                    for ($i = $startIndex; $i <= $newQuantity; $i++) {
+                    // Jika tidak ada unit sebelumnya, mulai dari 1
+                    $startUnitNumber = $highestUnitNumber ? $highestUnitNumber + 1 : 1;
+                    
+                    // Hitung berapa banyak item yang perlu ditambahkan
+                    $itemsToAdd = $newQuantity - $relatedItems->count();
+                    
+                    // Buat item baru untuk setiap unit yang ditambahkan
+                    for ($i = 0; $i < $itemsToAdd; $i++) {
                         $newItem = new Item();
                         $newItem->fill($validated);
                         $newItem->quantity = 1;
-                        $newItem->code = $baseCode . '-' . str_pad($i, 3, '0', STR_PAD_LEFT);
+                        $newItem->image = $imagePath;
+                        
+                        // Generate kode unit baru
+                        $unitNumber = $startUnitNumber + $i;
+                        $newItem->code = $baseCode . '-' . str_pad($unitNumber, 3, '0', STR_PAD_LEFT);
+                        
                         $newItem->save();
                         $newItem->categories()->attach($request->category_ids);
                         
@@ -359,16 +375,16 @@ class ItemController extends Controller
                 $newNotes .= "\nCatatan: " . $validated['notes'];
             }
             
-            // Cari item-item yang sudah ada dengan kode dasar yang sama
-            $existingItems = Item::where('code', 'like', $baseCode . '-%')
-                ->orWhere('code', $baseCode)
-                ->get();
-            
-            // Hitung nomor urut terakhir
-            $lastIndex = $existingItems->count();
+            // Cari nomor unit tertinggi yang pernah ada, termasuk yang sudah dihapus
+            $highestUnitNumber = Item::where('code', 'like', $baseCode . '-%')
+                ->orderByRaw('CAST(SUBSTRING_INDEX(code, "-", -1) AS UNSIGNED) DESC')
+                ->value(DB::raw('CAST(SUBSTRING_INDEX(code, "-", -1) AS UNSIGNED)'));
+                
+            // Jika tidak ada unit sebelumnya, mulai dari 1
+            $startUnitNumber = $highestUnitNumber ? $highestUnitNumber + 1 : 1;
             
             // Buat record baru untuk setiap unit yang ditambahkan
-            for ($i = 1; $i <= $validated['quantity_to_add']; $i++) {
+            for ($i = 0; $i < $validated['quantity_to_add']; $i++) {
                 $newItem = new Item();
                 $newItem->fill([
                     'name' => $item->name,
@@ -391,8 +407,8 @@ class ItemController extends Controller
                 }
                 
                 // Generate kode unit baru
-                $newIndex = $lastIndex + $i;
-                $newItem->code = $baseCode . '-' . str_pad($newIndex, 3, '0', STR_PAD_LEFT);
+                $unitNumber = $startUnitNumber + $i;
+                $newItem->code = $baseCode . '-' . str_pad($unitNumber, 3, '0', STR_PAD_LEFT);
                 
                 $newItem->save();
                 $newItem->categories()->attach($item->categories->pluck('id')->toArray());
@@ -445,14 +461,32 @@ class ItemController extends Controller
         // 3. Cari Urutan
         $codePrefix = "{$categoryCode}/{$dateCode}/";
         
-        $latestItem = Item::where('code', 'like', $codePrefix . '%')
+        // Cari kode tertinggi yang pernah ada, termasuk yang sudah dihapus
+        // Menggunakan withTrashed() jika menggunakan soft deletes
+        $latestItem = Item::where(function($query) use ($codePrefix) {
+                // Cari kode dengan prefix yang sama
+                $query->where('code', 'like', $codePrefix . '%');
+                
+                // Juga cari kode unit dengan prefix yang sama
+                $query->orWhere('code', 'like', $codePrefix . '%-___');
+            })
             ->where('id', '!=', $item->id) // Kecuali item ini
-            ->orderBy('code', 'desc')
+            ->orderByRaw('LENGTH(code) DESC, code DESC') // Urutkan berdasarkan panjang dan nilai
             ->first();
 
         $sequence = 1;
         if ($latestItem) {
-            $lastSequence = (int) substr($latestItem->code, -3);
+            // Ekstrak nomor urut dari kode
+            $code = $latestItem->code;
+            
+            // Jika kode memiliki format dengan unit (contoh: ELK/2506/002-001)
+            if (strpos($code, '-') !== false) {
+                // Ambil bagian sebelum tanda "-"
+                $code = explode('-', $code)[0];
+            }
+            
+            // Ambil 3 karakter terakhir untuk mendapatkan nomor urut
+            $lastSequence = (int) substr($code, -3);
             $sequence = $lastSequence + 1;
         }
         
