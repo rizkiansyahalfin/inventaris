@@ -109,6 +109,33 @@
                 </div>
             </div>
             @endif
+
+            @if($item->notes)
+            <div class="mt-6">
+                <h3 class="text-lg font-medium text-gray-900">Catatan Stok</h3>
+                <div class="mt-2 p-4 bg-gray-50 rounded-md">
+                    <pre class="text-sm text-gray-600 whitespace-pre-wrap">{{ $item->notes }}</pre>
+                </div>
+            </div>
+            @endif
+
+            @if($item->quantity > 1)
+            <div class="mt-6">
+                <h3 class="text-lg font-medium text-gray-900">Kode Unit</h3>
+                <div class="mt-2">
+                    <div class="flex flex-wrap gap-2">
+                        @foreach($unitCodes as $index => $unitCode)
+                            <span class="inline-flex items-center px-2.5 py-1.5 rounded-md text-xs font-medium bg-blue-50 text-blue-700 border border-blue-100">
+                                {{ $unitCode }}
+                            </span>
+                        @endforeach
+                    </div>
+                    @if(count($unitCodes) > 20)
+                        <p class="mt-2 text-sm text-gray-500">Menampilkan {{ count($unitCodes) }} kode unit.</p>
+                    @endif
+                </div>
+            </div>
+            @endif
         </div>
     </div>
 

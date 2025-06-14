@@ -33,12 +33,24 @@
                 </div>
 
                 <div>
+                    <label for="quantity" class="block text-sm font-medium text-gray-700">Jumlah Barang</label>
+                    <input type="number" name="quantity" id="quantity" value="{{ old('quantity', $item->quantity) }}" 
+                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm @error('quantity') border-red-500 @enderror"
+                        required min="1">
+                    @error('quantity')
+                    <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div>
                     <label class="block text-sm font-medium text-gray-700">Status Saat Ini</label>
                     <p class="mt-1 text-gray-900">
                         @if($item->status == 'Tersedia')
                             <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Tersedia</span>
                         @elseif($item->status == 'Dipinjam')
                             <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">Dipinjam</span>
+                        @elseif($item->status == 'Dalam Perbaikan')
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-orange-100 text-orange-800">Dalam Perbaikan</span>
                         @elseif($item->status == 'Rusak')
                             <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-orange-100 text-orange-800">Rusak</span>
                         @elseif($item->status == 'Hilang')
@@ -94,10 +106,9 @@
                     <select name="status" id="status" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
                         <option value="Tersedia" @selected(old('status', $item->status) == 'Tersedia')>Tersedia</option>
                         <option value="Dipinjam" @selected(old('status', $item->status) == 'Dipinjam')>Dipinjam</option>
-                        <option value="Hilang" @selected(old('status', $item->status) == 'Hilang')>Hilang</option>
-                        <option value="Perlu Servis" @selected(old('status', $item->status) == 'Perlu Servis')>Perlu Servis</option>
+                        <option value="Dalam Perbaikan" @selected(old('status', $item->status) == 'Dalam Perbaikan')>Dalam Perbaikan</option>
                         <option value="Rusak" @selected(old('status', $item->status) == 'Rusak')>Rusak</option>
-                        <option value="Perlu Ganti" @selected(old('status', $item->status) == 'Perlu Ganti')>Perlu Ganti</option>
+                        <option value="Hilang" @selected(old('status', $item->status) == 'Hilang')>Hilang</option>
                     </select>
                     @error('status')
                         <p class="mt-2 text-sm text-red-600">{{ $message }}</p>

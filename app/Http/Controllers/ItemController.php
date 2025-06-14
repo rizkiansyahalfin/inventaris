@@ -239,19 +239,20 @@ class ItemController extends Controller
                 $purchaseInfo .= " (Harga: Rp" . number_format($validated['purchase_price'], 0, ',', '.') . ")";
             }
             
-            // Tambahkan catatan (jika ada)
-            if (!empty($validated['notes'])) {
-                $item->notes = ($item->notes ? $item->notes . "\n" : '') . 
-                    "Penambahan stok " . $validated['quantity_to_add'] . " unit pada " . 
-                    date('Y-m-d H:i:s') . $purchaseInfo . "\n" . 
-                    "Kondisi: " . $validated['condition'] . "\n" . 
-                    "Catatan: " . $validated['notes'];
-            } else {
-                $item->notes = ($item->notes ? $item->notes . "\n" : '') . 
-                    "Penambahan stok " . $validated['quantity_to_add'] . " unit pada " . 
+            // Siapkan catatan baru
+            $newNotes = "Penambahan stok " . $validated['quantity_to_add'] . " unit pada " . 
                     date('Y-m-d H:i:s') . $purchaseInfo . "\n" . 
                     "Kondisi: " . $validated['condition'];
+                    
+            // Tambahkan catatan tambahan jika ada
+            if (!empty($validated['notes'])) {
+                $newNotes .= "\nCatatan: " . $validated['notes'];
             }
+            
+            // Update notes dengan catatan baru
+            $item->notes = $item->notes 
+                ? $item->notes . "\n\n" . $newNotes 
+                : $newNotes;
             
             // Perbarui status jika barang sebelumnya tidak tersedia karena stok 0
             if ($oldQuantity == 0 && $item->status !== Item::STATUS_BORROWED) {

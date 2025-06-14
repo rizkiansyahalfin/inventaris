@@ -25,6 +25,16 @@
                 </div>
 
                 <div>
+                    <label for="quantity" class="block text-sm font-medium text-gray-700">Jumlah Barang</label>
+                    <input type="number" name="quantity" id="quantity" value="{{ old('quantity', 1) }}"
+                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm @error('quantity') border-red-500 @enderror"
+                        required min="1">
+                    @error('quantity')
+                    <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div>
                     <label for="condition" class="block text-sm font-medium text-gray-700">Kondisi</label>
                     <select name="condition" id="condition"
                         class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm @error('condition') border-red-500 @enderror"
@@ -69,10 +79,10 @@
                 <div>
                     <label for="status" class="block text-sm font-medium text-gray-700">Status Awal</label>
                     <select name="status" id="status" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
-                        <option value="Tersedia" @selected(old('status') == 'Tersedia')>Tersedia</option>
-                        <option value="Perlu Servis" @selected(old('status') == 'Perlu Servis')>Perlu Servis</option>
+                        <option value="Tersedia" @selected(old('status', 'Tersedia') == 'Tersedia')>Tersedia</option>
+                        <option value="Dalam Perbaikan" @selected(old('status') == 'Dalam Perbaikan')>Dalam Perbaikan</option>
                         <option value="Rusak" @selected(old('status') == 'Rusak')>Rusak</option>
-                        <option value="Perlu Ganti" @selected(old('status') == 'Perlu Ganti')>Perlu Ganti</option>
+                        <option value="Hilang" @selected(old('status') == 'Hilang')>Hilang</option>
                     </select>
                     @error('status')
                         <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
