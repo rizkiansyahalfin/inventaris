@@ -77,8 +77,9 @@ class BorrowController extends Controller
             $borrow = Borrow::create([
                 'user_id' => auth()->id(),
                 'item_id' => $validated['item_id'],
-                'borrow_date' => $validated['borrow_date'],
-                'due_date' => $validated['due_date'],
+                'quantity' => $item->quantity,
+                'borrow_date' => Carbon::parse($validated['borrow_date']),
+                'due_date' => Carbon::parse($validated['due_date']),
                 'status' => 'borrowed',
                 'notes' => $validated['notes'],
                 'condition_at_borrow' => $item->condition,

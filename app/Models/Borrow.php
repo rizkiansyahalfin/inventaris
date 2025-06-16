@@ -19,17 +19,17 @@ class Borrow extends Model
         'quantity',
         'status',
         'borrow_date',
+        'due_date',
         'return_date',
-        'actual_return_date',
         'condition_at_borrow',
-        'condition_at_return',
+        'condition_on_return',
         'notes',
     ];
 
     protected $casts = [
         'borrow_date' => 'date',
+        'due_date' => 'date',
         'return_date' => 'date',
-        'actual_return_date' => 'date',
     ];
 
     public function user(): BelongsTo
