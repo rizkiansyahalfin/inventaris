@@ -24,56 +24,56 @@ Route::get('/', function () {
     return redirect()->route('login');
 });
 
-// Routes for all authenticated users
+// Rute untuk semua pengguna yang sudah login
 Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     
-    // Profile routes
+    // Rute profil
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     
-    // Routes for regular users - View only
+    // Rute untuk pengguna biasa - Hanya melihat
     Route::get('/items', [ItemController::class, 'index'])->name('items.index');
     Route::get('/items/{item}', [ItemController::class, 'show'])->name('items.show');
     
-    // User can create borrow requests
+    // Pengguna dapat membuat permintaan peminjaman
     Route::get('/borrows/create', [BorrowController::class, 'create'])->name('borrows.create');
     Route::post('/borrows', [BorrowController::class, 'store'])->name('borrows.store');
     
-    // User can view their own borrows
+    // Pengguna dapat melihat peminjaman mereka sendiri
     Route::get('/borrows', [BorrowController::class, 'index'])->name('borrows.index');
     Route::get('/borrows/{borrow}', [BorrowController::class, 'show'])->name('borrows.show');
     
-    // Notification routes
+    // Rute notifikasi
     Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
     Route::patch('/notifications/{notification}/read', [NotificationController::class, 'markAsRead'])->name('notifications.mark-as-read');
     Route::patch('/notifications/read-all', [NotificationController::class, 'markAllAsRead'])->name('notifications.mark-all-as-read');
     Route::delete('/notifications/{notification}', [NotificationController::class, 'destroy'])->name('notifications.destroy');
 
-    // Bookmarks
+    // Bookmark
     Route::get('/bookmarks', [BookmarkController::class, 'index'])->name('bookmarks.index');
     Route::post('/bookmarks', [BookmarkController::class, 'store'])->name('bookmarks.store');
     Route::patch('/bookmarks/{bookmark}', [BookmarkController::class, 'update'])->name('bookmarks.update');
     Route::delete('/bookmarks/{bookmark}', [BookmarkController::class, 'destroy'])->name('bookmarks.destroy');
     Route::post('/items/{item}/bookmark', [BookmarkController::class, 'toggle'])->name('bookmarks.toggle');
     
-    // Borrow Extensions
+    // Perpanjangan Peminjaman
     Route::get('/borrows/{borrow}/extend', [BorrowExtensionController::class, 'create'])->name('borrows.extend');
     Route::post('/borrows/{borrow}/extend', [BorrowExtensionController::class, 'store'])->name('borrows.extend.store');
     Route::get('/extensions', [BorrowExtensionController::class, 'index'])->name('extensions.index');
     Route::get('/extensions/{extension}', [BorrowExtensionController::class, 'show'])->name('extensions.show');
     
     // Feedback
+    Route::get('/feedbacks', [ItemFeedbackController::class, 'index'])->name('feedbacks.index');
     Route::get('/borrows/{borrow}/feedback', [ItemFeedbackController::class, 'create'])->name('feedbacks.create');
     Route::post('/borrows/{borrow}/feedback', [ItemFeedbackController::class, 'store'])->name('feedbacks.store');
-    Route::get('/feedbacks', [ItemFeedbackController::class, 'index'])->name('feedbacks.index');
     Route::get('/feedbacks/{feedback}', [ItemFeedbackController::class, 'show'])->name('feedbacks.show');
     Route::get('/feedbacks/{feedback}/edit', [ItemFeedbackController::class, 'edit'])->name('feedbacks.edit');
     Route::patch('/feedbacks/{feedback}', [ItemFeedbackController::class, 'update'])->name('feedbacks.update');
     Route::delete('/feedbacks/{feedback}', [ItemFeedbackController::class, 'destroy'])->name('feedbacks.destroy');
     
-    // Item Requests
+    // Permintaan Barang
     Route::get('/item-requests', [ItemRequestController::class, 'index'])->name('item-requests.index');
     Route::get('/item-requests/create', [ItemRequestController::class, 'create'])->name('item-requests.create');
     Route::post('/item-requests', [ItemRequestController::class, 'store'])->name('item-requests.store');
@@ -83,30 +83,30 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/item-requests/{itemRequest}', [ItemRequestController::class, 'destroy'])->name('item-requests.destroy');
 });
 
-// Routes for petugas and admin
+// Rute untuk petugas dan admin
 Route::middleware(['auth', 'role:petugas,admin'])->group(function () {
-    // Full access to items management
+    // Akses penuh ke manajemen barang
     Route::resource('items', ItemController::class)->except(['index', 'show']);
     Route::get('/items/{item}/add-stock', [ItemController::class, 'showAddStockForm'])->name('items.add-stock.form');
     Route::post('/items/{item}/add-stock', [ItemController::class, 'addStock'])->name('items.add-stock');
     
-    // Full access to maintenance
+    // Akses penuh ke perawatan
     Route::resource('maintenances', MaintenanceController::class);
     
-    // Manage borrows (update status)
+    // Kelola peminjaman (update status)
     Route::post('/borrows/{borrow}/status', [BorrowController::class, 'updateStatus'])->name('borrows.update_status');
     Route::resource('borrows', BorrowController::class)->except(['index', 'show', 'create', 'store']);
     
-    // Access to resource attachments
+    // Akses ke lampiran
     Route::resource('attachments', AttachmentController::class)->only(['destroy']);
     
-    // Basic reports
+    // Laporan dasar
     Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
     
-    // Manage Extensions
+    // Kelola Perpanjangan
     Route::post('/extensions/{extension}/status', [BorrowExtensionController::class, 'updateStatus'])->name('extensions.update_status');
     
-    // Manage Item Requests
+    // Kelola Permintaan Barang
     Route::post('/item-requests/{itemRequest}/status', [ItemRequestController::class, 'updateStatus'])->name('item-requests.update_status');
     
     // Stock Opname
@@ -123,7 +123,7 @@ Route::middleware(['auth', 'role:petugas,admin'])->group(function () {
     Route::post('/stock-opnames/{stockOpname}/items/{item}', [StockOpnameController::class, 'saveItemCheck'])->name('stock-opnames.items.save');
     Route::post('/stock-opnames/{stockOpname}/complete', [StockOpnameController::class, 'complete'])->name('stock-opnames.complete');
     
-    // Staff Reports (only for petugas)
+    // Laporan Staff (khusus petugas)
     Route::middleware(['role:petugas'])->group(function () {
         Route::get('/staff-reports', [StaffReportController::class, 'index'])->name('staff-reports.index');
         Route::get('/staff-reports/create', [StaffReportController::class, 'create'])->name('staff-reports.create');
@@ -135,23 +135,22 @@ Route::middleware(['auth', 'role:petugas,admin'])->group(function () {
     });
 });
 
-// Routes for admin only
+// Rute khusus admin
 Route::middleware(['auth', 'role:admin'])->group(function () {
-    // Category management (admin only)
+    // Manajemen kategori (khusus admin)
     Route::resource('categories', CategoryController::class);
     
-    // Full reports access with export
+    // Akses penuh ke laporan dengan ekspor
     Route::get('/reports/export/{format}', [ReportController::class, 'export'])->name('reports.export');
     
-    // User Management
+    // Manajemen Pengguna
     Route::prefix('admin')->name('admin.')->group(function() {
         Route::resource('users', UserManagementController::class);
         Route::get('users/{user}/reset-password', [UserManagementController::class, 'showResetPasswordForm'])->name('users.reset-password.form');
         Route::post('users/{user}/reset-password', [UserManagementController::class, 'resetPassword'])->name('users.reset-password');
         Route::patch('users/{user}/update-role', [UserManagementController::class, 'updateRole'])->name('users.update-role');
     });
-    
-    // Staff report reviews
+        // Review laporan staff
     Route::get('/staff-reports', [StaffReportController::class, 'index'])->name('staff-reports.index');
     Route::get('/staff-reports/{staffReport}', [StaffReportController::class, 'show'])->name('staff-reports.show');
     Route::post('/staff-reports/{staffReport}/review', [StaffReportController::class, 'review'])->name('staff-reports.review');
