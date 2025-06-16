@@ -13,6 +13,14 @@ use Excel;
 
 class ReportController extends Controller
 {
+    /**
+     * Konstruktor dengan middleware role
+     */
+    public function __construct()
+    {
+        $this->middleware('role:admin,petugas');
+    }
+    
     public function index(Request $request)
     {
         $query = Item::with('categories');
@@ -71,6 +79,11 @@ class ReportController extends Controller
 
     public function export(Request $request, $format)
     {
+        // Khusus admin bisa export
+        if (auth()->user()->role !== 'admin') {
+            return back()->with('error', 'Hanya admin yang dapat melakukan export laporan');
+        }
+        
         $query = Item::with('categories');
 
         // Apply filters

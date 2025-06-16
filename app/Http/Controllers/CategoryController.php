@@ -7,6 +7,14 @@ use Illuminate\Http\Request;
 
 class CategoryController extends Controller
 {
+    /**
+     * Konstruktor dengan middleware role
+     */
+    public function __construct()
+    {
+        $this->middleware('role:admin');
+    }
+    
     public function index()
     {
         $categories = Category::withCount('items')

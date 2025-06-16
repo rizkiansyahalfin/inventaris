@@ -5,9 +5,11 @@
     <div class="p-6">
         <div class="flex justify-between items-center mb-4">
             <h2 class="text-xl font-semibold text-gray-800">Daftar Barang</h2>
+            @if(Auth::user()->isAdmin() || Auth::user()->isPetugas())
             <a href="{{ route('items.create') }}" class="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700">
                 Tambah Barang
             </a>
+            @endif
         </div>
 
         <!-- Filter dan Pencarian -->
@@ -99,14 +101,26 @@
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm">
                             <a href="{{ route('items.show', $item) }}" class="text-indigo-600 hover:text-indigo-900 mr-3">Detail</a>
-                            <a href="{{ route('items.edit', $item) }}" class="text-indigo-600 hover:text-indigo-900 mr-3">Edit</a>
-                            <form action="{{ route('items.destroy', $item) }}" method="POST" class="inline">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="text-red-600 hover:text-red-900" onclick="return confirm('Apakah Anda yakin ingin menghapus barang ini?')">
-                                    Hapus
-                                </button>
-                            </form>
+                            
+                            @if(Auth::user()->isAdmin() || Auth::user()->isPetugas())
+                                <a href="{{ route('items.edit', $item) }}" class="text-indigo-600 hover:text-indigo-900 mr-3">Edit</a>
+                                
+                                @if(Auth::user()->isAdmin())
+                                    <form action="{{ route('items.destroy', $item) }}" method="POST" class="inline">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="text-red-600 hover:text-red-900" onclick="return confirm('Apakah Anda yakin ingin menghapus barang ini?')">
+                                            Hapus
+                                        </button>
+                                    </form>
+                                @endif
+                                
+                                @if($item->status == 'Tersedia')
+                                    <a href="{{ route('borrows.create', ['item_id' => $item->id]) }}" class="text-green-600 hover:text-green-900 ml-3">Pinjam</a>
+                                @endif
+                            @elseif(Auth::user()->isUser() && $item->status == 'Tersedia')
+                                <a href="{{ route('borrows.create', ['item_id' => $item->id]) }}" class="text-green-600 hover:text-green-900 ml-3">Pinjam</a>
+                            @endif
                         </td>
                     </tr>
                     @empty

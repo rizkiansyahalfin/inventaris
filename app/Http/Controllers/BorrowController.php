@@ -7,21 +7,30 @@ use App\Models\Item;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 
 class BorrowController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Borrow::with(['user', 'item'])
-            ->when($request->status, function ($query, $status) {
-                return $query->where('status', $status);
-            })
-            ->when($request->search, function ($query, $search) {
-                return $query->whereHas('item', function ($q) use ($search) {
-                    $q->where('name', 'like', "%{$search}%")
-                        ->orWhere('code', 'like', "%{$search}%");
-                });
+        $user = Auth::user();
+        $query = Borrow::with(['user', 'item']);
+        
+        // Jika user biasa, hanya tampilkan peminjaman miliknya
+        if ($user->isUser()) {
+            $query->where('user_id', $user->id);
+        }
+        
+        // Filter berdasarkan request
+        $query->when($request->status, function ($query, $status) {
+            return $query->where('status', $status);
+        })
+        ->when($request->search, function ($query, $search) {
+            return $query->whereHas('item', function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('code', 'like', "%{$search}%");
             });
+        });
 
         $borrows = $query->orderBy('created_at', 'desc')->paginate(10);
 
@@ -97,12 +106,26 @@ class BorrowController extends Controller
 
     public function show(Borrow $borrow)
     {
+        $user = Auth::user();
+        
+        // Cek apakah user biasa mencoba melihat peminjaman orang lain
+        if ($user->isUser() && $borrow->user_id != $user->id) {
+            return redirect()->route('borrows.index')
+                ->with('error', 'Anda tidak memiliki akses untuk melihat peminjaman ini.');
+        }
+        
         $borrow->load(['user', 'item', 'attachments']);
         return view('borrows.show', compact('borrow'));
     }
 
     public function updateStatus(Request $request, Borrow $borrow)
     {
+        // Hanya admin dan petugas yang boleh mengubah status
+        if (Auth::user()->isUser()) {
+            return redirect()->route('borrows.show', $borrow)
+                ->with('error', 'Anda tidak memiliki izin untuk mengubah status peminjaman.');
+        }
+        
         $validated = $request->validate([
             'action' => 'required|string|in:returned,lost',
             'condition_on_return' => 'required_if:action,returned|string|in:Baik,Rusak Ringan,Rusak Berat'
@@ -164,6 +187,12 @@ class BorrowController extends Controller
 
     public function destroy(Borrow $borrow)
     {
+        // Hanya admin yang boleh menghapus data peminjaman
+        if (!Auth::user()->isAdmin()) {
+            return redirect()->route('borrows.index')
+                ->with('error', 'Anda tidak memiliki izin untuk menghapus data peminjaman.');
+        }
+        
         if ($borrow->status === 'borrowed') {
             return back()->with('error', 'Tidak dapat menghapus data peminjaman yang masih aktif');
         }
