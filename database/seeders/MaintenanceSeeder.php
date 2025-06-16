@@ -17,11 +17,11 @@ class MaintenanceSeeder extends Seeder
      */
     public function run()
     {
-        $admins = User::where('is_admin', true)->get();
+        $staff = User::whereIn('role', ['admin', 'petugas'])->get();
         $items = Item::all();
 
-        if ($admins->isEmpty() || $items->isEmpty()) {
-            $this->command->info('Tidak ada admin atau barang yang tersedia untuk dibuatkan data pemeliharaan.');
+        if ($staff->isEmpty() || $items->isEmpty()) {
+            $this->command->info('Tidak ada petugas/admin atau barang yang tersedia untuk dibuatkan data pemeliharaan.');
             return;
         }
 
@@ -29,7 +29,7 @@ class MaintenanceSeeder extends Seeder
 
         for ($i = 0; $i < 20; $i++) {
             $item = $items->random();
-            $admin = $admins->random();
+            $user = $staff->random();
             $startDate = Carbon::now()->subDays(rand(1, 180));
             
             // Determine valid maintenance type based on item condition
@@ -41,7 +41,7 @@ class MaintenanceSeeder extends Seeder
 
             Maintenance::create([
                 'item_id' => $item->id,
-                'user_id' => $admin->id,
+                'user_id' => $user->id,
                 'type' => $selectedType,
                 'title' => 'Pemeliharaan Rutin ' . $item->name,
                 'notes' => 'Catatan pemeliharaan dummy untuk ' . $item->name . '.',

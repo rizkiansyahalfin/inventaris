@@ -17,7 +17,7 @@ class BorrowSeeder extends Seeder
      */
     public function run()
     {
-        $users = User::where('is_admin', false)->get();
+        $users = User::where('role', 'user')->get();
         // Only select items that are available and not severely damaged
         $items = Item::where('status', 'Tersedia')
                      ->where('condition', '!=', 'Rusak Berat')
@@ -39,12 +39,12 @@ class BorrowSeeder extends Seeder
             
             // Randomly decide if the item has been returned
             $isReturned = rand(0, 1);
-            $status = 'Dipinjam';
+            $status = 'borrowed';
             $returnDate = null;
             $conditionOnReturn = null;
             
             if ($isReturned) {
-                $status = 'Tersedia'; // Item is available again
+                $status = 'returned';
                 $returnDate = $dueDate->copy()->subDays(rand(1, 3));
                 $conditionOnReturn = $item->condition; // Assume condition is the same for simplicity
             }
@@ -55,14 +55,16 @@ class BorrowSeeder extends Seeder
                 'borrow_date' => $borrowDate,
                 'due_date' => $dueDate,
                 'return_date' => $returnDate,
-                'status' => $isReturned ? 'Dikembalikan' : 'Dipinjam',
+                'status' => $status,
                 'condition_at_borrow' => $item->condition,
                 'condition_on_return' => $conditionOnReturn,
                 'notes' => 'Catatan peminjaman dummy.',
             ]);
 
             // Update item status
-            $item->update(['status' => $status]);
+            if ($status === 'borrowed') {
+                $item->update(['status' => 'Dipinjam']);
+            }
         }
     }
 } 
