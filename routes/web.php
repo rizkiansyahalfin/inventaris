@@ -8,6 +8,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\AttachmentController;
 use App\Http\Controllers\MaintenanceController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\Admin\UserManagementController;
 use Illuminate\Support\Facades\Route;
 
 require __DIR__.'/auth.php';
@@ -66,4 +67,12 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     
     // Full reports access with export
     Route::get('/reports/export/{format}', [ReportController::class, 'export'])->name('reports.export');
+    
+    // User Management
+    Route::prefix('admin')->name('admin.')->group(function() {
+        Route::resource('users', UserManagementController::class);
+        Route::get('users/{user}/reset-password', [UserManagementController::class, 'showResetPasswordForm'])->name('users.reset-password.form');
+        Route::post('users/{user}/reset-password', [UserManagementController::class, 'resetPassword'])->name('users.reset-password');
+        Route::patch('users/{user}/update-role', [UserManagementController::class, 'updateRole'])->name('users.update-role');
+    });
 });

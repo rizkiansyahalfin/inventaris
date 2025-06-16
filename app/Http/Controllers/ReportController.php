@@ -14,13 +14,8 @@ use Excel;
 class ReportController extends Controller
 {
     /**
-     * Konstruktor dengan middleware role
+     * Display the main reports dashboard.
      */
-    public function __construct()
-    {
-        $this->middleware('role:admin,petugas');
-    }
-    
     public function index(Request $request)
     {
         $query = Item::with('categories');

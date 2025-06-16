@@ -26,9 +26,9 @@
                     </x-nav-link>
                     
                     @if(Auth::user()->isAdmin() || Auth::user()->isPetugas())
-                        <x-nav-link :href="route('maintenances.index')" :active="request()->routeIs('maintenances.*')">
-                            {{ __('Pemeliharaan') }}
-                        </x-nav-link>
+                    <x-nav-link :href="route('maintenances.index')" :active="request()->routeIs('maintenances.*')">
+                        {{ __('Pemeliharaan') }}
+                    </x-nav-link>
                         
                         <x-nav-link :href="route('reports.index')" :active="request()->routeIs('reports.index')">
                             {{ __('Laporan') }}
@@ -38,6 +38,9 @@
                     @if(Auth::user()->isAdmin())
                         <x-nav-link :href="route('categories.index')" :active="request()->routeIs('categories.*')">
                             {{ __('Kategori') }}
+                        </x-nav-link>
+                        <x-nav-link :href="route('admin.users.index')" :active="request()->routeIs('admin.users.*')">
+                            {{ __('Manajemen User') }}
                         </x-nav-link>
                     @endif
                 </div>
@@ -108,9 +111,9 @@
             </x-responsive-nav-link>
             
             @if(Auth::user()->isAdmin() || Auth::user()->isPetugas())
-                <x-responsive-nav-link :href="route('maintenances.index')" :active="request()->routeIs('maintenances.*')">
-                    {{ __('Pemeliharaan') }}
-                </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('maintenances.index')" :active="request()->routeIs('maintenances.*')">
+                {{ __('Pemeliharaan') }}
+            </x-responsive-nav-link>
                 
                 <x-responsive-nav-link :href="route('reports.index')" :active="request()->routeIs('reports.*')">
                     {{ __('Laporan') }}
@@ -120,6 +123,9 @@
             @if(Auth::user()->isAdmin())
                 <x-responsive-nav-link :href="route('categories.index')" :active="request()->routeIs('categories.*')">
                     {{ __('Kategori') }}
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('admin.users.index')" :active="request()->routeIs('admin.users.*')">
+                    {{ __('Manajemen User') }}
                 </x-responsive-nav-link>
             @endif
         </div>

@@ -23,14 +23,14 @@ class BorrowController extends Controller
         
         // Filter berdasarkan request
         $query->when($request->status, function ($query, $status) {
-            return $query->where('status', $status);
-        })
-        ->when($request->search, function ($query, $search) {
-            return $query->whereHas('item', function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                    ->orWhere('code', 'like', "%{$search}%");
+                return $query->where('status', $status);
+            })
+            ->when($request->search, function ($query, $search) {
+                return $query->whereHas('item', function ($q) use ($search) {
+                    $q->where('name', 'like', "%{$search}%")
+                        ->orWhere('code', 'like', "%{$search}%");
+                });
             });
-        });
 
         $borrows = $query->orderBy('created_at', 'desc')->paginate(10);
 

@@ -103,16 +103,16 @@
                             <a href="{{ route('items.show', $item) }}" class="text-indigo-600 hover:text-indigo-900 mr-3">Detail</a>
                             
                             @if(Auth::user()->isAdmin() || Auth::user()->isPetugas())
-                                <a href="{{ route('items.edit', $item) }}" class="text-indigo-600 hover:text-indigo-900 mr-3">Edit</a>
+                            <a href="{{ route('items.edit', $item) }}" class="text-indigo-600 hover:text-indigo-900 mr-3">Edit</a>
                                 
                                 @if(Auth::user()->isAdmin())
-                                    <form action="{{ route('items.destroy', $item) }}" method="POST" class="inline">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="text-red-600 hover:text-red-900" onclick="return confirm('Apakah Anda yakin ingin menghapus barang ini?')">
-                                            Hapus
-                                        </button>
-                                    </form>
+                            <form action="{{ route('items.destroy', $item) }}" method="POST" class="inline">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="text-red-600 hover:text-red-900" onclick="return confirm('Apakah Anda yakin ingin menghapus barang ini?')">
+                                    Hapus
+                                </button>
+                            </form>
                                 @endif
                                 
                                 @if($item->status == 'Tersedia')
