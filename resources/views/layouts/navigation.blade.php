@@ -17,31 +17,57 @@
                         {{ __('Dashboard') }}
                     </x-nav-link>
                     
-                    <x-nav-link :href="route('items.index')" :active="request()->routeIs('items.index')">
-                        {{ __('Barang') }}
+                    <x-nav-link :href="route('items.index')" :active="request()->routeIs('items.*')">
+                        {{ __('Inventaris') }}
                     </x-nav-link>
                     
                     <x-nav-link :href="route('borrows.index')" :active="request()->routeIs('borrows.*')">
                         {{ __('Peminjaman') }}
                     </x-nav-link>
                     
-                    @if(Auth::user()->isAdmin() || Auth::user()->isPetugas())
+                    <x-nav-link :href="route('bookmarks.index')" :active="request()->routeIs('bookmarks.*')">
+                        {{ __('Bookmark') }}
+                    </x-nav-link>
+                    
+                    <x-nav-link :href="route('feedbacks.index')" :active="request()->routeIs('feedbacks.*')">
+                        {{ __('Feedback') }}
+                    </x-nav-link>
+                    
+                    <x-nav-link :href="route('item-requests.index')" :active="request()->routeIs('item-requests.*')">
+                        {{ __('Permintaan Barang') }}
+                    </x-nav-link>
+                    
+                    <x-nav-link :href="route('notifications.index')" :active="request()->routeIs('notifications.*')">
+                        {{ __('Notifikasi') }}
+                    </x-nav-link>
+                    
+                    @if(auth()->user()->hasRole('petugas') || auth()->user()->hasRole('admin'))
                     <x-nav-link :href="route('maintenances.index')" :active="request()->routeIs('maintenances.*')">
-                        {{ __('Pemeliharaan') }}
+                        {{ __('Perawatan') }}
                     </x-nav-link>
                         
-                        <x-nav-link :href="route('reports.index')" :active="request()->routeIs('reports.index')">
-                            {{ __('Laporan') }}
-                        </x-nav-link>
+                    <x-nav-link :href="route('stock-opnames.index')" :active="request()->routeIs('stock-opnames.*')">
+                        {{ __('Stock Opname') }}
+                    </x-nav-link>
+                    
+                    <x-nav-link :href="route('reports.index')" :active="request()->routeIs('reports.*')">
+                        {{ __('Laporan') }}
+                    </x-nav-link>
+                    
+                    @if(auth()->user()->hasRole('petugas'))
+                    <x-nav-link :href="route('staff-reports.index')" :active="request()->routeIs('staff-reports.*')">
+                        {{ __('Laporan Staff') }}
+                    </x-nav-link>
+                    @endif
                     @endif
                     
-                    @if(Auth::user()->isAdmin())
-                        <x-nav-link :href="route('categories.index')" :active="request()->routeIs('categories.*')">
-                            {{ __('Kategori') }}
-                        </x-nav-link>
-                        <x-nav-link :href="route('admin.users.index')" :active="request()->routeIs('admin.users.*')">
-                            {{ __('Manajemen User') }}
-                        </x-nav-link>
+                    @if(auth()->user()->hasRole('admin'))
+                    <x-nav-link :href="route('categories.index')" :active="request()->routeIs('categories.*')">
+                        {{ __('Kategori') }}
+                    </x-nav-link>
+                    <x-nav-link :href="route('admin.users.index')" :active="request()->routeIs('admin.users.*')">
+                        {{ __('Manajemen User') }}
+                    </x-nav-link>
                     @endif
                 </div>
             </div>
@@ -103,30 +129,56 @@
             </x-responsive-nav-link>
             
             <x-responsive-nav-link :href="route('items.index')" :active="request()->routeIs('items.*')">
-                {{ __('Barang') }}
+                {{ __('Inventaris') }}
             </x-responsive-nav-link>
             
             <x-responsive-nav-link :href="route('borrows.index')" :active="request()->routeIs('borrows.*')">
                 {{ __('Peminjaman') }}
             </x-responsive-nav-link>
             
-            @if(Auth::user()->isAdmin() || Auth::user()->isPetugas())
+            <x-responsive-nav-link :href="route('bookmarks.index')" :active="request()->routeIs('bookmarks.*')">
+                {{ __('Bookmark') }}
+            </x-responsive-nav-link>
+            
+            <x-responsive-nav-link :href="route('feedbacks.index')" :active="request()->routeIs('feedbacks.*')">
+                {{ __('Feedback') }}
+            </x-responsive-nav-link>
+            
+            <x-responsive-nav-link :href="route('item-requests.index')" :active="request()->routeIs('item-requests.*')">
+                {{ __('Permintaan Barang') }}
+            </x-responsive-nav-link>
+            
+            <x-responsive-nav-link :href="route('notifications.index')" :active="request()->routeIs('notifications.*')">
+                {{ __('Notifikasi') }}
+            </x-responsive-nav-link>
+            
+            @if(auth()->user()->hasRole('petugas') || auth()->user()->hasRole('admin'))
             <x-responsive-nav-link :href="route('maintenances.index')" :active="request()->routeIs('maintenances.*')">
-                {{ __('Pemeliharaan') }}
+                {{ __('Perawatan') }}
             </x-responsive-nav-link>
                 
-                <x-responsive-nav-link :href="route('reports.index')" :active="request()->routeIs('reports.*')">
-                    {{ __('Laporan') }}
-                </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('stock-opnames.index')" :active="request()->routeIs('stock-opnames.*')">
+                {{ __('Stock Opname') }}
+            </x-responsive-nav-link>
+            
+            <x-responsive-nav-link :href="route('reports.index')" :active="request()->routeIs('reports.*')">
+                {{ __('Laporan') }}
+            </x-responsive-nav-link>
+            
+            @if(auth()->user()->hasRole('petugas'))
+            <x-responsive-nav-link :href="route('staff-reports.index')" :active="request()->routeIs('staff-reports.*')">
+                {{ __('Laporan Staff') }}
+            </x-responsive-nav-link>
+            @endif
             @endif
             
-            @if(Auth::user()->isAdmin())
-                <x-responsive-nav-link :href="route('categories.index')" :active="request()->routeIs('categories.*')">
-                    {{ __('Kategori') }}
-                </x-responsive-nav-link>
-                <x-responsive-nav-link :href="route('admin.users.index')" :active="request()->routeIs('admin.users.*')">
-                    {{ __('Manajemen User') }}
-                </x-responsive-nav-link>
+            @if(auth()->user()->hasRole('admin'))
+            <x-responsive-nav-link :href="route('categories.index')" :active="request()->routeIs('categories.*')">
+                {{ __('Kategori') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('admin.users.index')" :active="request()->routeIs('admin.users.*')">
+                {{ __('Manajemen User') }}
+            </x-responsive-nav-link>
             @endif
         </div>
 
