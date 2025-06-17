@@ -168,20 +168,36 @@ class DashboardController extends Controller
 
     private function getBorrowsPerMonth()
     {
-        return Borrow::selectRaw('COUNT(*) as total, MONTH(created_at) as month')
+        $months = [
+            1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
+            5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
+            9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
+        ];
+
+        $borrows = Borrow::selectRaw('COUNT(*) as total, MONTH(created_at) as month')
             ->whereYear('created_at', Carbon::now()->year)
             ->groupBy('month')
             ->orderBy('month')
-            ->get()
-            ->pluck('total', 'month')
-            ->toArray();
+            ->get();
+
+        $data = [];
+        foreach ($months as $num => $name) {
+            $data[$name] = $borrows->firstWhere('month', $num)?->total ?? 0;
+        }
+
+        return $data;
     }
 
     private function getItemsByCategory()
     {
-        return Category::withCount('items')
-            ->get()
-            ->pluck('items_count', 'name')
-            ->toArray();
+        $categories = Category::withCount('items')
+            ->get();
+
+        $data = [];
+        foreach ($categories as $category) {
+            $data[$category->name] = $category->items_count;
+        }
+
+        return $data;
     }
 } 

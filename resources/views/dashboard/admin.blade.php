@@ -114,49 +114,77 @@
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-    // Grafik Peminjaman per Bulan
-    const borrowsCtx = document.getElementById('borrowsChart').getContext('2d');
-    new Chart(borrowsCtx, {
-        type: 'line',
-        data: {
-            labels: Object.keys({{ json_encode($borrowsPerMonth) }}).map(month => {
-                const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
-                return months[month - 1];
-            }),
-            datasets: [{
-                label: 'Jumlah Peminjaman',
-                data: Object.values({{ json_encode($borrowsPerMonth) }}),
-                borderColor: 'rgb(59, 130, 246)',
-                tension: 0.1
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false
-        }
-    });
+    // Data untuk grafik peminjaman per bulan
+    const borrowsPerMonth = @json($borrowsPerMonth);
+    const borrowsLabels = Object.keys(borrowsPerMonth);
+    const borrowsData = Object.values(borrowsPerMonth);
 
-    // Grafik Barang per Kategori
-    const categoryCtx = document.getElementById('categoryChart').getContext('2d');
-    new Chart(categoryCtx, {
-        type: 'doughnut',
-        data: {
-            labels: Object.keys({{ json_encode($itemsByCategory) }}),
-            datasets: [{
-                data: Object.values({{ json_encode($itemsByCategory) }}),
-                backgroundColor: [
-                    'rgb(59, 130, 246)',
-                    'rgb(16, 185, 129)',
-                    'rgb(245, 158, 11)',
-                    'rgb(239, 68, 68)',
-                    'rgb(139, 92, 246)'
-                ]
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false
+    // Data untuk grafik barang per kategori
+    const itemsByCategory = @json($itemsByCategory);
+    const categoryLabels = Object.keys(itemsByCategory);
+    const categoryData = Object.values(itemsByCategory);
+
+    // Grafik peminjaman per bulan
+    const borrowsChart = new Chart(
+        document.getElementById('borrowsChart'),
+        {
+            type: 'line',
+            data: {
+                labels: borrowsLabels,
+                datasets: [{
+                    label: 'Jumlah Peminjaman',
+                    data: borrowsData,
+                    borderColor: 'rgb(75, 192, 192)',
+                    tension: 0.1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    title: {
+                        display: true,
+                        text: 'Peminjaman per Bulan'
+                    }
+                }
+            }
         }
-    });
+    );
+
+    // Grafik barang per kategori
+    const categoryChart = new Chart(
+        document.getElementById('categoryChart'),
+        {
+            type: 'pie',
+            data: {
+                labels: categoryLabels,
+                datasets: [{
+                    data: categoryData,
+                    backgroundColor: [
+                        'rgb(255, 99, 132)',
+                        'rgb(54, 162, 235)',
+                        'rgb(255, 205, 86)',
+                        'rgb(75, 192, 192)',
+                        'rgb(153, 102, 255)',
+                        'rgb(255, 159, 64)'
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    title: {
+                        display: true,
+                        text: 'Jumlah Barang per Kategori'
+                    }
+                }
+            }
+        }
+    );
 </script>
 @endpush 
