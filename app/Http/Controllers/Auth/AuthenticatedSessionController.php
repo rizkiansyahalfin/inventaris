@@ -8,6 +8,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
+use App\Providers\RouteServiceProvider;
 
 class AuthenticatedSessionController extends Controller
 {
@@ -26,9 +27,27 @@ class AuthenticatedSessionController extends Controller
     {
         $request->authenticate();
 
+        $user = auth()->user();
+        
+        if ($user->status !== 'active') {
+            auth()->logout();
+            
+            if ($user->status === 'inactive') {
+                return back()->withErrors([
+                    'email' => 'Akun Anda tidak aktif. Silakan hubungi administrator untuk mengaktifkan akun Anda.',
+                ])->withInput($request->except('password'));
+            }
+            
+            if ($user->status === 'suspended') {
+                return back()->withErrors([
+                    'email' => 'Akun Anda ditangguhkan. Silakan hubungi administrator untuk informasi lebih lanjut.',
+                ])->withInput($request->except('password'));
+            }
+        }
+
         $request->session()->regenerate();
 
-        return redirect()->intended(route('dashboard', absolute: false));
+        return redirect()->intended(route('dashboard'));
     }
 
     /**
@@ -39,9 +58,8 @@ class AuthenticatedSessionController extends Controller
         Auth::guard('web')->logout();
 
         $request->session()->invalidate();
-
         $request->session()->regenerateToken();
 
-        return redirect('/');
+        return redirect()->route('login');
     }
 }

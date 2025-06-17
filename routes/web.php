@@ -153,6 +153,7 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
         Route::get('users/{user}/reset-password', [UserManagementController::class, 'showResetPasswordForm'])->name('users.reset-password.form');
         Route::post('users/{user}/reset-password', [UserManagementController::class, 'resetPassword'])->name('users.reset-password');
         Route::patch('users/{user}/update-role', [UserManagementController::class, 'updateRole'])->name('users.update-role');
+        Route::put('/users/{user}/status', [UserManagementController::class, 'updateStatus'])->name('users.update-status');
     });
 
     // Log Aktivitas

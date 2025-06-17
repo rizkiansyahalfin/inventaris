@@ -92,16 +92,34 @@ class UserManagementController extends Controller
             'name' => 'required|string|max:255',
             'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
             'role' => ['required', Rule::in(['admin', 'petugas', 'user'])],
+            'status' => ['required', Rule::in(['active', 'inactive', 'suspended'])],
+        ], [
+            'status.in' => 'Status harus salah satu dari: Active (akses penuh), Inactive (tidak aktif), atau Suspended (ditangguhkan)',
         ]);
+
+        // Prevent changing own role and status
+        if ($user->id === auth()->id()) {
+            $validated['role'] = $user->role;
+            $validated['status'] = $user->status;
+            return redirect()->route('admin.users.index')
+                ->with('warning', 'Anda tidak dapat mengubah role dan status akun Anda sendiri.');
+        }
 
         $user->update([
             'name' => $validated['name'],
             'email' => $validated['email'],
             'role' => $validated['role'],
+            'status' => $validated['status'],
         ]);
 
+        $statusMessages = [
+            'active' => 'User berhasil diaktifkan dan memiliki akses penuh ke sistem',
+            'inactive' => 'User berhasil dinonaktifkan dan tidak dapat mengakses sistem',
+            'suspended' => 'User berhasil ditangguhkan dan menunggu verifikasi',
+        ];
+
         return redirect()->route('admin.users.index')
-            ->with('success', 'User berhasil diperbarui');
+            ->with('success', $statusMessages[$validated['status']]);
     }
 
     /**
