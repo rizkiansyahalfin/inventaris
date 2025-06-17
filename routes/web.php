@@ -83,8 +83,12 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/item-requests', [ItemRequestController::class, 'store'])->name('item-requests.store');
     Route::get('/item-requests/{itemRequest}', [ItemRequestController::class, 'show'])->name('item-requests.show');
     Route::get('/item-requests/{itemRequest}/edit', [ItemRequestController::class, 'edit'])->name('item-requests.edit');
-    Route::patch('/item-requests/{itemRequest}', [ItemRequestController::class, 'update'])->name('item-requests.update');
+    Route::put('/item-requests/{itemRequest}', [ItemRequestController::class, 'update'])->name('item-requests.update');
     Route::delete('/item-requests/{itemRequest}', [ItemRequestController::class, 'destroy'])->name('item-requests.destroy');
+    
+    // Optional: Route untuk menyetujui/menolak permintaan (untuk admin)
+    Route::patch('/item-requests/{itemRequest}/approve', [ItemRequestController::class, 'approve'])->name('item-requests.approve');
+    Route::patch('/item-requests/{itemRequest}/reject', [ItemRequestController::class, 'reject'])->name('item-requests.reject');
 });
 
 // Rute untuk petugas dan admin

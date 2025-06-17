@@ -4,9 +4,13 @@ namespace App\Http\Controllers;
 
 use App\Models\SystemConfig;
 use Illuminate\Http\Request;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Routing\Controller as BaseController;
 
-class SystemConfigController extends Controller
+class SystemConfigController extends BaseController
 {
+    use AuthorizesRequests;
+
     public function __construct()
     {
         $this->middleware(['auth', 'role:admin']);
@@ -14,7 +18,7 @@ class SystemConfigController extends Controller
 
     public function index()
     {
-        $configs = SystemConfig::orderBy('config_key')->paginate(20);
+        $configs = SystemConfig::orderBy('key')->paginate(10);
         return view('system-configs.index', compact('configs'));
     }
 
@@ -26,14 +30,15 @@ class SystemConfigController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'config_key' => 'required|string|max:50|unique:system_configs',
-            'config_value' => 'required|string',
+            'key' => 'required|string|max:255|unique:system_configs',
+            'value' => 'required|string',
+            'description' => 'nullable|string',
         ]);
 
         SystemConfig::create($validated);
 
         return redirect()->route('system-configs.index')
-            ->with('success', 'Konfigurasi berhasil ditambahkan.');
+            ->with('success', 'Konfigurasi sistem berhasil ditambahkan.');
     }
 
     public function edit(SystemConfig $systemConfig)
@@ -44,13 +49,14 @@ class SystemConfigController extends Controller
     public function update(Request $request, SystemConfig $systemConfig)
     {
         $validated = $request->validate([
-            'config_value' => 'required|string',
+            'value' => 'required|string',
+            'description' => 'nullable|string',
         ]);
 
         $systemConfig->update($validated);
 
         return redirect()->route('system-configs.index')
-            ->with('success', 'Konfigurasi berhasil diperbarui.');
+            ->with('success', 'Konfigurasi sistem berhasil diperbarui.');
     }
 
     public function destroy(SystemConfig $systemConfig)
@@ -58,6 +64,6 @@ class SystemConfigController extends Controller
         $systemConfig->delete();
 
         return redirect()->route('system-configs.index')
-            ->with('success', 'Konfigurasi berhasil dihapus.');
+            ->with('success', 'Konfigurasi sistem berhasil dihapus.');
     }
 } 
