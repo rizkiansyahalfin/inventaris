@@ -87,7 +87,7 @@ class DashboardController extends Controller
         // Statistik untuk petugas
         $stats = [
             'today_borrows' => Borrow::whereDate('created_at', Carbon::today())->count(),
-            'today_returns' => Borrow::whereDate('returned_at', Carbon::today())->count(),
+            'today_returns' => Borrow::whereDate('return_date', Carbon::today())->count(),
             'pending_returns' => Borrow::where('status', 'borrowed')
                 ->where('due_date', '<', Carbon::now())
                 ->count(),
@@ -103,7 +103,7 @@ class DashboardController extends Controller
 
         // Pengembalian hari ini
         $todayReturns = Borrow::with(['user', 'item'])
-            ->whereDate('returned_at', Carbon::today())
+            ->whereDate('return_date', Carbon::today())
             ->latest()
             ->take(5)
             ->get();
