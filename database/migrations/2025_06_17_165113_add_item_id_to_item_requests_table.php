@@ -11,11 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('system_configs', function (Blueprint $table) {
-            $table->id();
-            $table->string('config_key', 50)->unique();
-            $table->text('config_value')->nullable();
-            $table->timestamps();
+        Schema::table('item_requests', function (Blueprint $table) {
+            $table->foreignId('item_id')->nullable()->constrained()->onDelete('set null');
         });
     }
 
@@ -24,6 +21,9 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('system_configs');
+        Schema::table('item_requests', function (Blueprint $table) {
+            $table->dropForeign(['item_id']);
+            $table->dropColumn('item_id');
+        });
     }
 };

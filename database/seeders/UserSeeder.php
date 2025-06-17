@@ -14,41 +14,45 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
-        // Admin user
-        User::create([
-            'name' => 'Administrator',
-            'email' => 'admin@example.com',
-            'email_verified_at' => now(),
-            'password' => Hash::make('password'),
-            'role' => 'admin',
-        ]);
+        // Create admin user if not exists
+        if (!User::where('email', 'admin@example.com')->exists()) {
+            User::factory()->create([
+                'name' => 'Admin',
+                'email' => 'admin@example.com',
+                'password' => Hash::make('password'),
+                'role' => 'admin',
+            ]);
+        }
 
-        // Petugas users
-        User::create([
-            'name' => 'Petugas 1',
-            'email' => 'petugas1@example.com',
-            'email_verified_at' => now(),
-            'password' => Hash::make('password'),
-            'role' => 'petugas',
-        ]);
+        // Create petugas user if not exists
+        if (!User::where('email', 'petugas@example.com')->exists()) {
+            User::factory()->create([
+                'name' => 'Petugas',
+                'email' => 'petugas@example.com',
+                'password' => Hash::make('password'),
+                'role' => 'petugas',
+            ]);
+        }
 
-        User::create([
-            'name' => 'Petugas 2',
-            'email' => 'petugas2@example.com',
-            'email_verified_at' => now(),
-            'password' => Hash::make('password'),
-            'role' => 'petugas',
-        ]);
-
-        // Regular users
-        for ($i = 1; $i <= 5; $i++) {
-            User::create([
-                'name' => 'User ' . $i,
-                'email' => 'user' . $i . '@example.com',
-                'email_verified_at' => now(),
+        // Create regular user if not exists
+        if (!User::where('email', 'user@example.com')->exists()) {
+            User::factory()->create([
+                'name' => 'User',
+                'email' => 'user@example.com',
                 'password' => Hash::make('password'),
                 'role' => 'user',
             ]);
+        }
+
+        // Create additional random users if count is less than 5
+        $randomUserCount = User::whereNotIn('email', [
+            'admin@example.com',
+            'petugas@example.com',
+            'user@example.com'
+        ])->count();
+
+        if ($randomUserCount < 5) {
+            User::factory()->count(5 - $randomUserCount)->create();
         }
     }
 }

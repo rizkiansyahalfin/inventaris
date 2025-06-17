@@ -11,8 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('items', function (Blueprint $table) {
-            $table->string('image')->nullable()->after('qr_code');
+        Schema::table('item_requests', function (Blueprint $table) {
+            $table->text('notes')->nullable()->after('reason');
         });
     }
 
@@ -21,8 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('items', function (Blueprint $table) {
-            $table->dropColumn('image');
+        Schema::table('item_requests', function (Blueprint $table) {
+            $table->dropColumn('notes');
         });
     }
 };

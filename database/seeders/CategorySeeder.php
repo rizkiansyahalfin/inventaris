@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\Category;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Str;
 
 class CategorySeeder extends Seeder
 {
@@ -12,57 +13,51 @@ class CategorySeeder extends Seeder
      *
      * @return void
      */
-    public function run()
+    public function run(): void
     {
         $categories = [
             [
                 'name' => 'Elektronik',
                 'code' => 'ELK',
-                'description' => 'Perangkat elektronik seperti laptop, komputer, printer, dll.',
+                'description' => 'Perangkat elektronik dan gadget',
             ],
             [
                 'name' => 'Furnitur',
                 'code' => 'FRN',
-                'description' => 'Perabotan kantor seperti meja, kursi, lemari, dll.',
+                'description' => 'Peralatan dan perabotan kantor',
             ],
             [
-                'name' => 'Alat Tulis',
-                'code' => 'AT',
-                'description' => 'Peralatan tulis menulis dan kantor.',
+                'name' => 'Alat Tulis Kantor',
+                'code' => 'ATK',
+                'description' => 'Peralatan tulis dan perlengkapan kantor',
             ],
             [
-                'name' => 'Kendaraan',
-                'code' => 'KDR',
-                'description' => 'Kendaraan operasional kantor.',
+                'name' => 'Komputer & Aksesoris',
+                'code' => 'KMP',
+                'description' => 'Perangkat komputer dan aksesorinya',
             ],
             [
-                'name' => 'Perlengkapan Kebersihan',
-                'code' => 'PB',
-                'description' => 'Alat-alat kebersihan dan pembersih.',
-            ],
-            [
-                'name' => 'Perlengkapan Keamanan',
-                'code' => 'PKM',
-                'description' => 'Alat-alat keamanan dan keselamatan.',
-            ],
-            [
-                'name' => 'Perlengkapan Jaringan',
-                'code' => 'PJ',
-                'description' => 'Perangkat jaringan dan komunikasi.',
-            ],
-            [
-                'name' => 'Perlengkapan Audio Visual',
-                'code' => 'PAV',
-                'description' => 'Perangkat audio dan visual untuk presentasi.',
+                'name' => 'Proyektor & Layar',
+                'code' => 'PRJ',
+                'description' => 'Perangkat presentasi dan layar',
             ],
         ];
 
+        // Create predefined categories
         foreach ($categories as $category) {
-            Category::create([
-                'name' => $category['name'],
-                'code' => $category['code'],
-                'description' => $category['description'],
-            ]);
+            Category::firstOrCreate(
+                ['code' => $category['code']],
+                $category
+            );
+        }
+
+        // Create additional random categories if count is less than 10
+        $existingCount = Category::count();
+        if ($existingCount < 10) {
+            $neededCount = 10 - $existingCount;
+            for ($i = 0; $i < $neededCount; $i++) {
+                Category::factory()->create();
+            }
         }
     }
 } 

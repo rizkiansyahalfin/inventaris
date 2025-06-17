@@ -3,18 +3,14 @@
 namespace Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Illuminate\Support\Str;
 
-class CategoryFactory extends Factory
+class SystemConfigFactory extends Factory
 {
     public function definition(): array
     {
-        $name = fake()->unique()->word();
-        $code = strtoupper(Str::random(5));
-
         return [
-            'name' => $name,
-            'code' => $code,
+            'key' => fake()->unique()->word(),
+            'value' => fake()->word(),
             'description' => fake()->sentence(),
         ];
     }
