@@ -14,7 +14,7 @@
                 <!-- Navigation Links -->
                 <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
-                        {{ __('Dashboard') }}
+                        {{ __('Beranda') }}
                     </x-nav-link>
                     
                     <x-nav-link :href="route('items.index')" :active="request()->routeIs('items.*')">
@@ -26,11 +26,11 @@
                     </x-nav-link>
                     
                     <x-nav-link :href="route('bookmarks.index')" :active="request()->routeIs('bookmarks.*')">
-                        {{ __('Bookmark') }}
+                        {{ __('Tanda') }}
                     </x-nav-link>
                     
                     <x-nav-link :href="route('feedbacks.index')" :active="request()->routeIs('feedbacks.*')">
-                        {{ __('Feedback') }}
+                        {{ __('Umpan Balik') }}
                     </x-nav-link>
                     
                     <x-nav-link :href="route('item-requests.index')" :active="request()->routeIs('item-requests.*')">
@@ -43,11 +43,11 @@
                     
                     @if(auth()->user()->hasRole('petugas') || auth()->user()->hasRole('admin'))
                     <x-nav-link :href="route('maintenances.index')" :active="request()->routeIs('maintenances.*')">
-                        {{ __('Perawatan') }}
+                        {{ __('Pemeliharaan') }}
                     </x-nav-link>
                         
                     <x-nav-link :href="route('stock-opnames.index')" :active="request()->routeIs('stock-opnames.*')">
-                        {{ __('Stock Opname') }}
+                        {{ __('Stok Opname') }}
                     </x-nav-link>
                     
                     <x-nav-link :href="route('reports.index')" :active="request()->routeIs('reports.*')">
@@ -56,7 +56,7 @@
                     
                     @if(auth()->user()->hasRole('petugas'))
                     <x-nav-link :href="route('staff-reports.index')" :active="request()->routeIs('staff-reports.*')">
-                        {{ __('Laporan Staff') }}
+                        {{ __('Laporan Staf') }}
                     </x-nav-link>
                     @endif
                     @endif
@@ -66,7 +66,13 @@
                         {{ __('Kategori') }}
                     </x-nav-link>
                     <x-nav-link :href="route('admin.users.index')" :active="request()->routeIs('admin.users.*')">
-                        {{ __('Manajemen User') }}
+                        {{ __('Manajemen Pengguna') }}
+                    </x-nav-link>
+                    <x-nav-link :href="route('activity-logs.index')" :active="request()->routeIs('activity-logs.*')">
+                        {{ __('Log Aktivitas') }}
+                    </x-nav-link>
+                    <x-nav-link :href="route('system-configs.index')" :active="request()->routeIs('system-configs.*')">
+                        {{ __('Konfigurasi Sistem') }}
                     </x-nav-link>
                     @endif
                 </div>
@@ -92,7 +98,7 @@
 
                     <x-slot name="content">
                         <x-dropdown-link :href="route('profile.edit')">
-                            {{ __('Profile') }}
+                            {{ __('Profil') }}
                         </x-dropdown-link>
 
                         <!-- Authentication -->
@@ -125,23 +131,42 @@
     <div :class="{'block': open, 'hidden': ! open}" class="hidden sm:hidden">
         <div class="pt-2 pb-3 space-y-1">
             <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
-                {{ __('Dashboard') }}
+                {{ __('Beranda') }}
             </x-responsive-nav-link>
             
             <x-responsive-nav-link :href="route('items.index')" :active="request()->routeIs('items.*')">
                 {{ __('Inventaris') }}
             </x-responsive-nav-link>
+
+            @if(auth()->user()->hasRole('admin'))
+            <x-responsive-nav-link :href="route('categories.index')" :active="request()->routeIs('categories.*')">
+                {{ __('Kategori') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('admin.users.index')" :active="request()->routeIs('admin.users.*')">
+                {{ __('Manajemen Pengguna') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('activity-logs.index')" :active="request()->routeIs('activity-logs.*')">
+                {{ __('Log Aktivitas') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('system-configs.index')" :active="request()->routeIs('system-configs.*')">
+                {{ __('Konfigurasi Sistem') }}
+            </x-responsive-nav-link>
+            @endif
             
             <x-responsive-nav-link :href="route('borrows.index')" :active="request()->routeIs('borrows.*')">
                 {{ __('Peminjaman') }}
             </x-responsive-nav-link>
+
+            <x-responsive-nav-link :href="route('reports.index')" :active="request()->routeIs('reports.*')">
+                {{ __('Laporan') }}
+            </x-responsive-nav-link>
             
             <x-responsive-nav-link :href="route('bookmarks.index')" :active="request()->routeIs('bookmarks.*')">
-                {{ __('Bookmark') }}
+                {{ __('Tanda') }}
             </x-responsive-nav-link>
             
             <x-responsive-nav-link :href="route('feedbacks.index')" :active="request()->routeIs('feedbacks.*')">
-                {{ __('Feedback') }}
+                {{ __('Umpan Balik') }}
             </x-responsive-nav-link>
             
             <x-responsive-nav-link :href="route('item-requests.index')" :active="request()->routeIs('item-requests.*')">
@@ -154,32 +179,22 @@
             
             @if(auth()->user()->hasRole('petugas') || auth()->user()->hasRole('admin'))
             <x-responsive-nav-link :href="route('maintenances.index')" :active="request()->routeIs('maintenances.*')">
-                {{ __('Perawatan') }}
+                {{ __('Pemeliharaan') }}
             </x-responsive-nav-link>
                 
             <x-responsive-nav-link :href="route('stock-opnames.index')" :active="request()->routeIs('stock-opnames.*')">
-                {{ __('Stock Opname') }}
+                {{ __('Stok Opname') }}
             </x-responsive-nav-link>
-            
-            <x-responsive-nav-link :href="route('reports.index')" :active="request()->routeIs('reports.*')">
-                {{ __('Laporan') }}
-            </x-responsive-nav-link>
+
             
             @if(auth()->user()->hasRole('petugas'))
             <x-responsive-nav-link :href="route('staff-reports.index')" :active="request()->routeIs('staff-reports.*')">
-                {{ __('Laporan Staff') }}
+                {{ __('Laporan Staf') }}
             </x-responsive-nav-link>
             @endif
             @endif
             
-            @if(auth()->user()->hasRole('admin'))
-            <x-responsive-nav-link :href="route('categories.index')" :active="request()->routeIs('categories.*')">
-                {{ __('Kategori') }}
-            </x-responsive-nav-link>
-            <x-responsive-nav-link :href="route('admin.users.index')" :active="request()->routeIs('admin.users.*')">
-                {{ __('Manajemen User') }}
-            </x-responsive-nav-link>
-            @endif
+            
         </div>
 
         <!-- Responsive Settings Options -->
@@ -194,7 +209,7 @@
 
             <div class="mt-3 space-y-1">
                 <x-responsive-nav-link :href="route('profile.edit')">
-                    {{ __('Profile') }}
+                    {{ __('Profil') }}
                 </x-responsive-nav-link>
 
                 <!-- Authentication -->

@@ -19,6 +19,11 @@ class SystemConfig extends Model
         'config_value',
     ];
 
+    protected $casts = [
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
+    ];
+
     /**
      * Get config value
      *

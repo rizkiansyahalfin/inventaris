@@ -16,6 +16,8 @@ use App\Http\Controllers\ItemRequestController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\StaffReportController;
 use App\Http\Controllers\StockOpnameController;
+use App\Http\Controllers\ActivityLogController;
+use App\Http\Controllers\SystemConfigController;
 use Illuminate\Support\Facades\Route;
 
 require __DIR__.'/auth.php';
@@ -150,7 +152,14 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
         Route::post('users/{user}/reset-password', [UserManagementController::class, 'resetPassword'])->name('users.reset-password');
         Route::patch('users/{user}/update-role', [UserManagementController::class, 'updateRole'])->name('users.update-role');
     });
-        // Review laporan staff
+
+    // Log Aktivitas
+    Route::get('/activity-logs', [ActivityLogController::class, 'index'])->name('activity-logs.index');
+    
+    // Konfigurasi Sistem
+    Route::resource('system-configs', SystemConfigController::class);
+    
+    // Review laporan staff
     Route::get('/staff-reports', [StaffReportController::class, 'index'])->name('staff-reports.index');
     Route::get('/staff-reports/{staffReport}', [StaffReportController::class, 'show'])->name('staff-reports.show');
     Route::post('/staff-reports/{staffReport}/review', [StaffReportController::class, 'review'])->name('staff-reports.review');
