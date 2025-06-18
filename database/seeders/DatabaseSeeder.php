@@ -29,8 +29,8 @@ class DatabaseSeeder extends Seeder
             StockOpnameSeeder::class,
             ActivityLogSeeder::class,
             
-            // Dummy data for testing (optional)
-            // DummyDataSeeder::class,
+            // Dummy data for testing (optional - uncomment if needed)
+            DummyDataSeeder::class,
         ]);
     }
 }

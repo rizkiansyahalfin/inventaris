@@ -36,39 +36,39 @@ class DashboardController extends Controller
                 ->get();
 
             // Statistik untuk dashboard
-            $stats = [
-                'total_items' => Item::count(),
+        $stats = [
+            'total_items' => Item::count(),
                 'total_borrows' => Borrow::count(),
-                'total_users' => User::count(),
+            'total_users' => User::count(),
                 'pending_requests' => Borrow::where('approval_status', 'pending')->count(),
                 'low_stock_items' => Item::where('stock', '<', 5)->count(),
-            ];
+        ];
 
-            // Aktivitas terbaru
-            $recentActivities = ActivityLog::with('user')
-                ->latest()
-                ->take(10)
-                ->get();
+        // Aktivitas terbaru
+        $recentActivities = ActivityLog::with('user')
+            ->latest()
+            ->take(10)
+            ->get();
 
-            // Peminjaman yang perlu persetujuan
-            $pendingApprovals = Borrow::with(['user', 'item'])
+        // Peminjaman yang perlu persetujuan
+        $pendingApprovals = Borrow::with(['user', 'item'])
                 ->where('approval_status', 'pending')
-                ->latest()
-                ->take(5)
-                ->get();
+            ->latest()
+            ->take(5)
+            ->get();
 
-            // Data untuk grafik
-            $borrowsPerMonth = $this->getBorrowsPerMonth();
-            $itemsByCategory = $this->getItemsByCategory();
+        // Data untuk grafik
+        $borrowsPerMonth = $this->getBorrowsPerMonth();
+        $itemsByCategory = $this->getItemsByCategory();
 
-            return view('dashboard.admin', compact(
-                'stats',
-                'recentActivities',
-                'pendingApprovals',
-                'lowStockItems',
-                'borrowsPerMonth',
-                'itemsByCategory'
-            ));
+        return view('dashboard.admin', compact(
+            'stats',
+            'recentActivities',
+            'pendingApprovals',
+            'lowStockItems',
+            'borrowsPerMonth',
+            'itemsByCategory'
+        ));
         } catch (\Exception $e) {
             \Log::error('Dashboard Error: ' . $e->getMessage());
             

@@ -203,7 +203,7 @@ class StockOpnameController extends Controller
             'actual_quantity' => 'required|integer|min:0',
             'notes' => 'nullable|string',
         ]);
-
+        
         $stockOpnameItem = StockOpnameItem::where('stock_opname_id', $stockOpname->id)
             ->where('item_id', $item->id)
             ->firstOrFail();
@@ -212,7 +212,7 @@ class StockOpnameController extends Controller
             'actual_quantity' => $request->actual_quantity,
             'notes' => $request->notes,
         ]);
-
+        
         // Jika ada perbedaan, perbarui stock di item
         if ($request->actual_quantity != $item->stock) {
             $item->item->update(['stock' => $request->actual_quantity]);

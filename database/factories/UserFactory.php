@@ -24,7 +24,7 @@ class UserFactory extends Factory
     public function definition(): array
     {
         return [
-            'name' => fake()->name(),
+            'name' => $this->generatePondokName(),
             'email' => fake()->unique()->safeEmail(),
             'email_verified_at' => now(),
             'password' => Hash::make('password'),
@@ -48,6 +48,7 @@ class UserFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'role' => 'admin',
+            'name' => 'Ustadz ' . $this->generatePondokName(),
         ]);
     }
 
@@ -55,6 +56,7 @@ class UserFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'role' => 'petugas',
+            'name' => $this->generatePondokName(),
         ]);
     }
 
@@ -62,6 +64,33 @@ class UserFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'role' => 'user',
+            'name' => $this->generatePondokName(),
         ]);
+    }
+
+    private function generatePondokName(): string
+    {
+        $maleNames = [
+            'Ahmad', 'Muhammad', 'Abdullah', 'Hasan', 'Ali', 'Umar', 'Usman', 'Fatih', 'Rizki', 'Fadillah',
+            'Rahman', 'Basri', 'Mustafa', 'Faruq', 'Affan', 'Ibrahim', 'Yusuf', 'Zakaria', 'Harun', 'Musa',
+            'Isa', 'Daud', 'Sulaiman', 'Yahya', 'Yunus', 'Ayyub', 'Syuaib', 'Hud', 'Saleh', 'Lut'
+        ];
+
+        $femaleNames = [
+            'Fatimah', 'Aisyah', 'Khadijah', 'Zainab', 'Ruqayyah', 'Ummu Kulthum', 'Hafsah', 'Zainab', 'Safiyyah',
+            'Juwairiyah', 'Ummu Habibah', 'Maimunah', 'Zainab binti Jahsy', 'Ummu Salamah', 'Hindun', 'Asma',
+            'Ummu Aiman', 'Barakah', 'Ummu Haram', 'Ummu Sulaim', 'Ummu Atiyyah', 'Ummu Waraqah'
+        ];
+
+        $surnames = [
+            'Al-Fauzi', 'Ar-Rizki', 'Al-Basri', 'Al-Mustafa', 'Al-Faruq', 'Al-Affan', 'Az-Zahra', 'Binti Abu Bakar',
+            'Binti Khuwailid', 'Binti Jahsy', 'Binti Jahsy', 'Al-Qurasy', 'Al-Ansari', 'Al-Muhajir', 'Al-Madani'
+        ];
+
+        $isMale = fake()->boolean(70); // 70% chance of male names
+        $firstName = $isMale ? fake()->randomElement($maleNames) : fake()->randomElement($femaleNames);
+        $surname = fake()->randomElement($surnames);
+
+        return $firstName . ' ' . $surname;
     }
 }

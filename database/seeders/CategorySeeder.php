@@ -17,6 +17,16 @@ class CategorySeeder extends Seeder
     {
         $categories = [
             [
+                'name' => 'Kitab & Buku',
+                'code' => 'KTB',
+                'description' => 'Kitab kuning, buku pelajaran, dan literatur keislaman',
+            ],
+            [
+                'name' => 'Alat Tulis',
+                'code' => 'ATK',
+                'description' => 'Peralatan tulis dan perlengkapan belajar',
+            ],
+            [
                 'name' => 'Elektronik',
                 'code' => 'ELK',
                 'description' => 'Perangkat elektronik dan gadget',
@@ -24,12 +34,7 @@ class CategorySeeder extends Seeder
             [
                 'name' => 'Furnitur',
                 'code' => 'FRN',
-                'description' => 'Peralatan dan perabotan kantor',
-            ],
-            [
-                'name' => 'Alat Tulis Kantor',
-                'code' => 'ATK',
-                'description' => 'Peralatan tulis dan perlengkapan kantor',
+                'description' => 'Peralatan dan perabotan pondok',
             ],
             [
                 'name' => 'Komputer & Aksesoris',
@@ -37,9 +42,39 @@ class CategorySeeder extends Seeder
                 'description' => 'Perangkat komputer dan aksesorinya',
             ],
             [
-                'name' => 'Proyektor & Layar',
+                'name' => 'Proyektor & Audio',
                 'code' => 'PRJ',
-                'description' => 'Perangkat presentasi dan layar',
+                'description' => 'Perangkat presentasi dan audio visual',
+            ],
+            [
+                'name' => 'Peralatan Dapur',
+                'code' => 'DKP',
+                'description' => 'Peralatan dapur dan memasak',
+            ],
+            [
+                'name' => 'Peralatan Kebersihan',
+                'code' => 'KBR',
+                'description' => 'Peralatan kebersihan dan sanitasi',
+            ],
+            [
+                'name' => 'Peralatan Olahraga',
+                'code' => 'OLG',
+                'description' => 'Peralatan olahraga dan rekreasi',
+            ],
+            [
+                'name' => 'Peralatan Kesehatan',
+                'code' => 'KSH',
+                'description' => 'Peralatan kesehatan dan P3K',
+            ],
+            [
+                'name' => 'Peralatan Pertukangan',
+                'code' => 'TKN',
+                'description' => 'Peralatan pertukangan dan maintenance',
+            ],
+            [
+                'name' => 'Peralatan Transportasi',
+                'code' => 'TRP',
+                'description' => 'Kendaraan dan peralatan transportasi',
             ],
         ];
 
@@ -49,15 +84,6 @@ class CategorySeeder extends Seeder
                 ['code' => $category['code']],
                 $category
             );
-        }
-
-        // Create additional random categories if count is less than 10
-        $existingCount = Category::count();
-        if ($existingCount < 10) {
-            $neededCount = 10 - $existingCount;
-            for ($i = 0; $i < $neededCount; $i++) {
-                Category::factory()->create();
-            }
         }
     }
 } 

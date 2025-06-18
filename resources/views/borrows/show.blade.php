@@ -9,17 +9,17 @@
                 <div>
                     <h2 class="text-2xl font-bold text-gray-900">Detail Peminjaman</h2>
                     <div class="flex items-center space-x-4 mt-2">
-                        <p class="text-sm text-gray-500">Status:
+                    <p class="text-sm text-gray-500">Status:
                             @if($borrow->status === 'pending')
                                 <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">Menunggu</span>
                             @elseif($borrow->status === 'borrowed')
                                 <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">Dipinjam</span>
-                            @elseif($borrow->status === 'returned')
-                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Dikembalikan</span>
-                            @elseif($borrow->status === 'overdue')
-                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">Terlambat</span>
-                            @elseif($borrow->status === 'lost')
-                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">Hilang</span>
+                        @elseif($borrow->status === 'returned')
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Dikembalikan</span>
+                        @elseif($borrow->status === 'overdue')
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">Terlambat</span>
+                        @elseif($borrow->status === 'lost')
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">Hilang</span>
                             @elseif($borrow->status === 'rejected')
                                 <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">Ditolak</span>
                             @endif
@@ -31,8 +31,8 @@
                                 <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Disetujui</span>
                             @elseif($borrow->approval_status === 'rejected')
                                 <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">Ditolak</span>
-                            @endif
-                        </p>
+                        @endif
+                    </p>
                     </div>
                 </div>
                 <div class="flex space-x-3">

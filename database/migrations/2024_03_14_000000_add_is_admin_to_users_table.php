@@ -12,10 +12,15 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('users', function (Blueprint $table) {
+            // Drop is_admin column if it exists
             if (Schema::hasColumn('users', 'is_admin')) {
                 $table->dropColumn('is_admin');
             }
-            $table->enum('role', ['admin', 'petugas', 'user'])->default('user')->after('password');
+            
+            // Add role column if it doesn't exist
+            if (!Schema::hasColumn('users', 'role')) {
+                $table->enum('role', ['admin', 'petugas', 'user'])->default('user')->after('password');
+            }
         });
     }
 
@@ -25,8 +30,15 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->dropColumn('role');
-            $table->boolean('is_admin')->default(false)->after('password');
+            // Drop role column if it exists
+            if (Schema::hasColumn('users', 'role')) {
+                $table->dropColumn('role');
+            }
+            
+            // Add back is_admin column
+            if (!Schema::hasColumn('users', 'is_admin')) {
+                $table->boolean('is_admin')->default(false)->after('password');
+            }
         });
     }
 }; 

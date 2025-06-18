@@ -256,7 +256,7 @@ class ItemController extends Controller
                     $itemsToRemove = $sortedItems->slice($newStock);
                     
                     foreach ($itemsToRemove as $itemToRemove) {
-                        $itemToRemove->delete();
+                            $itemToRemove->delete();
                     }
                 }
                 
@@ -271,7 +271,7 @@ class ItemController extends Controller
                 $item->save();
             }
         });
-
+        
         $message = 'Barang berhasil diperbarui';
         if ($newStock !== $oldStock || $regenerateCode) {
             $message .= ' dengan perubahan kode unit';
