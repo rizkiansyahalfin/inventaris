@@ -41,14 +41,14 @@ class BorrowController extends Controller
             // Cek ketersediaan stok
             $item = Item::findOrFail($validated['item_id']);
             
-            if ($item->quantity < $validated['quantity']) {
+            if ($item->stock < $validated['quantity']) {
                 throw ValidationException::withMessages([
                     'quantity' => ['Stok barang tidak mencukupi'],
                 ]);
             }
 
             // Kurangi stok barang
-            $item->decrement('quantity', $validated['quantity']);
+            $item->decrement('stock', $validated['quantity']);
 
             // Buat peminjaman
             $borrow = Borrow::create([
@@ -89,7 +89,7 @@ class BorrowController extends Controller
             DB::beginTransaction();
 
             // Kembalikan stok barang
-            $borrow->item->increment('quantity', $borrow->quantity);
+            $borrow->item->increment('stock', $borrow->quantity);
 
             // Update status peminjaman
             $borrow->update([

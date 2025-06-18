@@ -33,10 +33,30 @@ class SystemConfigSeeder extends Seeder
         ];
 
         foreach ($configs as $config) {
-            SystemConfig::create($config);
+            SystemConfig::firstOrCreate(
+                ['key' => $config['key']],
+                $config
+            );
         }
 
-        // Create additional random configs
-        SystemConfig::factory()->count(5)->create();
+        // Create additional random configs only if they don't exist
+        $existingKeys = SystemConfig::pluck('key')->toArray();
+        $neededCount = 10 - count($existingKeys);
+        
+        if ($neededCount > 0) {
+            for ($i = 0; $i < $neededCount; $i++) {
+                do {
+                    $key = fake()->unique()->word();
+                } while (in_array($key, $existingKeys));
+                
+                $existingKeys[] = $key;
+                
+                SystemConfig::create([
+                    'key' => $key,
+                    'value' => fake()->sentence(),
+                    'description' => fake()->sentence(),
+                ]);
+            }
+        }
     }
 } 

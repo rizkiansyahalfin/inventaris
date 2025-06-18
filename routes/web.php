@@ -103,6 +103,8 @@ Route::middleware(['auth', 'role:petugas,admin'])->group(function () {
     
     // Kelola peminjaman (update status)
     Route::post('/borrows/{borrow}/status', [BorrowController::class, 'updateStatus'])->name('borrows.update_status');
+    Route::post('/borrows/{borrow}/approve', [BorrowController::class, 'approve'])->name('borrows.approve');
+    Route::post('/borrows/{borrow}/reject', [BorrowController::class, 'reject'])->name('borrows.reject');
     Route::resource('borrows', BorrowController::class)->except(['index', 'show', 'create', 'store']);
     
     // Akses ke lampiran
@@ -158,6 +160,15 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
         Route::post('users/{user}/reset-password', [UserManagementController::class, 'resetPassword'])->name('users.reset-password');
         Route::patch('users/{user}/update-role', [UserManagementController::class, 'updateRole'])->name('users.update-role');
         Route::put('/users/{user}/status', [UserManagementController::class, 'updateStatus'])->name('users.update-status');
+        
+        // Approval Peminjaman
+        Route::get('borrow-approvals', [App\Http\Controllers\Admin\BorrowApprovalController::class, 'index'])->name('borrow-approvals.index');
+        Route::get('borrow-approvals/pending', [App\Http\Controllers\Admin\BorrowApprovalController::class, 'pending'])->name('borrow-approvals.pending');
+        Route::get('borrow-approvals/approved', [App\Http\Controllers\Admin\BorrowApprovalController::class, 'approved'])->name('borrow-approvals.approved');
+        Route::get('borrow-approvals/rejected', [App\Http\Controllers\Admin\BorrowApprovalController::class, 'rejected'])->name('borrow-approvals.rejected');
+        Route::get('borrow-approvals/report', [App\Http\Controllers\Admin\BorrowApprovalController::class, 'report'])->name('borrow-approvals.report');
+        Route::post('borrow-approvals/bulk-approve', [App\Http\Controllers\Admin\BorrowApprovalController::class, 'bulkApprove'])->name('borrow-approvals.bulk-approve');
+        Route::post('borrow-approvals/bulk-reject', [App\Http\Controllers\Admin\BorrowApprovalController::class, 'bulkReject'])->name('borrow-approvals.bulk-reject');
     });
 
     // Log Aktivitas

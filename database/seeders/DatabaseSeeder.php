@@ -12,13 +12,25 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $this->call([
+            // Basic data first
             UserSeeder::class,
             CategorySeeder::class,
+            SystemConfigSeeder::class,
+            
+            // Items and related data
             ItemSeeder::class,
+            MaintenanceSeeder::class,
+            
+            // Borrowing data
+            BorrowSeeder::class,
             ItemRequestSeeder::class,
+            
+            // System data
             StockOpnameSeeder::class,
             ActivityLogSeeder::class,
-            SystemConfigSeeder::class,
+            
+            // Dummy data for testing (optional)
+            // DummyDataSeeder::class,
         ]);
     }
 }

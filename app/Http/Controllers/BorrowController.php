@@ -4,17 +4,19 @@ namespace App\Http\Controllers;
 
 use App\Models\Borrow;
 use App\Models\Item;
+use App\Models\Notification;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use App\Models\User;
 
 class BorrowController extends Controller
 {
     public function index(Request $request)
     {
         $user = Auth::user();
-        $query = Borrow::with(['user', 'item']);
+        $query = Borrow::with(['user', 'item', 'approvedBy']);
         
         // Jika user biasa, hanya tampilkan peminjaman miliknya
         if ($user->isUser()) {
@@ -24,6 +26,9 @@ class BorrowController extends Controller
         // Filter berdasarkan request
         $query->when($request->status, function ($query, $status) {
                 return $query->where('status', $status);
+            })
+            ->when($request->approval_status, function ($query, $approval_status) {
+                return $query->where('approval_status', $approval_status);
             })
             ->when($request->search, function ($query, $search) {
                 return $query->whereHas('item', function ($q) use ($search) {
@@ -41,7 +46,7 @@ class BorrowController extends Controller
     {
         $items = Item::where('status', Item::STATUS_AVAILABLE)
             ->where('condition', '!=', 'Rusak Berat')
-            ->where('quantity', '>', 0)
+            ->where('stock', '>', 0)
             ->orderBy('name')
             ->get();
 
@@ -60,7 +65,7 @@ class BorrowController extends Controller
                 if ($item->condition === 'Rusak Berat') {
                     $fail('Barang dengan kondisi "Rusak Berat" tidak dapat dipinjam.');
                 }
-                if ($item->quantity < 1) {
+                if ($item->stock < 1) {
                     $fail('Stok barang tidak mencukupi.');
                 }
             }],
@@ -77,27 +82,23 @@ class BorrowController extends Controller
             $borrow = Borrow::create([
                 'user_id' => auth()->id(),
                 'item_id' => $validated['item_id'],
-                'quantity' => $item->quantity,
+                'quantity' => 1, // Default quantity 1
                 'borrow_date' => Carbon::parse($validated['borrow_date']),
                 'due_date' => Carbon::parse($validated['due_date']),
-                'status' => 'borrowed',
+                'status' => 'pending', // Status awal pending
+                'approval_status' => 'pending', // Approval status pending
                 'notes' => $validated['notes'],
                 'condition_at_borrow' => $item->condition,
             ]);
 
-            // Kurangi jumlah dan perbarui status
-            $item->decrement('quantity');
-            
-            // Jika jumlah menjadi 0, update status menjadi 'Dipinjam'
-            if ($item->quantity === 0) {
-                $item->updateStatus(Item::STATUS_BORROWED);
-            }
+            // Buat notifikasi untuk admin/petugas
+            $this->createApprovalNotification($borrow);
 
             DB::commit();
 
             return redirect()
                 ->route('borrows.show', $borrow)
-                ->with('success', 'Peminjaman berhasil dibuat');
+                ->with('success', 'Pengajuan peminjaman berhasil dibuat dan menunggu persetujuan');
 
         } catch (\Exception $e) {
             DB::rollBack();
@@ -115,8 +116,104 @@ class BorrowController extends Controller
                 ->with('error', 'Anda tidak memiliki akses untuk melihat peminjaman ini.');
         }
         
-        $borrow->load(['user', 'item', 'attachments']);
+        $borrow->load(['user', 'item', 'attachments', 'approvedBy']);
         return view('borrows.show', compact('borrow'));
+    }
+
+    public function approve(Request $request, Borrow $borrow)
+    {
+        // Hanya admin dan petugas yang boleh menyetujui
+        if (Auth::user()->isUser()) {
+            return redirect()->route('borrows.show', $borrow)
+                ->with('error', 'Anda tidak memiliki izin untuk menyetujui peminjaman.');
+        }
+
+        if (!$borrow->canBeApproved()) {
+            return back()->with('error', 'Peminjaman ini tidak dapat disetujui.');
+        }
+
+        try {
+            DB::beginTransaction();
+
+            $item = $borrow->item;
+
+            // Cek ketersediaan stok
+            if ($item->stock < $borrow->quantity) {
+                return back()->with('error', 'Stok barang tidak mencukupi untuk peminjaman ini.');
+            }
+
+            // Update status peminjaman
+            $borrow->update([
+                'approval_status' => 'approved',
+                'status' => 'borrowed',
+                'approved_by' => Auth::id(),
+                'approved_at' => Carbon::now(),
+            ]);
+
+            // Kurangi jumlah stok
+            $item->decrement('stock', $borrow->quantity);
+            
+            // Jika jumlah menjadi 0, update status menjadi 'Dipinjam'
+            if ($item->stock === 0) {
+                $item->updateStatus(Item::STATUS_BORROWED);
+            }
+
+            // Buat notifikasi untuk user
+            $this->createApprovalNotification($borrow, 'approved');
+
+            DB::commit();
+
+            return redirect()
+                ->route('borrows.show', $borrow)
+                ->with('success', 'Peminjaman berhasil disetujui');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('error', 'Terjadi kesalahan saat menyetujui peminjaman: ' . $e->getMessage());
+        }
+    }
+
+    public function reject(Request $request, Borrow $borrow)
+    {
+        // Hanya admin dan petugas yang boleh menolak
+        if (Auth::user()->isUser()) {
+            return redirect()->route('borrows.show', $borrow)
+                ->with('error', 'Anda tidak memiliki izin untuk menolak peminjaman.');
+        }
+
+        $validated = $request->validate([
+            'rejection_reason' => 'required|string|max:500',
+        ]);
+
+        if (!$borrow->canBeRejected()) {
+            return back()->with('error', 'Peminjaman ini tidak dapat ditolak.');
+        }
+
+        try {
+            DB::beginTransaction();
+
+            // Update status peminjaman
+            $borrow->update([
+                'approval_status' => 'rejected',
+                'status' => 'rejected',
+                'approved_by' => Auth::id(),
+                'approved_at' => Carbon::now(),
+                'rejection_reason' => $validated['rejection_reason'],
+            ]);
+
+            // Buat notifikasi untuk user
+            $this->createApprovalNotification($borrow, 'rejected');
+
+            DB::commit();
+
+            return redirect()
+                ->route('borrows.show', $borrow)
+                ->with('success', 'Peminjaman berhasil ditolak');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('error', 'Terjadi kesalahan saat menolak peminjaman: ' . $e->getMessage());
+        }
     }
 
     public function updateStatus(Request $request, Borrow $borrow)
@@ -136,6 +233,10 @@ class BorrowController extends Controller
             return back()->with('error', 'Status peminjaman ini sudah final.');
         }
 
+        if ($borrow->approval_status !== 'approved') {
+            return back()->with('error', 'Hanya peminjaman yang sudah disetujui yang dapat dikembalikan.');
+        }
+
         try {
             DB::beginTransaction();
 
@@ -149,7 +250,7 @@ class BorrowController extends Controller
                 ]);
                 
                 // Update status item menjadi hilang jika semua stok hilang
-                if ($item->quantity == 0) {
+                if ($item->stock == 0) {
                     $item->updateStatus(Item::STATUS_LOST);
                 }
             } else {
@@ -161,7 +262,7 @@ class BorrowController extends Controller
                 ]);
                 
                 // Tambah jumlah karena barang dikembalikan
-                $item->increment('quantity');
+                $item->increment('stock', $borrow->quantity);
                 
                 // Perbarui kondisi barang berdasarkan kondisi saat dikembalikan
                 if ($validated['condition_on_return'] !== $item->condition) {
@@ -203,5 +304,32 @@ class BorrowController extends Controller
         return redirect()
             ->route('borrows.index')
             ->with('success', 'Data peminjaman berhasil dihapus');
+    }
+
+    private function createApprovalNotification(Borrow $borrow, $type = 'pending')
+    {
+        $adminUsers = User::whereIn('role', ['admin', 'petugas'])->get();
+        
+        foreach ($adminUsers as $admin) {
+            if ($type === 'pending') {
+                Notification::create([
+                    'user_id' => $admin->id,
+                    'title' => 'Pengajuan Peminjaman Baru',
+                    'message' => "Pengguna {$borrow->user->name} mengajukan peminjaman barang {$borrow->item->name}",
+                    'type' => 'borrow_request',
+                    'data' => json_encode(['borrow_id' => $borrow->id]),
+                ]);
+            } else {
+                Notification::create([
+                    'user_id' => $borrow->user_id,
+                    'title' => $type === 'approved' ? 'Peminjaman Disetujui' : 'Peminjaman Ditolak',
+                    'message' => $type === 'approved' 
+                        ? "Pengajuan peminjaman barang {$borrow->item->name} telah disetujui"
+                        : "Pengajuan peminjaman barang {$borrow->item->name} ditolak: {$borrow->rejection_reason}",
+                    'type' => 'borrow_approval',
+                    'data' => json_encode(['borrow_id' => $borrow->id, 'status' => $type]),
+                ]);
+            }
+        }
     }
 } 

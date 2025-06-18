@@ -18,7 +18,7 @@ class Item extends Model
         'qr_code',
         'image',
         'description',
-        'quantity',
+        'stock',
         'condition',
         'status',
         'location',
@@ -33,7 +33,7 @@ class Item extends Model
         'purchase_date' => 'date',
         'purchase_price' => 'decimal:2',
         'warranty_expiry' => 'date',
-        'quantity' => 'integer',
+        'stock' => 'integer',
     ];
 
     const STATUS_AVAILABLE = 'Tersedia';
@@ -55,7 +55,7 @@ class Item extends Model
 
     public function generateUnitCodes()
     {
-        if ($this->quantity <= 1) {
+        if ($this->stock <= 1) {
             return [$this->code];
         }
 
@@ -63,7 +63,7 @@ class Item extends Model
         $baseCode = $this->code;
         
         // Generate kode unik untuk setiap unit
-        for ($i = 1; $i <= $this->quantity; $i++) {
+        for ($i = 1; $i <= $this->stock; $i++) {
             $codes[] = $baseCode . '-' . str_pad($i, 3, '0', STR_PAD_LEFT);
         }
 

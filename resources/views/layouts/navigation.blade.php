@@ -65,6 +65,9 @@
                     <x-nav-link :href="route('categories.index')" :active="request()->routeIs('categories.*')">
                         {{ __('Kategori') }}
                     </x-nav-link>
+                    <x-nav-link :href="route('admin.borrow-approvals.index')" :active="request()->routeIs('admin.borrow-approvals.*')">
+                        {{ __('Approval Peminjaman') }}
+                    </x-nav-link>
                     <x-nav-link :href="route('admin.users.index')" :active="request()->routeIs('admin.users.*')">
                         {{ __('Manajemen Pengguna') }}
                     </x-nav-link>
@@ -141,6 +144,9 @@
             @if(auth()->user()->hasRole('admin'))
             <x-responsive-nav-link :href="route('categories.index')" :active="request()->routeIs('categories.*')">
                 {{ __('Kategori') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('admin.borrow-approvals.index')" :active="request()->routeIs('admin.borrow-approvals.*')">
+                {{ __('Approval Peminjaman') }}
             </x-responsive-nav-link>
             <x-responsive-nav-link :href="route('admin.users.index')" :active="request()->routeIs('admin.users.*')">
                 {{ __('Manajemen Pengguna') }}

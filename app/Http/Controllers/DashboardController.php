@@ -28,58 +28,66 @@ class DashboardController extends Controller
 
     private function adminDashboard()
     {
-        // Statistik untuk admin
-        $stats = [
-            'total_items' => Item::count(),
-            'available_items' => Item::where('status', 'Tersedia')->count(),
-            'total_users' => User::count(),
-            'active_users' => User::where('status', 'active')->count(),
-            'total_categories' => Category::count(),
-            'total_borrows' => Borrow::count(),
-            'pending_requests' => Borrow::where('status', 'pending')->count(),
-            'total_notifications' => Notification::count(),
-        ];
+        try {
+            // Barang dengan stok rendah
+            $lowStockItems = Item::with('categories')
+                ->where('stock', '<', 5)
+                ->limit(5)
+                ->get();
 
-        // Aktivitas terbaru
-        $recentActivities = ActivityLog::with('user')
-            ->latest()
-            ->take(10)
-            ->get();
+            // Statistik untuk dashboard
+            $stats = [
+                'total_items' => Item::count(),
+                'total_borrows' => Borrow::count(),
+                'total_users' => User::count(),
+                'pending_requests' => Borrow::where('approval_status', 'pending')->count(),
+                'low_stock_items' => Item::where('stock', '<', 5)->count(),
+            ];
 
-        // Peminjaman yang perlu persetujuan
-        $pendingApprovals = Borrow::with(['user', 'item'])
-            ->where('status', 'borrowed')
-            ->latest()
-            ->take(5)
-            ->get();
+            // Aktivitas terbaru
+            $recentActivities = ActivityLog::with('user')
+                ->latest()
+                ->take(10)
+                ->get();
 
-        // Stok barang yang kritis (kurang dari 5)
-        $lowStockItems = Item::with('categories')
-            ->where('quantity', '<', 5)
-            ->take(5)
-            ->get();
+            // Peminjaman yang perlu persetujuan
+            $pendingApprovals = Borrow::with(['user', 'item'])
+                ->where('approval_status', 'pending')
+                ->latest()
+                ->take(5)
+                ->get();
 
-        // Data untuk grafik
-        $borrowsPerMonth = $this->getBorrowsPerMonth();
-        $itemsByCategory = $this->getItemsByCategory();
+            // Data untuk grafik
+            $borrowsPerMonth = $this->getBorrowsPerMonth();
+            $itemsByCategory = $this->getItemsByCategory();
 
-        // Debug data
-        \Log::info('Dashboard Data:', [
-            'stats' => $stats,
-            'pendingApprovals' => $pendingApprovals->toArray(),
-            'lowStockItems' => $lowStockItems->toArray(),
-            'borrowsPerMonth' => $borrowsPerMonth,
-            'itemsByCategory' => $itemsByCategory
-        ]);
-
-        return view('dashboard.admin', compact(
-            'stats',
-            'recentActivities',
-            'pendingApprovals',
-            'lowStockItems',
-            'borrowsPerMonth',
-            'itemsByCategory'
-        ));
+            return view('dashboard.admin', compact(
+                'stats',
+                'recentActivities',
+                'pendingApprovals',
+                'lowStockItems',
+                'borrowsPerMonth',
+                'itemsByCategory'
+            ));
+        } catch (\Exception $e) {
+            \Log::error('Dashboard Error: ' . $e->getMessage());
+            
+            // Return default values if there's an error
+            return view('dashboard.admin', [
+                'stats' => [
+                    'total_items' => 0,
+                    'total_borrows' => 0,
+                    'total_users' => 0,
+                    'pending_requests' => 0,
+                    'low_stock_items' => 0,
+                ],
+                'recentActivities' => collect(),
+                'pendingApprovals' => collect(),
+                'lowStockItems' => collect(),
+                'borrowsPerMonth' => [],
+                'itemsByCategory' => [],
+            ]);
+        }
     }
 
     private function staffDashboard()
@@ -91,7 +99,7 @@ class DashboardController extends Controller
             'pending_returns' => Borrow::where('status', 'borrowed')
                 ->where('due_date', '<', Carbon::now())
                 ->count(),
-            'low_stock_items' => Item::where('quantity', '<', 5)->count(),
+            'low_stock_items' => Item::where('stock', '<', 5)->count(),
         ];
 
         // Peminjaman hari ini

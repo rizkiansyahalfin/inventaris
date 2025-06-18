@@ -138,14 +138,14 @@ class StockOpnameController extends Controller
             // Ambil semua item
             $items = Item::all();
             
-            // Buat StockOpnameItem untuk setiap item
+            // Buat record stock opname item
             foreach ($items as $item) {
                 StockOpnameItem::create([
                     'stock_opname_id' => $stockOpname->id,
                     'item_id' => $item->id,
-                    'expected_quantity' => $item->quantity,
+                    'expected_quantity' => $item->stock,
                     'actual_quantity' => 0, // Akan diisi nanti saat pengecekan
-                    'condition' => 'good',
+                    'notes' => '',
                 ]);
             }
             
@@ -199,23 +199,23 @@ class StockOpnameController extends Controller
             return back()->with('error', 'Stock opname tidak dalam proses.');
         }
         
-        $request->validate([
+        $validated = $request->validate([
             'actual_quantity' => 'required|integer|min:0',
-            'condition' => 'required|in:good,damaged,lost',
             'notes' => 'nullable|string',
         ]);
-        
-        $item->update([
+
+        $stockOpnameItem = StockOpnameItem::where('stock_opname_id', $stockOpname->id)
+            ->where('item_id', $item->id)
+            ->firstOrFail();
+
+        $stockOpnameItem->update([
             'actual_quantity' => $request->actual_quantity,
-            'condition' => $request->condition,
             'notes' => $request->notes,
-            'checked_by' => Auth::id(),
-            'checked_at' => now(),
         ]);
-        
-        // Jika ada perbedaan, perbarui quantity di item
-        if ($item->hasDiscrepancy()) {
-            $item->item->update(['quantity' => $request->actual_quantity]);
+
+        // Jika ada perbedaan, perbarui stock di item
+        if ($request->actual_quantity != $item->stock) {
+            $item->item->update(['stock' => $request->actual_quantity]);
         }
         
         return redirect()->route('stock-opnames.items.index', $stockOpname)

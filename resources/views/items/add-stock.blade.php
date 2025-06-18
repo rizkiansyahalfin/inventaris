@@ -94,7 +94,7 @@
                     <dl class="mt-2 grid grid-cols-1 sm:grid-cols-3 gap-4">
                         <div>
                             <dt class="text-sm font-medium text-gray-500">Jumlah Saat Ini</dt>
-                            <dd class="mt-1 text-sm text-gray-900">{{ $item->quantity }} unit</dd>
+                            <dd class="mt-1 text-sm text-gray-900">{{ $item->stock }} unit</dd>
                         </div>
                         <div>
                             <dt class="text-sm font-medium text-gray-500">Kondisi Saat Ini</dt>

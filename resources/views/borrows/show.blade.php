@@ -8,17 +8,32 @@
             <div class="flex justify-between items-start">
                 <div>
                     <h2 class="text-2xl font-bold text-gray-900">Detail Peminjaman</h2>
-                    <p class="text-sm text-gray-500">Status:
-                        @if($borrow->status === 'borrowed')
-                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">Dipinjam</span>
-                        @elseif($borrow->status === 'returned')
-                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Dikembalikan</span>
-                        @elseif($borrow->status === 'overdue')
-                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">Terlambat</span>
-                        @elseif($borrow->status === 'lost')
-                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">Hilang</span>
-                        @endif
-                    </p>
+                    <div class="flex items-center space-x-4 mt-2">
+                        <p class="text-sm text-gray-500">Status:
+                            @if($borrow->status === 'pending')
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">Menunggu</span>
+                            @elseif($borrow->status === 'borrowed')
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">Dipinjam</span>
+                            @elseif($borrow->status === 'returned')
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Dikembalikan</span>
+                            @elseif($borrow->status === 'overdue')
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">Terlambat</span>
+                            @elseif($borrow->status === 'lost')
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">Hilang</span>
+                            @elseif($borrow->status === 'rejected')
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">Ditolak</span>
+                            @endif
+                        </p>
+                        <p class="text-sm text-gray-500">Persetujuan:
+                            @if($borrow->approval_status === 'pending')
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">Menunggu</span>
+                            @elseif($borrow->approval_status === 'approved')
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Disetujui</span>
+                            @elseif($borrow->approval_status === 'rejected')
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">Ditolak</span>
+                            @endif
+                        </p>
+                    </div>
                 </div>
                 <div class="flex space-x-3">
                     <a href="{{ route('borrows.index') }}" class="bg-gray-100 text-gray-800 px-4 py-2 rounded-md hover:bg-gray-200">
@@ -27,7 +42,61 @@
                 </div>
             </div>
 
-            @if(in_array($borrow->status, ['borrowed', 'overdue']))
+            <!-- Tombol Approve/Reject untuk Admin/Petugas -->
+            @if(auth()->user()->isAdmin() || auth()->user()->isPetugas())
+                @if($borrow->approval_status === 'pending')
+                    <div class="mt-6 border-t pt-6">
+                        <h3 class="text-lg font-medium text-gray-900">Persetujuan Peminjaman</h3>
+                        <div class="mt-4 flex space-x-4">
+                            <form action="{{ route('borrows.approve', $borrow) }}" method="POST" class="inline">
+                                @csrf
+                                <button type="submit" 
+                                    class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700"
+                                    onclick="return confirm('Apakah Anda yakin ingin menyetujui peminjaman ini?')">
+                                    Setujui Peminjaman
+                                </button>
+                            </form>
+                            
+                            <button type="button" 
+                                onclick="document.getElementById('rejectModal').classList.remove('hidden')"
+                                class="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700">
+                                Tolak Peminjaman
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Modal Reject -->
+                    <div id="rejectModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+                        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+                            <div class="mt-3">
+                                <h3 class="text-lg font-medium text-gray-900 mb-4">Tolak Peminjaman</h3>
+                                <form action="{{ route('borrows.reject', $borrow) }}" method="POST">
+                                    @csrf
+                                    <div class="mb-4">
+                                        <label for="rejection_reason" class="block text-sm font-medium text-gray-700">Alasan Penolakan</label>
+                                        <textarea name="rejection_reason" id="rejection_reason" rows="3" required
+                                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                                            placeholder="Masukkan alasan penolakan..."></textarea>
+                                    </div>
+                                    <div class="flex justify-end space-x-3">
+                                        <button type="button" 
+                                            onclick="document.getElementById('rejectModal').classList.add('hidden')"
+                                            class="bg-gray-300 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-400">
+                                            Batal
+                                        </button>
+                                        <button type="submit" 
+                                            class="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700">
+                                            Tolak
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                @endif
+            @endif
+
+            @if(in_array($borrow->status, ['borrowed', 'overdue']) && $borrow->approval_status === 'approved')
                 <div x-data="{ action: 'returned' }" class="mt-6 border-t pt-6">
                     <h3 class="text-lg font-medium text-gray-900">Perbarui Status Peminjaman</h3>
                     <form action="{{ route('borrows.update_status', $borrow) }}" method="POST" class="mt-4 space-y-4">
@@ -108,6 +177,18 @@
                         <div>
                             <dt class="text-sm font-medium text-gray-500">Tanggal Kembali</dt>
                             <dd class="mt-1 text-sm text-gray-900">{{ $borrow->return_date->format('d/m/Y') }}</dd>
+                        </div>
+                        @endif
+                        @if($borrow->approvedBy)
+                        <div>
+                            <dt class="text-sm font-medium text-gray-500">Disetujui Oleh</dt>
+                            <dd class="mt-1 text-sm text-gray-900">{{ $borrow->approvedBy->name }} ({{ $borrow->approved_at->format('d/m/Y H:i') }})</dd>
+                        </div>
+                        @endif
+                        @if($borrow->rejection_reason)
+                        <div>
+                            <dt class="text-sm font-medium text-gray-500">Alasan Penolakan</dt>
+                            <dd class="mt-1 text-sm text-gray-900">{{ $borrow->rejection_reason }}</dd>
                         </div>
                         @endif
                     </dl>

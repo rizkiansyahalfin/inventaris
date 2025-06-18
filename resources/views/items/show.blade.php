@@ -119,7 +119,7 @@
             </div>
             @endif
 
-            @if($item->quantity > 1)
+            @if($item->stock > 1)
             <div class="mt-6">
                 <h3 class="text-lg font-medium text-gray-900">Daftar Unit Barang</h3>
                 <div class="mt-2 overflow-x-auto">

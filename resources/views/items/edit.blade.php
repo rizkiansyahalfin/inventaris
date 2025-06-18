@@ -33,11 +33,11 @@
                 </div>
 
                 <div>
-                    <label for="quantity" class="block text-sm font-medium text-gray-700">Jumlah Barang</label>
-                    <input type="number" name="quantity" id="quantity" value="{{ old('quantity', $item->quantity) }}" 
-                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm @error('quantity') border-red-500 @enderror"
+                    <label for="stock" class="block text-sm font-medium text-gray-700">Jumlah Barang</label>
+                    <input type="number" name="stock" id="stock" value="{{ old('stock', $item->stock) }}" 
+                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm @error('stock') border-red-500 @enderror"
                         required min="1">
-                    @error('quantity')
+                    @error('stock')
                     <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
                     @enderror
                 </div>

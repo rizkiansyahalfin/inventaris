@@ -45,7 +45,7 @@ class ItemController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'quantity' => 'required|integer|min:1',
+            'stock' => 'required|integer|min:1',
             'condition' => 'required|string|in:Baik,Rusak Ringan,Rusak Berat',
             'status' => 'required|string|in:Tersedia,Dipinjam,Dalam Perbaikan,Rusak,Hilang',
             'location' => 'nullable|string',
@@ -83,22 +83,22 @@ class ItemController extends Controller
             // Set item untuk response
             $item = $mainItem;
             
-            // Jika quantity lebih dari 1, buat record terpisah untuk setiap unit
-            if ($validated['quantity'] > 1) {
+            // Jika stock lebih dari 1, buat record terpisah untuk setiap unit
+            if ($validated['stock'] > 1) {
                 // Simpan item induk sebagai item pertama dengan kode unit -001
                 $baseCode = $mainItem->code;
                 $mainItem->code = $baseCode . '-001';
-                $mainItem->quantity = 1; // Set quantity ke 1 untuk item induk
+                $mainItem->stock = 1; // Set stock ke 1 untuk item induk
                 $mainItem->save();
                 
                 $createdItems[] = $mainItem;
                 $unitCodes[] = $mainItem->code;
                 
                 // Buat item-item turunan
-                for ($i = 2; $i <= $validated['quantity']; $i++) {
+                for ($i = 2; $i <= $validated['stock']; $i++) {
                     $childItem = new Item();
                     $childItem->fill(array_merge($validated, [
-                        'quantity' => 1, // Set quantity ke 1 untuk setiap unit
+                        'stock' => 1, // Set stock ke 1 untuk setiap unit
                         'image' => $imagePath,
                         'code' => $baseCode . '-' . str_pad($i, 3, '0', STR_PAD_LEFT)
                     ]));
@@ -109,8 +109,8 @@ class ItemController extends Controller
                     $unitCodes[] = $childItem->code;
                 }
             } else {
-                // Jika quantity hanya 1, gunakan item yang sudah dibuat
-                $mainItem->quantity = 1;
+                // Jika stock hanya 1, gunakan item yang sudah dibuat
+                $mainItem->stock = 1;
                 $mainItem->save();
                 
                 $createdItems[] = $mainItem;
@@ -171,7 +171,7 @@ class ItemController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'quantity' => 'required|integer|min:1',
+            'stock' => 'required|integer|min:1',
             'condition' => 'required|string|in:Baik,Rusak Ringan,Rusak Berat',
             'status' => 'required|string|in:Tersedia,Dipinjam,Dalam Perbaikan,Rusak,Hilang',
             'location' => 'nullable|string',
@@ -187,13 +187,13 @@ class ItemController extends Controller
         $categoriesChanged = !empty(array_diff($request->category_ids, $item->categories->pluck('id')->all()));
         
         $regenerateCode = $purchaseDateChanged || $categoriesChanged;
-        $oldQuantity = $item->quantity;
-        $newQuantity = $validated['quantity'];
+        $oldStock = $item->stock;
+        $newStock = $validated['stock'];
         $imagePath = $item->image;
         $unitCodes = [];
         $createdItems = [];
 
-        DB::transaction(function() use ($request, $item, $validated, $regenerateCode, $oldQuantity, $newQuantity, &$imagePath, &$unitCodes, &$createdItems) {
+        DB::transaction(function() use ($request, $item, $validated, $regenerateCode, $oldStock, $newStock, &$imagePath, &$unitCodes, &$createdItems) {
             if ($request->hasFile('image')) {
                 if ($item->image) {
                     \Illuminate\Support\Facades\Storage::disk('public')->delete('items/' . $item->image);
@@ -218,14 +218,14 @@ class ItemController extends Controller
             $baseCode = preg_replace('/-\d+$/', '', $item->code);
             
             // Jika jumlah berubah, perbarui atau buat record baru
-            if ($newQuantity != $oldQuantity) {
+            if ($newStock != $oldStock) {
                 // Cari item-item yang memiliki kode dasar yang sama
                 $relatedItems = Item::where('code', 'like', $baseCode . '-%')
                     ->orWhere('code', $baseCode)
                     ->get();
                 
                 // Jika jumlah baru lebih besar, tambahkan item baru
-                if ($newQuantity > $relatedItems->count()) {
+                if ($newStock > $relatedItems->count()) {
                     // Cari nomor unit tertinggi yang pernah ada
                     $highestUnitNumber = Item::where('code', 'like', $baseCode . '-%')
                         ->orderByRaw('CAST(SUBSTRING_INDEX(code, "-", -1) AS UNSIGNED) DESC')
@@ -235,80 +235,46 @@ class ItemController extends Controller
                     $startUnitNumber = $highestUnitNumber ? $highestUnitNumber + 1 : 1;
                     
                     // Hitung berapa banyak item yang perlu ditambahkan
-                    $itemsToAdd = $newQuantity - $relatedItems->count();
+                    $itemsToAdd = $newStock - $relatedItems->count();
                     
-                    // Buat item baru untuk setiap unit yang ditambahkan
                     for ($i = 0; $i < $itemsToAdd; $i++) {
                         $newItem = new Item();
-                        $newItem->fill($validated);
-                        $newItem->quantity = 1;
-                        $newItem->image = $imagePath;
-                        
-                        // Generate kode unit baru
-                        $unitNumber = $startUnitNumber + $i;
-                        $newItem->code = $baseCode . '-' . str_pad($unitNumber, 3, '0', STR_PAD_LEFT);
-                        
+                        $newItem->fill(array_merge($validated, [
+                            'stock' => 1,
+                            'image' => $imagePath,
+                            'code' => $baseCode . '-' . str_pad($startUnitNumber + $i, 3, '0', STR_PAD_LEFT)
+                        ]));
                         $newItem->save();
                         $newItem->categories()->attach($request->category_ids);
                         
                         $createdItems[] = $newItem;
                         $unitCodes[] = $newItem->code;
                     }
-                }
-                // Jika jumlah baru lebih kecil, hapus item yang tidak diperlukan
-                elseif ($newQuantity < $relatedItems->count()) {
-                    // Urutkan item berdasarkan kode
+                } elseif ($newStock < $relatedItems->count()) {
+                    // Jika jumlah baru lebih kecil, hapus item yang berlebih
                     $sortedItems = $relatedItems->sortBy('code');
+                    $itemsToRemove = $sortedItems->slice($newStock);
                     
-                    // Hapus item dari belakang
-                    $itemsToRemove = $sortedItems->slice($newQuantity);
                     foreach ($itemsToRemove as $itemToRemove) {
-                        // Pastikan tidak menghapus item yang sedang dipinjam
-                        if ($itemToRemove->status !== Item::STATUS_BORROWED) {
-                            $itemToRemove->delete();
-                        } else {
-                            // Jika ada item yang dipinjam, tambahkan catatan
-                            $item->notes = $item->notes 
-                                ? $item->notes . "\n\nTidak dapat menghapus unit " . $itemToRemove->code . " karena sedang dipinjam."
-                                : "Tidak dapat menghapus unit " . $itemToRemove->code . " karena sedang dipinjam.";
-                            $item->save();
-                        }
+                        $itemToRemove->delete();
                     }
                 }
                 
-                // Perbarui jumlah item utama
-                $item->quantity = $newQuantity;
+                // Update stock item utama
+                $item->stock = $newStock;
                 $item->save();
             }
             
-            // Jika ada perubahan kondisi, pastikan status diperbarui kecuali sedang dipinjam
-            if ($item->status !== Item::STATUS_BORROWED) {
+            // Pastikan status sesuai dengan kondisi
+            if ($item->condition !== 'Baik' && $item->status === Item::STATUS_AVAILABLE) {
                 $item->updateStatusFromCondition();
                 $item->save();
             }
-            
-            // Simpan kode unit untuk pesan sukses
-            $allItems = Item::where('code', 'like', $baseCode . '-%')
-                ->orWhere('code', $baseCode)
-                ->get();
-            
-            foreach ($allItems as $relatedItem) {
-                $unitCodes[] = $relatedItem->code;
-            }
         });
-        
+
         $message = 'Barang berhasil diperbarui';
-        
-        // Jika jumlah berubah, tampilkan kode unit baru
-        if ($newQuantity !== $oldQuantity || $regenerateCode) {
-            if (count($unitCodes) > 1) {
-                $message .= ' dengan kode unit: ' . implode(', ', array_slice($unitCodes, 0, 3));
-                if (count($unitCodes) > 3) {
-                    $message .= ' dan ' . (count($unitCodes) - 3) . ' lainnya';
-                }
-            } else {
-                $message .= ' dengan kode: ' . $unitCodes[0];
-            }
+        if ($newStock !== $oldStock || $regenerateCode) {
+            $message .= ' dengan perubahan kode unit';
         }
 
         return redirect()
@@ -352,8 +318,8 @@ class ItemController extends Controller
             DB::beginTransaction();
             
             // Simpan jumlah lama untuk menghitung kode unit baru
-            $oldQuantity = $item->quantity;
-            $newQuantity = $oldQuantity + $validated['quantity_to_add'];
+            $oldStock = $item->stock;
+            $newStock = $oldStock + $validated['quantity_to_add'];
             $baseCode = preg_replace('/-\d+$/', '', $item->code);
             $newUnitCodes = [];
             
@@ -389,7 +355,7 @@ class ItemController extends Controller
                 $newItem->fill([
                     'name' => $item->name,
                     'description' => $item->description,
-                    'quantity' => 1,
+                    'stock' => 1,
                     'condition' => $validated['condition'],
                     'location' => $item->location,
                     'purchase_price' => $validated['purchase_price'] ?? $item->purchase_price,
@@ -422,7 +388,7 @@ class ItemController extends Controller
                 : $newNotes;
             
             // Update jumlah total pada item utama
-            $item->quantity = $newQuantity;
+            $item->stock = $newStock;
             $item->save();
             
             DB::commit();
