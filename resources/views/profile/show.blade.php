@@ -19,6 +19,11 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900 dark:text-gray-100">
+                    <div class="mb-4">
+                        <a href="{{ route('profile.index') }}" class="inline-block bg-gray-100 text-gray-800 px-4 py-2 rounded-md hover:bg-gray-200">
+                            Kembali ke Daftar Profil
+                        </a>
+                    </div>
                     <div class="flex items-center space-x-4 mb-6">
                         <div class="flex-shrink-0">
                             <div class="w-24 h-24 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center">

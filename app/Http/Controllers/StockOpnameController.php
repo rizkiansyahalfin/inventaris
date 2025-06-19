@@ -20,7 +20,7 @@ class StockOpnameController extends Controller
             ->latest()
             ->paginate(15);
             
-        return view('stock_opnames.index', compact('stockOpnames'));
+        return view('stock-opnames.index', compact('stockOpnames'));
     }
 
     /**
@@ -28,7 +28,7 @@ class StockOpnameController extends Controller
      */
     public function create()
     {
-        return view('stock_opnames.create');
+        return view('stock-opnames.create');
     }
 
     /**
@@ -63,7 +63,7 @@ class StockOpnameController extends Controller
     {
         $stockOpname->load(['items.item', 'items.checkedBy']);
         
-        return view('stock_opnames.show', compact('stockOpname'));
+        return view('stock-opnames.show', compact('stockOpname'));
     }
 
     /**
@@ -75,7 +75,7 @@ class StockOpnameController extends Controller
             return back()->with('error', 'Stock opname yang sudah dimulai tidak dapat diubah.');
         }
         
-        return view('stock_opnames.edit', compact('stockOpname'));
+        return view('stock-opnames.edit', compact('stockOpname'));
     }
 
     /**
@@ -175,7 +175,7 @@ class StockOpnameController extends Controller
             ->orderBy('checked_at')
             ->paginate(15);
             
-        return view('stock_opnames.items.index', compact('stockOpname', 'items'));
+        return view('stock-opnames.items.index', compact('stockOpname', 'items'));
     }
     
     /**
@@ -187,7 +187,7 @@ class StockOpnameController extends Controller
             return back()->with('error', 'Stock opname tidak dalam proses.');
         }
         
-        return view('stock_opnames.items.check', compact('stockOpname', 'item'));
+        return view('stock-opnames.items.check', compact('stockOpname', 'item'));
     }
     
     /**

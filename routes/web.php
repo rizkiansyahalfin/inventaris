@@ -5,7 +5,7 @@ use App\Http\Controllers\ItemController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\BorrowController;
 use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\AttachmentController;
+use App\Http\Controllers\Api\AttachmentController;
 use App\Http\Controllers\MaintenanceController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\Admin\UserManagementController;
@@ -37,9 +37,16 @@ Route::middleware(['auth'])->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     
+    // Rute untuk petugas dan admin
+Route::middleware(['auth', 'role:petugas,admin'])->group(function () {
+    // Akses penuh ke manajemen barang
+    Route::resource('items', ItemController::class)->except(['index', 'show']);
+    Route::get('/items/{item}/add-stock', [ItemController::class, 'showAddStockForm'])->name('items.add-stock.form');
+    Route::post('/items/{item}/add-stock', [ItemController::class, 'addStock'])->name('items.add-stock');
     // Rute untuk pengguna biasa - Hanya melihat
     Route::get('/items', [ItemController::class, 'index'])->name('items.index');
     Route::get('/items/{item}', [ItemController::class, 'show'])->name('items.show');
+    
     
     // Pengguna dapat membuat permintaan peminjaman
     Route::get('/borrows/create', [BorrowController::class, 'create'])->name('borrows.create');
@@ -91,12 +98,7 @@ Route::middleware(['auth'])->group(function () {
     Route::patch('/item-requests/{itemRequest}/reject', [ItemRequestController::class, 'reject'])->name('item-requests.reject');
 });
 
-// Rute untuk petugas dan admin
-Route::middleware(['auth', 'role:petugas,admin'])->group(function () {
-    // Akses penuh ke manajemen barang
-    Route::resource('items', ItemController::class)->except(['index', 'show']);
-    Route::get('/items/{item}/add-stock', [ItemController::class, 'showAddStockForm'])->name('items.add-stock.form');
-    Route::post('/items/{item}/add-stock', [ItemController::class, 'addStock'])->name('items.add-stock');
+
     
     // Akses penuh ke perawatan
     Route::resource('maintenances', MaintenanceController::class);

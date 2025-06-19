@@ -56,7 +56,7 @@
                                         @endif
                                     </td>
                                     <td class="py-4 px-4 whitespace-nowrap text-sm text-gray-500">
-                                        {{ $opname->user->name }}
+                                        {{ $opname->user->name ?? '-' }}
                                     </td>
                                     <td class="py-4 px-4 whitespace-nowrap text-sm text-gray-500">
                                         {{ $opname->started_at ? $opname->started_at->format('d M Y H:i') : '-' }}
