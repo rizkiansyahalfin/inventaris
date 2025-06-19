@@ -9,40 +9,36 @@
         </p>
     </header>
 
-    <form method="post" action="{{ route('password.update') }}" class="mt-6 space-y-6">
+    <form method="POST" action="{{ route('password.update') }}" class="space-y-6">
         @csrf
         @method('put')
 
         <div>
-            <x-input-label for="update_password_current_password" :value="__('Current Password')" />
-            <x-text-input id="update_password_current_password" name="current_password" type="password" class="mt-1 block w-full" autocomplete="current-password" />
-            <x-input-error :messages="$errors->updatePassword->get('current_password')" class="mt-2" />
-        </div>
-
-        <div>
-            <x-input-label for="update_password_password" :value="__('New Password')" />
-            <x-text-input id="update_password_password" name="password" type="password" class="mt-1 block w-full" autocomplete="new-password" />
-            <x-input-error :messages="$errors->updatePassword->get('password')" class="mt-2" />
-        </div>
-
-        <div>
-            <x-input-label for="update_password_password_confirmation" :value="__('Confirm Password')" />
-            <x-text-input id="update_password_password_confirmation" name="password_confirmation" type="password" class="mt-1 block w-full" autocomplete="new-password" />
-            <x-input-error :messages="$errors->updatePassword->get('password_confirmation')" class="mt-2" />
-        </div>
-
-        <div class="flex items-center gap-4">
-            <x-primary-button>{{ __('Save') }}</x-primary-button>
-
-            @if (session('status') === 'password-updated')
-                <p
-                    x-data="{ show: true }"
-                    x-show="show"
-                    x-transition
-                    x-init="setTimeout(() => show = false, 2000)"
-                    class="text-sm text-gray-600 dark:text-gray-400"
-                >{{ __('Saved.') }}</p>
+            <label for="update_password_current_password" class="block text-sm font-semibold text-gray-700 dark:text-gray-300">{{ __('Current Password') }}</label>
+            <input id="update_password_current_password" name="current_password" type="password" class="mt-1 block w-full rounded-md border-gray-300 dark:bg-gray-700 dark:text-white focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50" autocomplete="current-password">
+            @if($errors->updatePassword && $errors->updatePassword->has('current_password'))
+                <div class="mt-2 text-sm text-red-600">{{ $errors->updatePassword->first('current_password') }}</div>
             @endif
+        </div>
+
+        <div>
+            <label for="update_password_password" class="block text-sm font-semibold text-gray-700 dark:text-gray-300">{{ __('New Password') }}</label>
+            <input id="update_password_password" name="password" type="password" class="mt-1 block w-full rounded-md border-gray-300 dark:bg-gray-700 dark:text-white focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50" autocomplete="new-password">
+            @if($errors->updatePassword && $errors->updatePassword->has('password'))
+                <div class="mt-2 text-sm text-red-600">{{ $errors->updatePassword->first('password') }}</div>
+            @endif
+        </div>
+
+        <div>
+            <label for="update_password_password_confirmation" class="block text-sm font-semibold text-gray-700 dark:text-gray-300">{{ __('Confirm Password') }}</label>
+            <input id="update_password_password_confirmation" name="password_confirmation" type="password" class="mt-1 block w-full rounded-md border-gray-300 dark:bg-gray-700 dark:text-white focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50" autocomplete="new-password">
+            @if($errors->updatePassword && $errors->updatePassword->has('password_confirmation'))
+                <div class="mt-2 text-sm text-red-600">{{ $errors->updatePassword->first('password_confirmation') }}</div>
+            @endif
+        </div>
+
+        <div>
+            <button type="submit" class="py-2 px-4 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition">{{ __('Save') }}</button>
         </div>
     </form>
 </section>

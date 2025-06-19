@@ -1,3 +1,27 @@
+@extends('layouts.app')
+@section('header')
+    <h2 class="font-semibold text-xl text-gray-800 leading-tight">Laporan Staff</h2>
+@endsection
+@section('content')
+<div class="py-12">
+    <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+        <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-xl sm:rounded-lg p-6">
+            @if (session('status'))
+                <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-4" role="alert">
+                    <p>{{ session('status') }}</p>
+                </div>
+            @endif
+
+            @if ($staffReports->isEmpty())
+                <div class="text-center py-8">
+                    <p class="text-gray-500">Belum ada laporan staff yang dibuat</p>
+                </div>
+            @else
+                <div class="overflow-x-auto">
+                    <table class="min-w-full bg-white border">
+                        <thead>
+                            <tr>
+                                <th class="py-3 px-4 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Judul</th>
 <x-app-layout>
     <x-slot name="header">
         <div class="flex justify-between items-center">

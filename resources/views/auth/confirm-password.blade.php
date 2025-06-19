@@ -1,34 +1,20 @@
-<x-guest-layout>
-    <div class="text-center mb-8">
-        <h2 class="text-3xl font-bold text-gray-900 mb-2">Konfirmasi Kata Sandi</h2>
-        <p class="text-gray-600">Mohon konfirmasi kata sandi Anda sebelum melanjutkan</p>
-    </div>
-
-    <div class="mb-4 text-sm text-gray-600">
-        {{ __('Ini adalah area yang aman dari aplikasi. Mohon konfirmasi kata sandi Anda sebelum melanjutkan.') }}
-    </div>
-
-    <form method="POST" action="{{ route('password.confirm') }}" class="space-y-6">
+@extends('layouts.guest')
+@section('content')
+<div class="w-full max-w-md mx-auto mt-10 bg-white dark:bg-gray-800 p-8 rounded-lg shadow">
+    <h2 class="text-2xl font-bold mb-6 text-center text-gray-900 dark:text-white">Konfirmasi Kata Sandi</h2>
+    <form method="POST" action="{{ route('password.confirm') }}">
         @csrf
-
-        <!-- Password -->
-        <div>
-            <x-input-label for="password" :value="__('Kata Sandi')" class="text-sm font-semibold text-gray-700" />
-            <x-text-input id="password" 
-                class="mt-2 block w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:bg-gray-100"
-                type="password"
-                name="password"
-                required 
-                autocomplete="current-password" 
-                placeholder="Masukkan kata sandi Anda" />
-            <x-input-error :messages="$errors->get('password')" class="mt-2" />
+        <div class="mb-4">
+            <label for="password" class="block text-sm font-semibold text-gray-700 dark:text-gray-300">Kata Sandi</label>
+            <input id="password" name="password" type="password" required autofocus class="mt-1 block w-full rounded-md border-gray-300 dark:bg-gray-700 dark:text-white focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+            @if($errors->has('password'))
+                <div class="mt-2 text-sm text-red-600">{{ $errors->first('password') }}</div>
+            @endif
         </div>
-
-        <!-- Submit Button -->
-        <div class="pt-4">
-            <x-primary-button class="w-full justify-center py-3 px-4 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-200">
-                {{ __('Konfirmasi') }}
-            </x-primary-button>
-        </div>
+        <button type="submit" class="w-full justify-center py-3 px-4 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition">Konfirmasi</button>
     </form>
-</x-guest-layout>
+    <div class="mt-6 text-center">
+        <a href="{{ route('login') }}" class="text-blue-600 hover:underline dark:text-blue-400">Kembali ke Login</a>
+    </div>
+</div>
+@endsection
