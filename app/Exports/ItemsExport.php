@@ -36,10 +36,11 @@ class ItemsExport implements FromCollection, WithHeadings, WithMapping
 
     public function map($item): array
     {
+        $categoryName = $item->category ? $item->category->name : '';
         return [
             $item->code,
             $item->name,
-            $item->categories->pluck('name')->join(', '),
+            $categoryName,
             $item->status,
             $item->condition,
             $item->location,

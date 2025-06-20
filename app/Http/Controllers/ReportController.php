@@ -18,11 +18,11 @@ class ReportController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Item::with('categories');
+        $query = Item::with('category');
 
         // Filter by category
         if ($request->filled('category')) {
-            $query->whereHas('categories', function ($q) use ($request) {
+            $query->whereHas('category', function ($q) use ($request) {
                 $q->where('categories.id', $request->category);
             });
         }
@@ -79,11 +79,11 @@ class ReportController extends Controller
             return back()->with('error', 'Hanya admin yang dapat melakukan export laporan');
         }
         
-        $query = Item::with('categories');
+        $query = Item::with('category');
 
         // Apply filters
         if ($request->filled('category')) {
-            $query->whereHas('categories', function ($q) use ($request) {
+            $query->whereHas('category', function ($q) use ($request) {
                 $q->where('categories.id', $request->category);
             });
         }
