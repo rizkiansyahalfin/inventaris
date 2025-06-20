@@ -12,15 +12,13 @@ class ItemController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Item::with(['categories'])
+        $query = Item::with(['category'])
             ->when($request->search, function ($query, $search) {
                 return $query->where('name', 'like', "%{$search}%")
                     ->orWhere('code', 'like', "%{$search}%");
             })
             ->when($request->category_id, function ($query, $categoryId) {
-                return $query->whereHas('categories', function ($q) use ($categoryId) {
-                    $q->where('categories.id', $categoryId);
-                });
+                return $query->where('category_id', $categoryId);
             })
             ->when($request->status, function ($query, $status) {
                 return $query->where('status', $status);
@@ -51,8 +49,7 @@ class ItemController extends Controller
             'location' => 'nullable|string',
             'purchase_price' => 'nullable|numeric|min:0',
             'purchase_date' => 'required|date',
-            'category_ids' => 'required|array|min:1',
-            'category_ids.*' => 'exists:categories,id',
+            'category_id' => 'required|exists:categories,id',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
@@ -74,7 +71,6 @@ class ItemController extends Controller
                 'image' => $imagePath
             ]));
             $mainItem->save();
-            $mainItem->categories()->attach($request->category_ids);
             
             // Generate kode dasar
             $mainItem->code = $this->generateItemCode($mainItem);
@@ -103,7 +99,6 @@ class ItemController extends Controller
                         'code' => $baseCode . '-' . str_pad($i, 3, '0', STR_PAD_LEFT)
                     ]));
                     $childItem->save();
-                    $childItem->categories()->attach($request->category_ids);
                     
                     $createdItems[] = $childItem;
                     $unitCodes[] = $childItem->code;
@@ -143,7 +138,7 @@ class ItemController extends Controller
 
     public function show(Item $item)
     {
-        $item->load(['categories', 'attachments', 'borrows.user'])->loadCount('borrows');
+        $item->load(['category', 'attachments', 'borrows.user'])->loadCount('borrows');
         
         // Cari semua unit dengan kode dasar yang sama
         $baseCode = preg_replace('/-\d+$/', '', $item->code);
@@ -177,14 +172,13 @@ class ItemController extends Controller
             'location' => 'nullable|string',
             'purchase_price' => 'nullable|numeric|min:0',
             'purchase_date' => 'required|date',
-            'category_ids' => 'required|array|min:1',
-            'category_ids.*' => 'exists:categories,id',
+            'category_id' => 'required|exists:categories,id',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
         // Periksa apakah kode perlu dibuat ulang
         $purchaseDateChanged = Carbon::parse($validated['purchase_date'])->notEqualTo($item->purchase_date);
-        $categoriesChanged = !empty(array_diff($request->category_ids, $item->categories->pluck('id')->all()));
+        $categoriesChanged = $validated['category_id'] != $item->category_id;
         
         $regenerateCode = $purchaseDateChanged || $categoriesChanged;
         $oldStock = $item->stock;
@@ -205,7 +199,6 @@ class ItemController extends Controller
 
             // Update item utama
             $item->update($validated);
-            $item->categories()->sync($request->category_ids);
 
             if ($regenerateCode) {
                 // Muat ulang item untuk mendapatkan relasi terbaru
@@ -245,7 +238,6 @@ class ItemController extends Controller
                             'code' => $baseCode . '-' . str_pad($startUnitNumber + $i, 3, '0', STR_PAD_LEFT)
                         ]));
                         $newItem->save();
-                        $newItem->categories()->attach($request->category_ids);
                         
                         $createdItems[] = $newItem;
                         $unitCodes[] = $newItem->code;
@@ -362,6 +354,7 @@ class ItemController extends Controller
                     'purchase_date' => $validated['purchase_date'] ?? now(),
                     'image' => $item->image,
                     'notes' => $newNotes,
+                    'category_id' => $item->category_id,
                 ]);
                 
                 // Set status berdasarkan kondisi
@@ -377,7 +370,6 @@ class ItemController extends Controller
                 $newItem->code = $baseCode . '-' . str_pad($unitNumber, 3, '0', STR_PAD_LEFT);
                 
                 $newItem->save();
-                $newItem->categories()->attach($item->categories->pluck('id')->toArray());
                 
                 $newUnitCodes[] = $newItem->code;
             }
@@ -414,7 +406,7 @@ class ItemController extends Controller
     private function generateItemCode(Item $item): string
     {
         // 1. Ambil Kode Kategori
-        $primaryCategory = $item->categories()->first();
+        $primaryCategory = $item->category;
         if (!$primaryCategory) {
             // Fallback jika tidak ada kategori
             return "NO-CAT-" . time(); 

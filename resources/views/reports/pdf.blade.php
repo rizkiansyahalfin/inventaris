@@ -54,7 +54,7 @@
             <tr>
                 <td>{{ $item->code }}</td>
                 <td>{{ $item->name }}</td>
-                <td>{{ $item->categories->pluck('name')->join(', ') }}</td>
+                <td>{{ $item->category?->name ?? 'Tidak ada kategori' }}</td>
                 <td>{{ $item->status }}</td>
                 <td>{{ $item->condition }}</td>
             </tr>

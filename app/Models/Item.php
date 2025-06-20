@@ -3,7 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -26,7 +26,8 @@ class Item extends Model
         'purchase_date',
         'warranty_expiry',
         'supplier',
-        'notes'
+        'notes',
+        'category_id'
     ];
 
     protected $casts = [
@@ -107,10 +108,9 @@ class Item extends Model
         return $this;
     }
 
-    public function categories(): BelongsToMany
+    public function category(): BelongsTo
     {
-        return $this->belongsToMany(Category::class)
-            ->withTimestamps();
+        return $this->belongsTo(Category::class);
     }
 
     public function attachments(): MorphMany

@@ -114,7 +114,7 @@
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $item->code }}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $item->name }}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            {{ $item->categories->pluck('name')->join(', ') }}
+                            {{ $item->category?->name ?? 'Tidak ada kategori' }}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 

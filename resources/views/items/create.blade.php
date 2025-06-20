@@ -109,20 +109,18 @@
             </div>
 
             <div>
-                <label class="block text-sm font-medium text-gray-700">Kategori</label>
-                <div class="mt-2 space-y-2 rounded-md border border-gray-300 p-4 h-40 overflow-y-auto">
+                <label for="category_id" class="block text-sm font-medium text-gray-700">Kategori</label>
+                <select name="category_id" id="category_id"
+                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm @error('category_id') border-red-500 @enderror"
+                    required>
+                    <option value="">Pilih Kategori</option>
                     @foreach($categories as $category)
-                    <div class="flex items-center">
-                        <input type="checkbox" name="category_ids[]" id="category_{{ $category->id }}"
-                               value="{{ $category->id }}" class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
-                               {{ in_array($category->id, old('category_ids', [])) ? 'checked' : '' }}>
-                        <label for="category_{{ $category->id }}" class="ml-3 block text-sm text-gray-900">
-                            {{ $category->name }}
-                        </label>
-                    </div>
+                    <option value="{{ $category->id }}" {{ old('category_id') == $category->id ? 'selected' : '' }}>
+                        {{ $category->name }}
+                    </option>
                     @endforeach
-                </div>
-                @error('category_ids')
+                </select>
+                @error('category_id')
                 <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
                 @enderror
             </div>

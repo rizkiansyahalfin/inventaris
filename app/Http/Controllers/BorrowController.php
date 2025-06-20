@@ -150,16 +150,28 @@ class BorrowController extends Controller
                 'approved_at' => Carbon::now(),
             ]);
 
-            // Kurangi jumlah stok
-            $item->decrement('stock', $borrow->quantity);
-            
-            // Jika jumlah menjadi 0, update status menjadi 'Dipinjam'
-            if ($item->stock === 0) {
-                $item->updateStatus(Item::STATUS_BORROWED);
-            }
+            // Ubah status item menjadi 'Dipinjam' karena setiap item adalah unit tunggal
+            $item->updateStatus(Item::STATUS_BORROWED);
 
             // Buat notifikasi untuk user
             $this->createApprovalNotification($borrow, 'approved');
+
+            // Tolak otomatis semua pengajuan lain yang pending untuk unit barang yang sama
+            $otherPendings = Borrow::where('item_id', $item->id)
+                ->where('id', '!=', $borrow->id)
+                ->where('approval_status', 'pending')
+                ->get();
+            foreach ($otherPendings as $pending) {
+                $pending->update([
+                    'approval_status' => 'rejected',
+                    'status' => 'rejected',
+                    'approved_by' => Auth::id(),
+                    'approved_at' => Carbon::now(),
+                    'rejection_reason' => 'Barang sudah dipinjam oleh pengguna lain.'
+                ]);
+                // Kirim notifikasi ke user
+                $this->createApprovalNotification($pending, 'rejected');
+            }
 
             DB::commit();
 
@@ -249,10 +261,9 @@ class BorrowController extends Controller
                     'return_date' => Carbon::now()
                 ]);
                 
-                // Update status item menjadi hilang jika semua stok hilang
-                if ($item->stock == 0) {
-                    $item->updateStatus(Item::STATUS_LOST);
-                }
+                // Update status item menjadi hilang
+                $item->updateStatus(Item::STATUS_LOST);
+
             } else {
                 // Kembalikan barang
                 $borrow->update([
@@ -261,18 +272,8 @@ class BorrowController extends Controller
                     'condition_on_return' => $validated['condition_on_return']
                 ]);
                 
-                // Tambah jumlah karena barang dikembalikan
-                $item->increment('stock', $borrow->quantity);
-                
-                // Perbarui kondisi barang berdasarkan kondisi saat dikembalikan
-                if ($validated['condition_on_return'] !== $item->condition) {
-                    $item->updateCondition($validated['condition_on_return']);
-                } else {
-                    // Jika kondisi sama tapi barang baru dikembalikan,
-                    // perbarui status berdasarkan kondisi
-                    $item->updateStatusFromCondition();
-                    $item->save();
-                }
+                // Perbarui kondisi dan status item berdasarkan kondisi saat dikembalikan
+                $item->updateCondition($validated['condition_on_return']);
             }
 
             DB::commit();

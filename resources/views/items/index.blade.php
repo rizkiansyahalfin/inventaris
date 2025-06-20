@@ -82,11 +82,13 @@
                         <td class="px-6 py-4 whitespace-nowrap text-sm">{{ $item->code }}</td>
                         <td class="px-6 py-4 whitespace-nowrap">{{ $item->name }}</td>
                         <td class="px-6 py-4">
-                            @foreach($item->categories as $category)
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 mr-1">
-                                {{ $category->name }}
+                            @if($item->category)
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                {{ $item->category->name }}
                             </span>
-                            @endforeach
+                            @else
+                            <span class="text-gray-400 text-xs">Tidak ada kategori</span>
+                            @endif
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             @if($item->status == 'Tersedia')

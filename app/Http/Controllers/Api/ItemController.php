@@ -14,7 +14,7 @@ class ItemController extends Controller
 {
     public function index(): JsonResponse
     {
-        $items = Item::with(['categories', 'attachments'])
+        $items = Item::with(['category', 'attachments'])
             ->orderBy('name')
             ->paginate(10);
 
@@ -32,8 +32,7 @@ class ItemController extends Controller
             'location' => 'nullable|string',
             'purchase_price' => 'nullable|numeric|min:0',
             'purchase_date' => 'nullable|date',
-            'category_ids' => 'array',
-            'category_ids.*' => 'exists:categories,id',
+            'category_id' => 'required|exists:categories,id',
         ]);
 
         try {
@@ -41,13 +40,9 @@ class ItemController extends Controller
 
             $item = Item::create($validated);
 
-            if (!empty($validated['category_ids'])) {
-                $item->categories()->attach($validated['category_ids']);
-            }
-
             DB::commit();
 
-            return response()->json($item->load('categories'), 201);
+            return response()->json($item->load('category'), 201);
         } catch (\Exception $e) {
             DB::rollBack();
             throw $e;
@@ -57,7 +52,7 @@ class ItemController extends Controller
     public function show(Item $item): JsonResponse
     {
         return response()->json(
-            $item->load(['categories', 'attachments', 'borrows.user'])
+            $item->load(['category', 'attachments', 'borrows.user'])
         );
     }
 
@@ -72,11 +67,12 @@ class ItemController extends Controller
             'location' => 'nullable|string',
             'purchase_price' => 'nullable|numeric|min:0',
             'purchase_date' => 'nullable|date',
+            'category_id' => 'sometimes|exists:categories,id',
         ]);
 
         $item->update($validated);
 
-        return response()->json($item->load('categories'));
+        return response()->json($item->load('category'));
     }
 
     public function destroy(Item $item): JsonResponse
@@ -94,15 +90,17 @@ class ItemController extends Controller
 
     public function attachCategory(Item $item, Category $category): JsonResponse
     {
-        $item->categories()->attach($category->id);
+        $item->category()->associate($category);
+        $item->save();
 
-        return response()->json($item->load('categories'));
+        return response()->json($item->load('category'));
     }
 
     public function detachCategory(Item $item, Category $category): JsonResponse
     {
-        $item->categories()->detach($category->id);
+        $item->category()->dissociate();
+        $item->save();
 
-        return response()->json($item->load('categories'));
+        return response()->json($item->load('category'));
     }
 } 
