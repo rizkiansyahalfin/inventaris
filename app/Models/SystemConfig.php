@@ -15,8 +15,9 @@ class SystemConfig extends Model
      * @var array<int, string>
      */
     protected $fillable = [
-        'config_key',
-        'config_value',
+        'key',
+        'value',
+        'description',
     ];
 
     protected $casts = [
@@ -33,9 +34,9 @@ class SystemConfig extends Model
      */
     public static function getValue(string $key, $default = null)
     {
-        $config = self::where('config_key', $key)->first();
+        $config = self::where('key', $key)->first();
         
-        return $config ? $config->config_value : $default;
+        return $config ? $config->value : $default;
     }
 
     /**
@@ -48,8 +49,8 @@ class SystemConfig extends Model
     public static function setValue(string $key, $value): void
     {
         self::updateOrCreate(
-            ['config_key' => $key],
-            ['config_value' => $value]
+            ['key' => $key],
+            ['value' => $value]
         );
     }
 }

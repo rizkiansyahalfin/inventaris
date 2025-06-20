@@ -15,21 +15,21 @@
                 <form action="{{ route('system-configs.store') }}" method="POST">
                     @csrf
                     <div class="mb-4">
-                        <label for="config_key" class="block text-sm font-medium text-gray-700">Kunci Konfigurasi</label>
-                        <input type="text" name="config_key" id="config_key" value="{{ old('config_key') }}" 
+                        <label for="key" class="block text-sm font-medium text-gray-700">Kunci Konfigurasi</label>
+                        <input type="text" name="key" id="key" value="{{ old('key') }}" 
                             class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                             required>
-                        @error('config_key')
+                        @error('key')
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                         @enderror
                     </div>
 
                     <div class="mb-4">
-                        <label for="config_value" class="block text-sm font-medium text-gray-700">Nilai Konfigurasi</label>
-                        <textarea name="config_value" id="config_value" rows="3" 
+                        <label for="value" class="block text-sm font-medium text-gray-700">Nilai Konfigurasi</label>
+                        <textarea name="value" id="value" rows="3" 
                             class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                            required>{{ old('config_value') }}</textarea>
-                        @error('config_value')
+                            required>{{ old('value') }}</textarea>
+                        @error('value')
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                         @enderror
                     </div>

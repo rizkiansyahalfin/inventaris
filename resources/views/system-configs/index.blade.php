@@ -26,10 +26,10 @@
                     @forelse ($configs as $config)
                         <tr>
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                {{ $config->config_key }}
+                                {{ $config->key }}
                             </td>
                             <td class="px-6 py-4 text-sm text-gray-500">
-                                {{ $config->config_value }}
+                                {{ $config->value }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                 {{ $config->updated_at->format('d/m/Y H:i:s') }}
