@@ -85,6 +85,8 @@ class MaintenanceController extends Controller
 
             DB::commit();
 
+            \App\Models\ActivityLog::log('create', 'maintenance', 'Menambah perawatan untuk item: ' . $item->name . ' (Maint. ID: ' . $maintenance->id . ')');
+
             return redirect()->route('maintenances.show', $maintenance)
                 ->with('success', 'Data pemeliharaan berhasil ditambahkan.');
 
@@ -138,7 +140,9 @@ class MaintenanceController extends Controller
             }
             
             DB::commit();
-            
+
+            \App\Models\ActivityLog::log('update', 'maintenance', 'Memperbarui perawatan: ' . $maintenance->title . ' (Maint. ID: ' . $maintenance->id . ')');
+
             return redirect()->route('maintenances.show', $maintenance)
                 ->with('success', 'Data pemeliharaan berhasil diperbarui.');
                 
@@ -153,7 +157,10 @@ class MaintenanceController extends Controller
      */
     public function destroy(Maintenance $maintenance)
     {
+        $maintenanceName = $maintenance->title;
+        $maintenanceId = $maintenance->id;
         $maintenance->delete();
+        \App\Models\ActivityLog::log('delete', 'maintenance', 'Menghapus perawatan: ' . $maintenanceName . ' (Maint. ID: ' . $maintenanceId . ')');
         return redirect()->route('maintenances.index')->with('success', 'Data pemeliharaan berhasil dihapus.');
     }
 }

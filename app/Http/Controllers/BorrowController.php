@@ -91,6 +91,9 @@ class BorrowController extends Controller
                 'condition_at_borrow' => $item->condition,
             ]);
 
+            // Log aktivitas pengajuan peminjaman
+            \App\Models\ActivityLog::log('create', 'peminjaman', 'Mengajukan peminjaman barang: ' . ($item->name ?? '-') . ' (ID: ' . $borrow->id . ')');
+
             // Buat notifikasi untuk admin/petugas
             $this->createApprovalNotification($borrow);
 
@@ -156,6 +159,9 @@ class BorrowController extends Controller
             // Buat notifikasi untuk user
             $this->createApprovalNotification($borrow, 'approved');
 
+            // Log aktivitas persetujuan
+            \App\Models\ActivityLog::log('approve', 'peminjaman', 'Menyetujui peminjaman barang: ' . ($borrow->item->name ?? '-') . ' (ID: ' . $borrow->id . ')');
+
             // Tolak otomatis semua pengajuan lain yang pending untuk unit barang yang sama
             $otherPendings = Borrow::where('item_id', $item->id)
                 ->where('id', '!=', $borrow->id)
@@ -171,6 +177,8 @@ class BorrowController extends Controller
                 ]);
                 // Kirim notifikasi ke user
                 $this->createApprovalNotification($pending, 'rejected');
+                // Log aktivitas penolakan otomatis
+                \App\Models\ActivityLog::log('reject', 'peminjaman', 'Menolak otomatis pengajuan lain barang: ' . ($pending->item->name ?? '-') . ' (ID: ' . $pending->id . ') karena sudah dipinjam user lain.');
             }
 
             DB::commit();
@@ -215,6 +223,9 @@ class BorrowController extends Controller
 
             // Buat notifikasi untuk user
             $this->createApprovalNotification($borrow, 'rejected');
+
+            // Log aktivitas penolakan
+            \App\Models\ActivityLog::log('reject', 'peminjaman', 'Menolak peminjaman barang: ' . ($borrow->item->name ?? '-') . ' (ID: ' . $borrow->id . ')');
 
             DB::commit();
 
@@ -264,6 +275,9 @@ class BorrowController extends Controller
                 // Update status item menjadi hilang
                 $item->updateStatus(Item::STATUS_LOST);
 
+                // Log aktivitas kehilangan
+                \App\Models\ActivityLog::log('lost', 'peminjaman', 'Barang dinyatakan hilang: ' . ($borrow->item->name ?? '-') . ' (ID: ' . $borrow->id . ')');
+
             } else {
                 // Kembalikan barang
                 $borrow->update([
@@ -274,6 +288,9 @@ class BorrowController extends Controller
                 
                 // Perbarui kondisi dan status item berdasarkan kondisi saat dikembalikan
                 $item->updateCondition($validated['condition_on_return']);
+
+                // Log aktivitas pengembalian
+                \App\Models\ActivityLog::log('return', 'peminjaman', 'Mengembalikan barang: ' . ($borrow->item->name ?? '-') . ' (ID: ' . $borrow->id . ')');
             }
 
             DB::commit();
@@ -301,6 +318,7 @@ class BorrowController extends Controller
         }
 
         $borrow->delete();
+        \App\Models\ActivityLog::log('delete', 'peminjaman', 'Menghapus data peminjaman: ID ' . $borrow->id . ' (Barang: ' . ($borrow->item->name ?? '-') . ')');
 
         return redirect()
             ->route('borrows.index')

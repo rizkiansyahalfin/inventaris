@@ -72,13 +72,14 @@ class ItemFeedbackController extends Controller
         }
         
         // Simpan feedback
-        ItemFeedback::create([
+        $feedback = ItemFeedback::create([
             'borrow_id' => $borrow->id,
             'user_id' => Auth::id(),
             'item_id' => $borrow->item_id,
             'rating' => $request->rating,
             'comment' => $request->comment,
         ]);
+        \App\Models\ActivityLog::log('create', 'item_feedback', 'Memberikan feedback untuk peminjaman ID: ' . $borrow->id . ' (Feedback ID: ' . $feedback->id . ')');
         
         return redirect()->route('borrows.show', $borrow)
             ->with('success', 'Terima kasih atas feedback Anda.');
@@ -133,6 +134,7 @@ class ItemFeedbackController extends Controller
             'rating' => $request->rating,
             'comment' => $request->comment,
         ]);
+        \App\Models\ActivityLog::log('update', 'item_feedback', 'Memperbarui feedback ID: ' . $feedback->id);
         
         return redirect()->route('feedbacks.show', $feedback)
             ->with('success', 'Feedback berhasil diperbarui.');
@@ -149,7 +151,9 @@ class ItemFeedbackController extends Controller
             abort(403);
         }
         
+        $feedbackId = $feedback->id;
         $feedback->delete();
+        \App\Models\ActivityLog::log('delete', 'item_feedback', 'Menghapus feedback ID: ' . $feedbackId);
         
         return redirect()->route('feedbacks.index')
             ->with('success', 'Feedback berhasil dihapus.');

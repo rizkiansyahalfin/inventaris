@@ -56,12 +56,13 @@ class UserManagementController extends Controller
             'role' => ['required', Rule::in(['admin', 'petugas', 'user'])],
         ]);
 
-        User::create([
+        $user = User::create([
             'name' => $validated['name'],
             'email' => $validated['email'],
             'password' => Hash::make($validated['password']),
             'role' => $validated['role'],
         ]);
+        \App\Models\ActivityLog::log('create', 'user', 'Menambah user: ' . $user->name . ' (ID: ' . $user->id . ')');
 
         return redirect()->route('admin.users.index')
             ->with('success', 'User berhasil ditambahkan');
@@ -111,6 +112,7 @@ class UserManagementController extends Controller
             'role' => $validated['role'],
             'status' => $validated['status'],
         ]);
+        \App\Models\ActivityLog::log('update', 'user', 'Mengedit user: ' . $user->name . ' (ID: ' . $user->id . ')');
 
         $statusMessages = [
             'active' => 'User berhasil diaktifkan dan memiliki akses penuh ke sistem',
@@ -133,6 +135,7 @@ class UserManagementController extends Controller
         }
 
         $user->delete();
+        \App\Models\ActivityLog::log('delete', 'user', 'Menghapus user: ' . $user->name . ' (ID: ' . $user->id . ')');
 
         return redirect()->route('admin.users.index')
             ->with('success', 'User berhasil dihapus');
@@ -155,6 +158,7 @@ class UserManagementController extends Controller
         $user->update([
             'role' => $validated['role'],
         ]);
+        \App\Models\ActivityLog::log('update_role', 'user', 'Mengubah role user: ' . $user->name . ' (ID: ' . $user->id . ')');
 
         return redirect()->route('admin.users.index')
             ->with('success', 'Role user berhasil diperbarui');
@@ -180,6 +184,7 @@ class UserManagementController extends Controller
         $user->update([
             'password' => Hash::make($validated['password']),
         ]);
+        \App\Models\ActivityLog::log('reset_password', 'user', 'Reset password user: ' . $user->name . ' (ID: ' . $user->id . ')');
 
         return redirect()->route('admin.users.show', $user)
             ->with('success', 'Password user berhasil direset');

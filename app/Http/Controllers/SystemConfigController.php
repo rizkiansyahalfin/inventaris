@@ -35,7 +35,8 @@ class SystemConfigController extends BaseController
             'description' => 'nullable|string',
         ]);
 
-        SystemConfig::create($validated);
+        $systemConfig = SystemConfig::create($validated);
+        \App\Models\ActivityLog::log('create', 'system_config', 'Menambah konfigurasi: ' . $systemConfig->key);
 
         return redirect()->route('system-configs.index')
             ->with('success', 'Konfigurasi sistem berhasil ditambahkan.');
@@ -54,6 +55,7 @@ class SystemConfigController extends BaseController
         ]);
 
         $systemConfig->update($validated);
+        \App\Models\ActivityLog::log('update', 'system_config', 'Mengedit konfigurasi: ' . $systemConfig->key);
 
         return redirect()->route('system-configs.index')
             ->with('success', 'Konfigurasi sistem berhasil diperbarui.');
@@ -61,7 +63,9 @@ class SystemConfigController extends BaseController
 
     public function destroy(SystemConfig $systemConfig)
     {
+        $key = $systemConfig->key;
         $systemConfig->delete();
+        \App\Models\ActivityLog::log('delete', 'system_config', 'Menghapus konfigurasi: ' . $key);
 
         return redirect()->route('system-configs.index')
             ->with('success', 'Konfigurasi sistem berhasil dihapus.');

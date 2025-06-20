@@ -31,7 +31,8 @@ class CategoryController extends Controller
             'description' => 'nullable|string',
         ]);
 
-        Category::create($validated);
+        $category = Category::create($validated);
+        \App\Models\ActivityLog::log('create', 'kategori', 'Menambah kategori: ' . $category->name);
 
         return redirect()
             ->route('categories.index')
@@ -51,6 +52,7 @@ class CategoryController extends Controller
         ]);
 
         $category->update($validated);
+        \App\Models\ActivityLog::log('update', 'kategori', 'Mengedit kategori: ' . $category->name);
 
         return redirect()
             ->route('categories.index')
@@ -64,6 +66,7 @@ class CategoryController extends Controller
         }
 
         $category->delete();
+        \App\Models\ActivityLog::log('delete', 'kategori', 'Menghapus kategori: ' . $category->name);
 
         return redirect()
             ->route('categories.index')

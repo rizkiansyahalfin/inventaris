@@ -39,6 +39,7 @@ class ItemController extends Controller
             DB::beginTransaction();
 
             $item = Item::create($validated);
+            \App\Models\ActivityLog::log('create', 'barang_api', 'Menambah barang (API): ' . $item->name . ' (ID: ' . $item->id . ')');
 
             DB::commit();
 
@@ -71,6 +72,7 @@ class ItemController extends Controller
         ]);
 
         $item->update($validated);
+        \App\Models\ActivityLog::log('update', 'barang_api', 'Mengedit barang (API): ' . $item->name . ' (ID: ' . $item->id . ')');
 
         return response()->json($item->load('category'));
     }
@@ -84,6 +86,7 @@ class ItemController extends Controller
         }
 
         $item->delete();
+        \App\Models\ActivityLog::log('delete', 'barang_api', 'Menghapus barang (API): ' . $item->name . ' (ID: ' . $item->id . ')');
 
         return response()->json(null, 204);
     }

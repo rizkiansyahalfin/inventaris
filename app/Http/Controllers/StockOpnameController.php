@@ -52,6 +52,8 @@ class StockOpnameController extends Controller
             'created_by' => Auth::id(),
         ]);
         
+        \App\Models\ActivityLog::log('create', 'stock_opname', 'Menambah stock opname: ' . $stockOpname->id);
+        
         return redirect()->route('stock-opnames.show', $stockOpname)
             ->with('success', 'Stock opname berhasil dibuat.');
     }
@@ -101,6 +103,8 @@ class StockOpnameController extends Controller
             'notes' => $request->notes,
         ]);
         
+        \App\Models\ActivityLog::log('update', 'stock_opname', 'Mengedit stock opname: ' . $stockOpname->id);
+        
         return redirect()->route('stock-opnames.show', $stockOpname)
             ->with('success', 'Stock opname berhasil diperbarui.');
     }
@@ -115,6 +119,8 @@ class StockOpnameController extends Controller
         }
         
         $stockOpname->delete();
+        
+        \App\Models\ActivityLog::log('delete', 'stock_opname', 'Menghapus stock opname: ' . $stockOpname->id);
         
         return redirect()->route('stock-opnames.index')
             ->with('success', 'Stock opname berhasil dihapus.');

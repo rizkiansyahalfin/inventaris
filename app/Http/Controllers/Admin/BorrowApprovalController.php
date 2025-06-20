@@ -120,6 +120,7 @@ class BorrowApprovalController extends Controller
         $errorCount = 0;
 
         foreach ($validated['borrow_ids'] as $borrowId) {
+            $borrow = null; // inisialisasi
             try {
                 DB::beginTransaction();
 
@@ -153,11 +154,15 @@ class BorrowApprovalController extends Controller
                     $item->updateStatus(Item::STATUS_BORROWED);
                 }
 
-                $successCount++;
                 DB::commit();
+                \App\Models\ActivityLog::log('approve', 'borrow_request', 'Menyetujui peminjaman ID: ' . $borrow->id . ' untuk item: ' . $borrow->item->name);
+                $successCount++;
 
             } catch (\Exception $e) {
                 DB::rollBack();
+                if ($borrow) {
+                    \App\Models\ActivityLog::log('approve_failed', 'borrow_request', 'Gagal menyetujui peminjaman ID: ' . $borrow->id . ' - ' . $e->getMessage());
+                }
                 $errorCount++;
             }
         }
@@ -182,6 +187,7 @@ class BorrowApprovalController extends Controller
         $errorCount = 0;
 
         foreach ($validated['borrow_ids'] as $borrowId) {
+            $borrow = null; // inisialisasi
             try {
                 DB::beginTransaction();
 
@@ -201,11 +207,15 @@ class BorrowApprovalController extends Controller
                     'rejection_reason' => $validated['rejection_reason'],
                 ]);
 
-                $successCount++;
                 DB::commit();
+                \App\Models\ActivityLog::log('reject', 'borrow_request', 'Menolak peminjaman ID: ' . $borrow->id . ' untuk item: ' . $borrow->item->name);
+                $successCount++;
 
             } catch (\Exception $e) {
                 DB::rollBack();
+                if ($borrow) {
+                    \App\Models\ActivityLog::log('reject_failed', 'borrow_request', 'Gagal menolak peminjaman ID: ' . $borrow->id . ' - ' . $e->getMessage());
+                }
                 $errorCount++;
             }
         }

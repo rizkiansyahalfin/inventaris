@@ -60,6 +60,7 @@ class BorrowController extends Controller
                 'status' => 'borrowed',
                 'notes' => $validated['notes'],
             ]);
+            \App\Models\ActivityLog::log('create', 'peminjaman_api', 'Mengajukan peminjaman barang (API): ' . ($item->name ?? '-') . ' (ID: ' . $borrow->id . ')');
 
             DB::commit();
 
@@ -96,6 +97,7 @@ class BorrowController extends Controller
                 'return_date' => Carbon::now(),
                 'status' => 'returned',
             ]);
+            \App\Models\ActivityLog::log('return', 'peminjaman_api', 'Mengembalikan barang (API): ' . ($borrow->item->name ?? '-') . ' (ID: ' . $borrow->id . ')');
 
             DB::commit();
 
@@ -115,6 +117,7 @@ class BorrowController extends Controller
         }
 
         $borrow->delete();
+        \App\Models\ActivityLog::log('delete', 'peminjaman_api', 'Menghapus data peminjaman (API): ID ' . $borrow->id . ' (Barang: ' . ($borrow->item->name ?? '-') . ')');
 
         return response()->json(null, 204);
     }

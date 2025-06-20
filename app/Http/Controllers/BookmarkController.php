@@ -37,12 +37,12 @@ class BookmarkController extends Controller
             return back()->with('error', 'Item sudah ada dalam bookmark.');
         }
 
-        Bookmark::create([
+        $bookmark = Bookmark::create([
             'user_id' => Auth::id(),
             'item_id' => $request->item_id,
             'notes' => $request->notes,
         ]);
-
+        \App\Models\ActivityLog::log('create', 'bookmark', 'Menambah bookmark: ' . $bookmark->id);
         return back()->with('success', 'Item berhasil ditambahkan ke bookmark.');
     }
 
@@ -63,7 +63,7 @@ class BookmarkController extends Controller
         $bookmark->update([
             'notes' => $request->notes,
         ]);
-
+        \App\Models\ActivityLog::log('update', 'bookmark', 'Mengedit bookmark: ' . $bookmark->id);
         return back()->with('success', 'Catatan bookmark berhasil diperbarui.');
     }
 
@@ -78,7 +78,7 @@ class BookmarkController extends Controller
         }
 
         $bookmark->delete();
-
+        \App\Models\ActivityLog::log('delete', 'bookmark', 'Menghapus bookmark: ' . $bookmark->id);
         return back()->with('success', 'Item berhasil dihapus dari bookmark.');
     }
 

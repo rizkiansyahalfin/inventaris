@@ -95,6 +95,8 @@ class BorrowExtensionController extends Controller
             ]);
         }
         
+        \App\Models\ActivityLog::log('create', 'borrow_extension', 'Mengajukan perpanjangan untuk peminjaman ID: ' . $borrow->id . ' (Ext ID: ' . $extension->id . ')');
+        
         return redirect()->route('borrows.show', $borrow)
             ->with('success', 'Permintaan perpanjangan berhasil diajukan');
     }
@@ -148,6 +150,8 @@ class BorrowExtensionController extends Controller
                 ($request->status === 'approved' ? 'disetujui' : 'ditolak') . '.',
             'data' => json_encode(['extension_id' => $extension->id, 'borrow_id' => $extension->borrow_id]),
         ]);
+        
+        \App\Models\ActivityLog::log($request->status, 'borrow_extension', 'Status perpanjangan ' . $request->status . ' untuk peminjaman ID: ' . $extension->borrow->id . ' (Ext ID: ' . $extension->id . ')');
         
         return redirect()->route('extensions.show', $extension)
             ->with('success', 'Status perpanjangan berhasil diperbarui');

@@ -85,6 +85,8 @@ class StaffReportController extends Controller
             }
         }
         
+        \App\Models\ActivityLog::log('create', 'staff_report', 'Menambah laporan petugas: ' . $report->id);
+        
         return redirect()->route('staff-reports.show', $report)
             ->with('success', 'Laporan kerja berhasil dibuat.');
     }
@@ -161,6 +163,8 @@ class StaffReportController extends Controller
             }
         }
         
+        \App\Models\ActivityLog::log('update', 'staff_report', 'Mengedit laporan petugas: ' . $staffReport->id);
+        
         return redirect()->route('staff-reports.show', $staffReport)
             ->with('success', 'Laporan kerja berhasil diperbarui.');
     }
@@ -180,6 +184,8 @@ class StaffReportController extends Controller
         }
         
         $staffReport->delete();
+        
+        \App\Models\ActivityLog::log('delete', 'staff_report', 'Menghapus laporan petugas: ' . $staffReport->id);
         
         return redirect()->route('staff-reports.index')
             ->with('success', 'Laporan kerja berhasil dihapus.');

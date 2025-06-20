@@ -285,6 +285,7 @@ class ItemController extends Controller
         }
 
         $item->delete();
+        \App\Models\ActivityLog::log('delete', 'barang', 'Menghapus barang: ' . $item->name . ' (ID: ' . $item->id . ')');
 
         return redirect()
             ->route('items.index')
@@ -385,6 +386,7 @@ class ItemController extends Controller
             
             DB::commit();
             
+            \App\Models\ActivityLog::log('add_stock', 'barang', 'Menambah stok barang: ' . $item->name . ' (ID: ' . $item->id . '), jumlah: ' . $validated['quantity_to_add']);
             $message = 'Penambahan stok berhasil sebanyak ' . $validated['quantity_to_add'] . ' unit';
             if (count($newUnitCodes) > 0) {
                 $message .= ' dengan kode unit baru: ' . implode(', ', array_slice($newUnitCodes, 0, 3));

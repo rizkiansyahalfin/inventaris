@@ -27,7 +27,9 @@ class CategoryController extends Controller
         ]);
 
         $category = Category::create($validated);
-
+        if (auth()->check()) {
+            \App\Models\ActivityLog::log('create', 'kategori_api', 'Menambah kategori (API): ' . $category->name . ' oleh ' . auth()->user()->name);
+        }
         return response()->json($category, 201);
     }
 
@@ -46,7 +48,9 @@ class CategoryController extends Controller
         ]);
 
         $category->update($validated);
-
+        if (auth()->check()) {
+            \App\Models\ActivityLog::log('update', 'kategori_api', 'Mengedit kategori (API): ' . $category->name . ' oleh ' . auth()->user()->name);
+        }
         return response()->json($category);
     }
 
@@ -60,7 +64,9 @@ class CategoryController extends Controller
         }
 
         $category->delete();
-
+        if (auth()->check()) {
+            \App\Models\ActivityLog::log('delete', 'kategori_api', 'Menghapus kategori (API): ' . $category->name . ' oleh ' . auth()->user()->name);
+        }
         return response()->json(null, 204);
     }
 } 

@@ -39,6 +39,7 @@ class NotificationController extends Controller
     public function markAllAsRead()
     {
         Auth::user()->notifications()->whereNull('read_at')->update(['read_at' => now()]);
+        \App\Models\ActivityLog::log('mark_all_read', 'notification', 'Menandai semua notifikasi sebagai telah dibaca');
         return back()->with('success', 'Semua notifikasi ditandai sudah dibaca.');
     }
 
@@ -52,6 +53,7 @@ class NotificationController extends Controller
         }
 
         $notification->delete();
+        \App\Models\ActivityLog::log('delete', 'notification', 'Menghapus notifikasi ID: ' . $notification->id);
         return back()->with('success', 'Notifikasi telah dihapus.');
     }
 }

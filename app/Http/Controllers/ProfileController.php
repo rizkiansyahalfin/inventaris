@@ -53,6 +53,7 @@ class ProfileController extends Controller
         }
 
         $request->user()->save();
+        \App\Models\ActivityLog::log('update', 'profil', 'Mengubah profil: ' . $request->user()->name);
 
         return Redirect::route('profile.index')->with('status', 'profile-updated');
     }
@@ -71,6 +72,7 @@ class ProfileController extends Controller
         Auth::logout();
 
         $user->delete();
+        \App\Models\ActivityLog::log('delete', 'profil', 'Menghapus akun: ' . $user->name . ' (ID: ' . $user->id . ')');
 
         $request->session()->invalidate();
         $request->session()->regenerateToken();

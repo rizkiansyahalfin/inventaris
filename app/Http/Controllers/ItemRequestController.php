@@ -76,6 +76,8 @@ class ItemRequestController extends Controller
             ]);
         }
         
+        \App\Models\ActivityLog::log('create', 'item_request', 'Menambah permintaan barang: ' . $itemRequest->id);
+        
         return redirect()->route('item-requests.show', $itemRequest)
             ->with('success', 'Permintaan item berhasil diajukan.');
     }
@@ -135,6 +137,8 @@ class ItemRequestController extends Controller
             'reason' => $request->reason,
         ]);
         
+        \App\Models\ActivityLog::log('update', 'item_request', 'Mengedit permintaan barang: ' . $itemRequest->id);
+        
         return redirect()->route('item-requests.show', $itemRequest)
             ->with('success', 'Permintaan item berhasil diperbarui.');
     }
@@ -153,6 +157,8 @@ class ItemRequestController extends Controller
         }
         
         $itemRequest->delete();
+        
+        \App\Models\ActivityLog::log('delete', 'item_request', 'Menghapus permintaan barang: ' . $itemRequest->id);
         
         return redirect()->route('item-requests.index')
             ->with('success', 'Permintaan item berhasil dihapus.');
