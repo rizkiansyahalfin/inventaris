@@ -16,10 +16,9 @@ class Category extends Model
         'description',
     ];
 
-    public function items(): BelongsToMany
+    public function items()
     {
-        return $this->belongsToMany(Item::class)
-            ->withTimestamps();
+        return $this->hasMany(Item::class, 'category_id');
     }
 
     public static function generateCode($name): string
