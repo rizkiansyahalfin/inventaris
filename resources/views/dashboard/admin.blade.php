@@ -54,7 +54,10 @@
         <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm rounded-lg">
             <div class="p-6">
                 <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Peminjaman yang Perlu Persetujuan</h3>
-                <div class="overflow-x-auto">
+                <div class="overflow-x-auto" style="max-height: 300px; overflow-y: auto; min-height: 60px;">
+                    @if($pendingApprovals->count() > 5)
+                        <small class="text-gray-400">Scroll ke bawah untuk melihat semua data</small>
+                    @endif
                     <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                         <thead>
                             <tr>
@@ -71,8 +74,15 @@
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">{{ $borrow->item?->name ?? 'Barang tidak ditemukan' }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">{{ $borrow->created_at->format('d/m/Y') }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
-                                    <button class="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300 mr-2">Setujui</button>
-                                    <button class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300">Tolak</button>
+                                    <form action="{{ route('borrows.approve', $borrow) }}" method="POST" class="inline">
+                                        @csrf
+                                        <button type="submit" class="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300 mr-2" onclick="return confirm('Setujui peminjaman ini?')">Setujui</button>
+                                    </form>
+                                    <form action="{{ route('borrows.reject', $borrow) }}" method="POST" class="inline">
+                                        @csrf
+                                        <input type="hidden" name="rejection_reason" value="Ditolak oleh admin dari dashboard">
+                                        <button type="submit" class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300" onclick="return confirm('Tolak peminjaman ini?')">Tolak</button>
+                                    </form>
                                 </td>
                             </tr>
                             @endforeach

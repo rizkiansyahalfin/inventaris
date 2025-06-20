@@ -30,7 +30,7 @@ class DashboardController extends Controller
     {
         try {
             // Barang dengan stok rendah
-            $lowStockItems = Item::with('categories')
+            $lowStockItems = Item::with('category')
                 ->where('stock', '<', 5)
                 ->limit(5)
                 ->get();
@@ -52,9 +52,8 @@ class DashboardController extends Controller
 
         // Peminjaman yang perlu persetujuan
         $pendingApprovals = Borrow::with(['user', 'item'])
-                ->where('approval_status', 'pending')
+            ->where('approval_status', 'pending')
             ->latest()
-            ->take(5)
             ->get();
 
         // Data untuk grafik
