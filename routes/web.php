@@ -82,6 +82,9 @@ Route::middleware(['auth', 'role:petugas,admin'])->group(function () {
     Route::get('/items/{item}/add-stock', [ItemController::class, 'showAddStockForm'])->name('items.add-stock.form');
     Route::post('/items/{item}/add-stock', [ItemController::class, 'addStock'])->name('items.add-stock');
 
+    // Tambahkan resource route untuk maintenances
+    Route::resource('maintenances', MaintenanceController::class);
+
     // Perpanjangan Peminjaman
     Route::get('/borrows/{borrow}/extend', [BorrowExtensionController::class, 'create'])->name('borrows.extend');
     Route::post('/borrows/{borrow}/extend', [BorrowExtensionController::class, 'store'])->name('borrows.extend.store');
