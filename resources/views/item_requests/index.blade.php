@@ -1,40 +1,37 @@
-<x-app-layout>
-    <x-slot name="header">
-        <div class="flex justify-between items-center">
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-                {{ __('Daftar Permintaan Barang') }}
-            </h2>
-            <a href="{{ route('item-requests.create') }}" 
-               class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200">
-                Buat Permintaan Baru
-            </a>
-        </div>
-    </x-slot>
-
+@extends('layouts.app')
+@section('content')
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900">
+                    <!-- Tombol Buat Permintaan Baru -->
+                    <div class="mb-6 flex justify-end">
+                        <a href="{{ route('item-requests.create') }}" class="px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-900 transition-colors duration-200">Buat Permintaan Baru</a>
+                    </div>
                     <!-- Filter Section -->
-                    <div class="mb-6 flex flex-wrap gap-4">
+                    <form method="GET" action="" class="mb-6 flex flex-wrap gap-4 items-end">
                         <div class="flex-1 min-w-[200px]">
                             <label for="status" class="block text-sm font-medium text-gray-700 mb-1">Status</label>
                             <select id="status" name="status" 
                                 class="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500">
                                 <option value="">Semua Status</option>
-                                <option value="pending">Menunggu</option>
-                                <option value="approved">Disetujui</option>
-                                <option value="rejected">Ditolak</option>
+                                <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Menunggu</option>
+                                <option value="approved" {{ request('status') == 'approved' ? 'selected' : '' }}>Disetujui</option>
+                                <option value="rejected" {{ request('status') == 'rejected' ? 'selected' : '' }}>Ditolak</option>
+                                <option value="completed" {{ request('status') == 'completed' ? 'selected' : '' }}>Selesai</option>
                             </select>
                         </div>
                         <div class="flex-1 min-w-[200px]">
                             <label for="search" class="block text-sm font-medium text-gray-700 mb-1">Cari</label>
                             <input type="text" id="search" name="search" 
                                 class="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500"
-                                placeholder="Cari permintaan...">
+                                placeholder="Cari permintaan..." value="{{ request('search') }}">
                         </div>
-                    </div>
-
+                        <div class="flex items-end gap-2 mb-2">
+                            <button type="submit" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors duration-200">Filter</button>
+                            <a href="{{ route('item-requests.index') }}" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors duration-200">Reset</a>
+                        </div>
+                    </form>
                     <!-- Table Section -->
                     <div class="overflow-x-auto">
                         <table class="min-w-full divide-y divide-gray-200">
@@ -85,9 +82,10 @@
                                             <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
                                                 {{ $request->status === 'approved' ? 'bg-green-100 text-green-800' : 
                                                    ($request->status === 'rejected' ? 'bg-red-100 text-red-800' : 
-                                                    'bg-yellow-100 text-yellow-800') }}">
+                                                    ($request->status === 'completed' ? 'bg-blue-100 text-blue-800' : 'bg-yellow-100 text-yellow-800')) }}">
                                                 {{ $request->status === 'approved' ? 'Disetujui' : 
-                                                   ($request->status === 'rejected' ? 'Ditolak' : 'Menunggu') }}
+                                                   ($request->status === 'rejected' ? 'Ditolak' : 
+                                                    ($request->status === 'completed' ? 'Selesai' : 'Menunggu')) }}
                                             </span>
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
@@ -126,7 +124,6 @@
                             </tbody>
                         </table>
                     </div>
-
                     <!-- Pagination -->
                     <div class="mt-4">
                         {{ $itemRequests->links() }}
@@ -135,4 +132,4 @@
             </div>
         </div>
     </div>
-</x-app-layout> 
+@endsection 

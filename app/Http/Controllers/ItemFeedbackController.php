@@ -20,14 +20,21 @@ class ItemFeedbackController extends Controller
             $feedbacks = ItemFeedback::with(['item', 'user', 'borrow'])
                 ->latest()
                 ->paginate(15);
+            return view('feedbacks.index', compact('feedbacks'));
         } else {
             $feedbacks = $user->feedback()
                 ->with(['item', 'borrow'])
                 ->latest()
                 ->paginate(15);
+            // Ambil daftar peminjaman yang sudah dikembalikan dan belum diberi feedback
+            $borrowsTanpaFeedback = $user->borrows()
+                ->where('status', 'returned')
+                ->whereDoesntHave('feedback')
+                ->with('item')
+                ->orderBy('return_date', 'desc')
+                ->get();
+            return view('feedbacks.index', compact('feedbacks', 'borrowsTanpaFeedback'));
         }
-        
-        return view('feedbacks.index', compact('feedbacks'));
     }
 
     /**

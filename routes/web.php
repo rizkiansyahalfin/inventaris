@@ -67,6 +67,9 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/item-requests/create', [ItemRequestController::class, 'create'])->name('item-requests.create');
     Route::post('/item-requests', [ItemRequestController::class, 'store'])->name('item-requests.store');
     Route::get('/item-requests/{itemRequest}', [ItemRequestController::class, 'show'])->name('item-requests.show');
+    Route::get('/item-requests/{itemRequest}/edit', [ItemRequestController::class, 'edit'])->name('item-requests.edit');
+    Route::delete('/item-requests/{itemRequest}', [ItemRequestController::class, 'destroy'])->name('item-requests.destroy');
+    Route::match(['put', 'patch'], '/item-requests/{itemRequest}', [ItemRequestController::class, 'update'])->name('item-requests.update');
 
     // Notifikasi
     Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');

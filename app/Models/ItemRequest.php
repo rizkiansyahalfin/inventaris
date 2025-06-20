@@ -37,6 +37,11 @@ class ItemRequest extends Model
         return $this->belongsTo(User::class, 'reviewed_by');
     }
 
+    public function item(): BelongsTo
+    {
+        return $this->belongsTo(Item::class);
+    }
+
     public function scopePending($query)
     {
         return $query->where('status', 'pending');

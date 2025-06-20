@@ -58,8 +58,15 @@
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">{{ $borrow->item?->name ?? 'Barang tidak ditemukan' }}</td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">{{ $borrow->created_at->format('d/m/Y') }}</td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
-                                        <button class="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300 mr-2">Setujui</button>
-                                        <button class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300">Tolak</button>
+                                        <form action="{{ route('borrows.approve', $borrow) }}" method="POST" class="inline">
+                                            @csrf
+                                            <button type="submit" class="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300 mr-2" onclick="return confirm('Setujui peminjaman ini?')">Setujui</button>
+                                        </form>
+                                        <form action="{{ route('borrows.reject', $borrow) }}" method="POST" class="inline">
+                                            @csrf
+                                            <input type="hidden" name="rejection_reason" value="Ditolak oleh petugas dari dashboard">
+                                            <button type="submit" class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300" onclick="return confirm('Tolak peminjaman ini?')">Tolak</button>
+                                        </form>
                                     </td>
                                 </tr>
                                 @endforeach
@@ -124,6 +131,102 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Tambahkan grafik statistik -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                <!-- Grafik Peminjaman per Bulan -->
+                <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm rounded-lg">
+                    <div class="p-6">
+                        <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Peminjaman per Bulan</h3>
+                        <canvas id="borrowsChart" height="300"></canvas>
+                    </div>
+                </div>
+                <!-- Grafik Barang per Kategori -->
+                <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm rounded-lg">
+                    <div class="p-6">
+                        <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Barang per Kategori</h3>
+                        <canvas id="categoryChart" height="300"></canvas>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
-@endsection 
+@endsection
+
+@push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Data untuk grafik peminjaman per bulan
+    const borrowsPerMonth = @json($borrowsPerMonth);
+    const borrowsLabels = Object.keys(borrowsPerMonth);
+    const borrowsData = Object.values(borrowsPerMonth);
+
+    // Data untuk grafik barang per kategori
+    const itemsByCategory = @json($itemsByCategory);
+    const categoryLabels = Object.keys(itemsByCategory);
+    const categoryData = Object.values(itemsByCategory);
+
+    // Grafik peminjaman per bulan
+    const borrowsChart = new Chart(
+        document.getElementById('borrowsChart'),
+        {
+            type: 'line',
+            data: {
+                labels: borrowsLabels,
+                datasets: [{
+                    label: 'Jumlah Peminjaman',
+                    data: borrowsData,
+                    borderColor: 'rgb(75, 192, 192)',
+                    tension: 0.1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    title: {
+                        display: true,
+                        text: 'Peminjaman per Bulan'
+                    }
+                }
+            }
+        }
+    );
+
+    // Grafik barang per kategori
+    const categoryChart = new Chart(
+        document.getElementById('categoryChart'),
+        {
+            type: 'pie',
+            data: {
+                labels: categoryLabels,
+                datasets: [{
+                    data: categoryData,
+                    backgroundColor: [
+                        'rgb(255, 99, 132)',
+                        'rgb(54, 162, 235)',
+                        'rgb(255, 205, 86)',
+                        'rgb(75, 192, 192)',
+                        'rgb(153, 102, 255)',
+                        'rgb(255, 159, 64)'
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    title: {
+                        display: true,
+                        text: 'Jumlah Barang per Kategori'
+                    }
+                }
+            }
+        }
+    );
+</script>
+@endpush 

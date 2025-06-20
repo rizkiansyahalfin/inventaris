@@ -93,7 +93,9 @@ class DashboardController extends Controller
     {
         // Statistik untuk petugas
         $stats = [
-            'today_borrows' => Borrow::whereDate('created_at', Carbon::today())->count(),
+            'today_borrows' => Borrow::whereDate('created_at', Carbon::today())
+                ->where('approval_status', 'pending')
+                ->count(),
             'today_returns' => Borrow::whereDate('return_date', Carbon::today())->count(),
             'pending_returns' => Borrow::where('status', 'borrowed')
                 ->where('due_date', '<', Carbon::now())
@@ -101,9 +103,10 @@ class DashboardController extends Controller
             'low_stock_items' => Item::where('stock', '<', 5)->count(),
         ];
 
-        // Peminjaman hari ini
+        // Peminjaman hari ini (pending approval)
         $todayBorrows = Borrow::with(['user', 'item'])
             ->whereDate('created_at', Carbon::today())
+            ->where('approval_status', 'pending')
             ->latest()
             ->take(5)
             ->get();
@@ -122,11 +125,17 @@ class DashboardController extends Controller
             ->where('due_date', '<=', Carbon::now()->addDays(7))
             ->get();
 
+        // Data untuk grafik
+        $borrowsPerMonth = $this->getBorrowsPerMonth();
+        $itemsByCategory = $this->getItemsByCategory();
+
         return view('dashboard.staff', compact(
             'stats',
             'todayBorrows',
             'todayReturns',
-            'upcomingReturns'
+            'upcomingReturns',
+            'borrowsPerMonth',
+            'itemsByCategory'
         ));
     }
 

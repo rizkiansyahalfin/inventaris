@@ -14,21 +14,38 @@ class ItemRequestController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
         $user = Auth::user();
-        
-        if ($user->isAdmin() || $user->isPetugas()) {
-            $itemRequests = ItemRequest::with(['user', 'category', 'reviewer'])
-                ->latest()
-                ->paginate(15);
-        } else {
-            $itemRequests = $user->itemRequests()
-                ->with(['category', 'reviewer'])
-                ->latest()
-                ->paginate(15);
+        $query = ItemRequest::with(['user', 'category', 'reviewer', 'item']);
+
+        if (!$user->isAdmin() && !$user->isPetugas()) {
+            $query->where('user_id', $user->id);
         }
-        
+
+        // Filter status
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        // Search
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', "%$search%")
+                  ->orWhere('description', 'like', "%$search%")
+                  ->orWhere('reason', 'like', "%$search%")
+                  ->orWhereHas('item', function($q2) use ($search) {
+                      $q2->where('name', 'like', "%$search%")
+                         ->orWhere('code', 'like', "%$search%")
+                         ->orWhere('description', 'like', "%$search%")
+                         ;
+                  });
+            });
+        }
+
+        $itemRequests = $query->latest()->paginate(15)->appends($request->all());
+
         return view('item_requests.index', compact('itemRequests'));
     }
 
