@@ -60,6 +60,9 @@ class StaffReportController extends Controller
         // Data untuk export dan bulk actions
         $users = User::where('role', 'petugas')->get();
         
+        // Log main page access
+        \App\Models\ActivityLog::log('view', 'staff_report', 'Akses halaman utama laporan staff (Total: ' . $totalReports . ' laporan)');
+        
         return view('staff-reports.index', compact('staffReports', 'stats', 'recentReports', 'users'));
     }
 
@@ -72,6 +75,9 @@ class StaffReportController extends Controller
         if (!Auth::user()->isPetugas()) {
             abort(403);
         }
+        
+        // Log create access
+        \App\Models\ActivityLog::log('view', 'staff_report', 'Akses halaman buat laporan staff baru');
         
         return view('staff-reports.create');
     }
@@ -135,6 +141,9 @@ class StaffReportController extends Controller
             abort(403);
         }
         
+        // Log view activity
+        \App\Models\ActivityLog::log('view', 'staff_report', 'Lihat detail laporan staff ID: ' . $staffReport->id . ' oleh ' . $staffReport->user->name);
+        
         return view('staff-reports.show', compact('staffReport'));
     }
 
@@ -149,6 +158,9 @@ class StaffReportController extends Controller
         if ($staffReport->user_id !== $user->id || $staffReport->status !== 'draft') {
             abort(403);
         }
+        
+        // Log edit access
+        \App\Models\ActivityLog::log('view', 'staff_report', 'Akses halaman edit laporan staff ID: ' . $staffReport->id);
         
         return view('staff-reports.edit', compact('staffReport'));
     }
@@ -295,6 +307,9 @@ class StaffReportController extends Controller
             'reviewed_percentage' => $totalReports > 0 ? round(($reviewedReports / $totalReports) * 100, 1) : 0,
         ];
         
+        // Log dashboard access
+        \App\Models\ActivityLog::log('view', 'staff_report', 'Akses dashboard laporan staff (Total: ' . $totalReports . ', Pending: ' . $pendingReviews . ', Reviewed: ' . $reviewedReports . ')');
+        
         return view('staff-reports.dashboard', compact('stats', 'recentReports'));
     }
 
@@ -331,6 +346,9 @@ class StaffReportController extends Controller
         $staffReports = $query->latest()->paginate(15);
         $users = User::where('role', 'petugas')->get();
         
+        // Log export page access
+        \App\Models\ActivityLog::log('view', 'staff_report', 'Akses halaman export laporan staff');
+        
         return view('staff-reports.export', compact('staffReports', 'users'));
     }
 
@@ -343,20 +361,26 @@ class StaffReportController extends Controller
         $query = StaffReport::with(['user', 'reviewer']);
         
         // Apply filters
+        $filters = [];
         if ($request->filled('start_date')) {
             $query->where('report_date', '>=', $request->start_date);
+            $filters[] = 'tanggal mulai: ' . $request->start_date;
         }
         
         if ($request->filled('end_date')) {
             $query->where('report_date', '<=', $request->end_date);
+            $filters[] = 'tanggal akhir: ' . $request->end_date;
         }
         
         if ($request->filled('status')) {
             $query->where('status', $request->status);
+            $filters[] = 'status: ' . $request->status;
         }
         
         if ($request->filled('user_id')) {
             $query->where('user_id', $request->user_id);
+            $userName = User::find($request->user_id)->name ?? 'Unknown';
+            $filters[] = 'petugas: ' . $userName;
         }
         
         // If not admin, only show own reports
@@ -365,6 +389,10 @@ class StaffReportController extends Controller
         }
         
         $staffReports = $query->latest()->get();
+        
+        // Log export activity
+        $filterDescription = !empty($filters) ? 'Export PDF laporan staff dengan filter: ' . implode(', ', $filters) : 'Export PDF semua laporan staff';
+        \App\Models\ActivityLog::log('export', 'staff_report', $filterDescription . ' (' . $staffReports->count() . ' laporan)');
         
         $pdf = \PDF::loadView('staff-reports.pdf', compact('staffReports'));
         
@@ -380,20 +408,26 @@ class StaffReportController extends Controller
         $query = StaffReport::with(['user', 'reviewer']);
         
         // Apply filters
+        $filters = [];
         if ($request->filled('start_date')) {
             $query->where('report_date', '>=', $request->start_date);
+            $filters[] = 'tanggal mulai: ' . $request->start_date;
         }
         
         if ($request->filled('end_date')) {
             $query->where('report_date', '<=', $request->end_date);
+            $filters[] = 'tanggal akhir: ' . $request->end_date;
         }
         
         if ($request->filled('status')) {
             $query->where('status', $request->status);
+            $filters[] = 'status: ' . $request->status;
         }
         
         if ($request->filled('user_id')) {
             $query->where('user_id', $request->user_id);
+            $userName = User::find($request->user_id)->name ?? 'Unknown';
+            $filters[] = 'petugas: ' . $userName;
         }
         
         // If not admin, only show own reports
@@ -402,6 +436,10 @@ class StaffReportController extends Controller
         }
         
         $staffReports = $query->latest()->paginate(15);
+        
+        // Log filter activity
+        $filterDescription = !empty($filters) ? 'Filter laporan staff dengan: ' . implode(', ', $filters) : 'Lihat semua laporan staff';
+        \App\Models\ActivityLog::log('filter', 'staff_report', $filterDescription);
         
         return response()->json([
             'html' => view('staff-reports.partials.export-table', compact('staffReports'))->render()
@@ -421,23 +459,33 @@ class StaffReportController extends Controller
         $query = StaffReport::with(['user', 'reviewer']);
         
         // Apply filters
+        $filters = [];
         if ($request->filled('status_filter')) {
             $query->where('status', $request->status_filter);
+            $filters[] = 'status: ' . $request->status_filter;
         }
         
         if ($request->filled('user_filter')) {
             $query->where('user_id', $request->user_filter);
+            $userName = User::find($request->user_filter)->name ?? 'Unknown';
+            $filters[] = 'petugas: ' . $userName;
         }
         
         if ($request->filled('date_from')) {
             $query->where('report_date', '>=', $request->date_from);
+            $filters[] = 'dari tanggal: ' . $request->date_from;
         }
         
         if ($request->filled('date_to')) {
             $query->where('report_date', '<=', $request->date_to);
+            $filters[] = 'sampai tanggal: ' . $request->date_to;
         }
         
         $staffReports = $query->latest()->paginate(15);
+        
+        // Log filter activity
+        $filterDescription = !empty($filters) ? 'Filter laporan untuk aksi massal dengan: ' . implode(', ', $filters) : 'Lihat semua laporan untuk aksi massal';
+        \App\Models\ActivityLog::log('filter', 'staff_report', $filterDescription);
         
         return response()->json([
             'html' => view('staff-reports.partials.bulk-table', compact('staffReports'))->render()
@@ -453,20 +501,26 @@ class StaffReportController extends Controller
         $query = StaffReport::with(['user', 'reviewer']);
         
         // Apply filters
+        $filters = [];
         if ($request->filled('start_date')) {
             $query->where('report_date', '>=', $request->start_date);
+            $filters[] = 'tanggal mulai: ' . $request->start_date;
         }
         
         if ($request->filled('end_date')) {
             $query->where('report_date', '<=', $request->end_date);
+            $filters[] = 'tanggal akhir: ' . $request->end_date;
         }
         
         if ($request->filled('status')) {
             $query->where('status', $request->status);
+            $filters[] = 'status: ' . $request->status;
         }
         
         if ($request->filled('user_id')) {
             $query->where('user_id', $request->user_id);
+            $userName = User::find($request->user_id)->name ?? 'Unknown';
+            $filters[] = 'petugas: ' . $userName;
         }
         
         // If not admin, only show own reports
@@ -475,6 +529,10 @@ class StaffReportController extends Controller
         }
         
         $staffReports = $query->latest()->get();
+        
+        // Log export activity
+        $filterDescription = !empty($filters) ? 'Export Excel laporan staff dengan filter: ' . implode(', ', $filters) : 'Export Excel semua laporan staff';
+        \App\Models\ActivityLog::log('export', 'staff_report', $filterDescription . ' (' . $staffReports->count() . ' laporan)');
         
         return \Excel::download(new \App\Exports\StaffReportsExport($staffReports), 'laporan-staff-' . date('Y-m-d') . '.xlsx');
     }
@@ -510,6 +568,9 @@ class StaffReportController extends Controller
         
         $staffReports = $query->latest()->paginate(15);
         $users = User::where('role', 'petugas')->get();
+        
+        // Log bulk actions page access
+        \App\Models\ActivityLog::log('view', 'staff_report', 'Akses halaman aksi massal laporan staff');
         
         return view('staff-reports.bulk-actions', compact('staffReports', 'users'));
     }
@@ -598,7 +659,76 @@ class StaffReportController extends Controller
      */
     private function exportSelected($reports)
     {
+        // Log export selected activity
+        \App\Models\ActivityLog::log('export', 'staff_report', 'Export laporan staff terpilih (' . $reports->count() . ' laporan)');
+        
         $pdf = \PDF::loadView('staff-reports.pdf', compact('reports'));
         return $pdf->download('laporan-staff-terpilih-' . date('Y-m-d') . '.pdf');
+    }
+
+    /**
+     * Show the review form for staff report
+     */
+    public function reviewForm(StaffReport $staffReport)
+    {
+        // Pastikan hanya admin yang dapat me-review laporan
+        if (!Auth::user()->isAdmin()) {
+            abort(403);
+        }
+        
+        // Pastikan laporan sudah submitted
+        if ($staffReport->status !== 'submitted') {
+            return back()->with('error', 'Hanya laporan yang sudah disubmit yang dapat di-review.');
+        }
+        
+        // Log review access
+        \App\Models\ActivityLog::log('view', 'staff_report', 'Akses halaman review laporan staff ID: ' . $staffReport->id . ' oleh ' . $staffReport->user->name);
+        
+        return view('staff-reports.review', compact('staffReport'));
+    }
+
+    /**
+     * Print staff reports
+     */
+    public function print(Request $request)
+    {
+        $user = Auth::user();
+        $query = StaffReport::with(['user', 'reviewer']);
+        
+        // Apply filters
+        $filters = [];
+        if ($request->filled('start_date')) {
+            $query->where('report_date', '>=', $request->start_date);
+            $filters[] = 'tanggal mulai: ' . $request->start_date;
+        }
+        
+        if ($request->filled('end_date')) {
+            $query->where('report_date', '<=', $request->end_date);
+            $filters[] = 'tanggal akhir: ' . $request->end_date;
+        }
+        
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+            $filters[] = 'status: ' . $request->status;
+        }
+        
+        if ($request->filled('user_id')) {
+            $query->where('user_id', $request->user_id);
+            $userName = User::find($request->user_id)->name ?? 'Unknown';
+            $filters[] = 'petugas: ' . $userName;
+        }
+        
+        // If not admin, only show own reports
+        if (!$user->isAdmin()) {
+            $query->where('user_id', $user->id);
+        }
+        
+        $staffReports = $query->latest()->get();
+        
+        // Log print activity
+        $filterDescription = !empty($filters) ? 'Print laporan staff dengan filter: ' . implode(', ', $filters) : 'Print semua laporan staff';
+        \App\Models\ActivityLog::log('print', 'staff_report', $filterDescription . ' (' . $staffReports->count() . ' laporan)');
+        
+        return view('staff-reports.print', compact('staffReports'));
     }
 }

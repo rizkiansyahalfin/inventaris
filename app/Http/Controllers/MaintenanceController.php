@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Maintenance;
 use App\Models\Item;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -16,39 +17,36 @@ class MaintenanceController extends Controller
     public function index(Request $request)
     {
         $query = Maintenance::with(['item', 'user']);
-
-        // Search functionality
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $query->where(function($q) use ($search) {
-                $q->where('title', 'like', "%{$search}%")
-                  ->orWhereHas('item', function($itemQuery) use ($search) {
-                      $itemQuery->where('name', 'like', "%{$search}%")
-                               ->orWhere('code', 'like', "%{$search}%");
-                  });
+        
+        // Filter berdasarkan request
+        $query->when($request->status, function ($query, $status) {
+                if ($status === 'completed') {
+                    return $query->whereNotNull('completion_date');
+                } elseif ($status === 'ongoing') {
+                    return $query->whereNull('completion_date');
+                }
+                return $query;
+            })
+            ->when($request->search, function ($query, $search) {
+                return $query->whereHas('item', function ($q) use ($search) {
+                    $q->where('name', 'like', "%{$search}%")
+                        ->orWhere('code', 'like', "%{$search}%");
+                });
+            })
+            ->when($request->type, function ($query, $type) {
+                return $query->where('type', $type);
             });
-        }
 
-        // Filter by status
-        if ($request->filled('status')) {
-            if ($request->status === 'completed') {
-                $query->whereNotNull('completion_date');
-            } elseif ($request->status === 'ongoing') {
-                $query->whereNull('completion_date');
-            }
-        }
+        $maintenances = $query->orderBy('created_at', 'desc')->paginate(10);
 
-        // Filter by type
-        if ($request->filled('type')) {
-            $query->where('type', $request->type);
-        }
-
-        $maintenances = $query->orderBy('start_date', 'desc')->paginate(10);
-
-        // Handle export
-        if ($request->has('export') && $request->export === 'pdf') {
-            return $this->exportPdf($query->get());
-        }
+        // Log activity
+        $filters = [];
+        if ($request->status) $filters[] = 'status: ' . $request->status;
+        if ($request->search) $filters[] = 'pencarian: ' . $request->search;
+        if ($request->type) $filters[] = 'tipe: ' . $request->type;
+        
+        $filterDescription = !empty($filters) ? 'Lihat daftar maintenance dengan filter: ' . implode(', ', $filters) : 'Lihat daftar maintenance';
+        \App\Models\ActivityLog::log('view', 'maintenance', $filterDescription . ' (' . $maintenances->total() . ' maintenance)');
 
         return view('maintenances.index', compact('maintenances'));
     }
@@ -75,19 +73,25 @@ class MaintenanceController extends Controller
     /**
      * Show the form for creating a new resource.
      */
-    public function create(Request $request)
+    public function create()
     {
-        // Tampilkan semua item yang tidak hilang dan tidak rusak berat
-        $items = Item::where('status', '!=', Item::STATUS_LOST)
-                    ->orderBy('name')
-                    ->get();
-                    
+        $items = Item::where('status', Item::STATUS_MAINTENANCE)
+            ->orWhere('condition', '!=', 'Baik')
+            ->orderBy('name')
+            ->get();
+
+        // Prepare items data for JavaScript
         $itemsWithCondition = $items->keyBy('id')->map(function ($item) {
-            return ['condition' => $item->condition, 'status' => $item->status];
+            return ['condition' => $item->condition];
         });
-        
-        $selectedItem = $request->get('item_id');
-        return view('maintenances.create', compact('items', 'selectedItem', 'itemsWithCondition'));
+
+        // Get selected item from query parameter
+        $selectedItem = request('item_id');
+
+        // Log activity
+        \App\Models\ActivityLog::log('view', 'maintenance', 'Akses halaman tambah maintenance baru');
+
+        return view('maintenances.create', compact('items', 'itemsWithCondition', 'selectedItem'));
     }
 
     /**
@@ -160,6 +164,10 @@ class MaintenanceController extends Controller
     public function show(Maintenance $maintenance)
     {
         $maintenance->load(['item', 'user']);
+        
+        // Log activity
+        \App\Models\ActivityLog::log('view', 'maintenance', 'Lihat detail maintenance: ' . $maintenance->title . ' (ID: ' . $maintenance->id . ')');
+        
         return view('maintenances.show', compact('maintenance'));
     }
 
@@ -169,6 +177,10 @@ class MaintenanceController extends Controller
     public function edit(Maintenance $maintenance)
     {
         $maintenance->load(['item', 'user']);
+        
+        // Log activity
+        \App\Models\ActivityLog::log('view', 'maintenance', 'Akses halaman edit maintenance: ' . $maintenance->title . ' (ID: ' . $maintenance->id . ')');
+        
         return view('maintenances.edit', compact('maintenance'));
     }
 

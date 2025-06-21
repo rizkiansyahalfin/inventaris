@@ -140,6 +140,10 @@ Route::middleware(['auth', 'role:petugas,admin'])->group(function () {
         Route::patch('/staff-reports/{staffReport}', [StaffReportController::class, 'update'])->name('staff-reports.update');
         Route::delete('/staff-reports/{staffReport}', [StaffReportController::class, 'destroy'])->name('staff-reports.destroy');
     });
+
+    // Review laporan staff (khusus admin)
+    Route::post('/staff-reports/{staffReport}/review', [StaffReportController::class, 'review'])->name('staff-reports.review');
+    Route::get('/staff-reports/{staffReport}/review', [StaffReportController::class, 'reviewForm'])->name('staff-reports.review.form');
 });
 
 // Rute khusus admin
@@ -168,12 +172,10 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::get('/activity-logs', [ActivityLogController::class, 'index'])->name('activity-logs.index');
     // Konfigurasi Sistem
     Route::resource('system-configs', SystemConfigController::class);
-    // Review laporan staff (khusus admin)
-    Route::post('/staff-reports/{staffReport}/review', [StaffReportController::class, 'review'])->name('staff-reports.review');
-    
     // Export dan bulk actions untuk staff reports (khusus admin)
     Route::get('/staff-reports/export/pdf', [StaffReportController::class, 'exportPdf'])->name('staff-reports.export-pdf');
     Route::get('/staff-reports/export/excel', [StaffReportController::class, 'exportExcel'])->name('staff-reports.export-excel');
+    Route::get('/staff-reports/print', [StaffReportController::class, 'print'])->name('staff-reports.print');
     Route::get('/staff-reports/bulk-actions', [StaffReportController::class, 'bulkActions'])->name('staff-reports.bulk-actions');
     Route::post('/staff-reports/bulk-process', [StaffReportController::class, 'bulkProcess'])->name('staff-reports.bulk-process');
     Route::post('/staff-reports/filtered-reports', [StaffReportController::class, 'getFilteredReports'])->name('staff-reports.filtered-reports');

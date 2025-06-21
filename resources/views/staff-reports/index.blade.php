@@ -136,7 +136,7 @@
                                                         @endif
                                                         
                                                         @if (auth()->user()->hasRole('admin') && $report->status === 'submitted')
-                                                            <a href="{{ route('staff-reports.review', $report) }}" class="text-purple-600 hover:text-purple-900">Ulas</a>
+                                                            <a href="{{ route('staff-reports.review.form', $report) }}" class="text-purple-600 hover:text-purple-900">Ulas</a>
                                                         @endif
                                                     </div>
                                                 </td>

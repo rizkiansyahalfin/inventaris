@@ -16,11 +16,17 @@ class CategoryController extends Controller
             ->orderBy('name')
             ->paginate(10);
 
+        // Log activity
+        \App\Models\ActivityLog::log('view', 'category', 'Lihat daftar kategori (' . $categories->total() . ' kategori)');
+
         return view('categories.index', compact('categories'));
     }
 
     public function create()
     {
+        // Log activity
+        \App\Models\ActivityLog::log('view', 'category', 'Akses halaman tambah kategori baru');
+        
         return view('categories.create');
     }
 
@@ -32,7 +38,9 @@ class CategoryController extends Controller
         ]);
 
         $category = Category::create($validated);
-        \App\Models\ActivityLog::log('create', 'kategori', 'Menambah kategori: ' . $category->name);
+        
+        // Log activity
+        \App\Models\ActivityLog::log('create', 'category', 'Menambah kategori baru: ' . $category->name);
 
         return redirect()
             ->route('categories.index')
@@ -41,6 +49,9 @@ class CategoryController extends Controller
 
     public function edit(Category $category)
     {
+        // Log activity
+        \App\Models\ActivityLog::log('view', 'category', 'Akses halaman edit kategori: ' . $category->name . ' (Kode: ' . $category->code . ')');
+        
         return view('categories.edit', compact('category'));
     }
 
@@ -52,7 +63,9 @@ class CategoryController extends Controller
         ]);
 
         $category->update($validated);
-        \App\Models\ActivityLog::log('update', 'kategori', 'Mengedit kategori: ' . $category->name);
+        
+        // Log activity
+        \App\Models\ActivityLog::log('update', 'category', 'Mengedit kategori: ' . $category->name);
 
         return redirect()
             ->route('categories.index')
@@ -65,8 +78,12 @@ class CategoryController extends Controller
             return back()->with('error', 'Tidak dapat menghapus kategori yang masih memiliki barang');
         }
 
+        $categoryName = $category->name;
+        $categoryCode = $category->code;
         $category->delete();
-        \App\Models\ActivityLog::log('delete', 'kategori', 'Menghapus kategori: ' . $category->name);
+        
+        // Log activity
+        \App\Models\ActivityLog::log('delete', 'category', 'Menghapus kategori: ' . $categoryName . ' (Kode: ' . $categoryCode . ')');
 
         return redirect()
             ->route('categories.index')

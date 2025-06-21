@@ -39,6 +39,15 @@ class BorrowController extends Controller
 
         $borrows = $query->orderBy('created_at', 'desc')->paginate(10);
 
+        // Log activity
+        $filters = [];
+        if ($request->status) $filters[] = 'status: ' . $request->status;
+        if ($request->approval_status) $filters[] = 'approval: ' . $request->approval_status;
+        if ($request->search) $filters[] = 'pencarian: ' . $request->search;
+        
+        $filterDescription = !empty($filters) ? 'Lihat daftar peminjaman dengan filter: ' . implode(', ', $filters) : 'Lihat daftar peminjaman';
+        \App\Models\ActivityLog::log('view', 'borrow', $filterDescription . ' (' . $borrows->total() . ' peminjaman)');
+
         return view('borrows.index', compact('borrows'));
     }
 
@@ -49,6 +58,9 @@ class BorrowController extends Controller
             ->where('stock', '>', 0)
             ->orderBy('name')
             ->get();
+
+        // Log activity
+        \App\Models\ActivityLog::log('view', 'borrow', 'Akses halaman buat peminjaman baru');
 
         return view('borrows.create', compact('items'));
     }
@@ -120,6 +132,10 @@ class BorrowController extends Controller
         }
         
         $borrow->load(['user', 'item', 'attachments', 'approvedBy']);
+        
+        // Log activity
+        \App\Models\ActivityLog::log('view', 'borrow', 'Lihat detail peminjaman ID: ' . $borrow->id . ' - ' . ($borrow->item->name ?? 'Unknown'));
+        
         return view('borrows.show', compact('borrow'));
     }
 

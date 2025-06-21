@@ -41,7 +41,7 @@
                                         {{ $opname->name }}
                                     </td>
                                     <td class="py-4 px-4 whitespace-nowrap">
-                                        @if ($opname->status === 'draft')
+                                        @if ($opname->status === 'pending')
                                             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
                                                 Draft
                                             </span>
@@ -56,7 +56,7 @@
                                         @endif
                                     </td>
                                     <td class="py-4 px-4 whitespace-nowrap text-sm text-gray-500">
-                                        {{ $opname->user->name ?? '-' }}
+                                        {{ $opname->creator->name ?? '-' }}
                                     </td>
                                     <td class="py-4 px-4 whitespace-nowrap text-sm text-gray-500">
                                         {{ $opname->started_at ? $opname->started_at->format('d M Y H:i') : '-' }}
@@ -74,7 +74,7 @@
                                         <div class="flex space-x-2">
                                             <a href="{{ route('stock-opnames.show', $opname) }}" class="text-blue-600 hover:text-blue-900">Lihat</a>
                                             
-                                            @if ($opname->status === 'draft')
+                                            @if ($opname->status === 'pending')
                                                 <a href="{{ route('stock-opnames.edit', $opname) }}" class="text-green-600 hover:text-green-900">Edit</a>
                                                 
                                                 <form action="{{ route('stock-opnames.start', $opname) }}" method="POST" class="inline">

@@ -8,6 +8,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\View\View;
+use Illuminate\Validation\Rule;
+use App\Models\User;
 
 class ProfileController extends Controller
 {
@@ -16,6 +18,9 @@ class ProfileController extends Controller
      */
     public function index(Request $request): View
     {
+        // Log activity
+        \App\Models\ActivityLog::log('view', 'profile', 'Akses halaman profil');
+        
         return view('profile.index', [
             'user' => $request->user(),
         ]);
@@ -26,6 +31,9 @@ class ProfileController extends Controller
      */
     public function show(Request $request): View
     {
+        // Log activity
+        \App\Models\ActivityLog::log('view', 'profile', 'Lihat detail profil');
+        
         return view('profile.show', [
             'user' => $request->user(),
         ]);
@@ -36,6 +44,9 @@ class ProfileController extends Controller
      */
     public function edit(Request $request): View
     {
+        // Log activity
+        \App\Models\ActivityLog::log('view', 'profile', 'Akses halaman edit profil');
+        
         return view('profile.edit', [
             'user' => $request->user(),
         ]);
@@ -46,16 +57,25 @@ class ProfileController extends Controller
      */
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
-        $request->user()->fill($request->validated());
+        $user = $request->user();
 
-        if ($request->user()->isDirty('email')) {
-            $request->user()->email_verified_at = null;
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', Rule::unique(User::class)->ignore($user->id)],
+        ]);
+
+        $user->fill($validated);
+
+        if ($user->isDirty('email')) {
+            $user->email_verified_at = null;
         }
 
-        $request->user()->save();
-        \App\Models\ActivityLog::log('update', 'profil', 'Mengubah profil: ' . $request->user()->name);
-
-        return Redirect::route('profile.index')->with('status', 'profile-updated');
+        $user->save();
+        
+        // Log activity
+        \App\Models\ActivityLog::log('update', 'profile', 'Mengedit profil');
+        
+        return Redirect::route('profile.edit')->with('status', 'profile-updated');
     }
 
     /**
@@ -72,8 +92,10 @@ class ProfileController extends Controller
         Auth::logout();
 
         $user->delete();
-        \App\Models\ActivityLog::log('delete', 'profil', 'Menghapus akun: ' . $user->name . ' (ID: ' . $user->id . ')');
-
+        
+        // Log activity
+        \App\Models\ActivityLog::log('delete', 'profile', 'Menghapus akun profil');
+        
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 

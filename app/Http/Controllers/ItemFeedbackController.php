@@ -15,26 +15,20 @@ class ItemFeedbackController extends Controller
     public function index()
     {
         $user = Auth::user();
+        $query = ItemFeedback::with(['user', 'item']);
         
-        if ($user->isAdmin() || $user->isPetugas()) {
-            $feedbacks = ItemFeedback::with(['item', 'user', 'borrow'])
-                ->latest()
-                ->paginate(15);
-            return view('feedbacks.index', compact('feedbacks'));
-        } else {
-            $feedbacks = $user->feedback()
-                ->with(['item', 'borrow'])
-                ->latest()
-                ->paginate(15);
-            // Ambil daftar peminjaman yang sudah dikembalikan dan belum diberi feedback
-            $borrowsTanpaFeedback = $user->borrows()
-                ->where('status', 'returned')
-                ->whereDoesntHave('feedback')
-                ->with('item')
-                ->orderBy('return_date', 'desc')
-                ->get();
-            return view('feedbacks.index', compact('feedbacks', 'borrowsTanpaFeedback'));
+        // Jika user biasa, hanya tampilkan feedback miliknya
+        if ($user->isUser()) {
+            $query->where('user_id', $user->id);
         }
+        
+        $feedbacks = $query->orderBy('created_at', 'desc')->paginate(10);
+        
+        // Log activity
+        $filterDescription = $user->isUser() ? 'Lihat daftar feedback sendiri' : 'Lihat daftar feedback semua user';
+        \App\Models\ActivityLog::log('view', 'feedback', $filterDescription . ' (' . $feedbacks->total() . ' feedback)');
+        
+        return view('feedbacks.index', compact('feedbacks'));
     }
 
     /**
@@ -42,10 +36,13 @@ class ItemFeedbackController extends Controller
      */
     public function create(Borrow $borrow)
     {
-        // Pastikan user hanya bisa memberikan feedback untuk peminjaman miliknya
+        // Pastikan hanya peminjam yang dapat memberikan feedback
         if ($borrow->user_id !== Auth::id()) {
             abort(403);
         }
+        
+        // Log activity
+        \App\Models\ActivityLog::log('view', 'feedback', 'Akses halaman buat feedback untuk peminjaman ID: ' . $borrow->id);
         
         // Pastikan peminjaman sudah dikembalikan dan belum ada feedback
         if (!$borrow->canSubmitFeedback()) {
@@ -104,6 +101,9 @@ class ItemFeedbackController extends Controller
             abort(403);
         }
         
+        // Log activity
+        \App\Models\ActivityLog::log('view', 'feedback', 'Lihat detail feedback ID: ' . $feedback->id);
+        
         return view('feedbacks.show', compact('feedback'));
     }
 
@@ -116,6 +116,9 @@ class ItemFeedbackController extends Controller
         if ($feedback->user_id !== Auth::id()) {
             abort(403);
         }
+        
+        // Log activity
+        \App\Models\ActivityLog::log('view', 'feedback', 'Akses halaman edit feedback ID: ' . $feedback->id);
         
         return view('feedbacks.edit', compact('feedback'));
     }

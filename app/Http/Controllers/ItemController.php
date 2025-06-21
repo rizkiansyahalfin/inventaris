@@ -28,6 +28,15 @@ class ItemController extends Controller
         $categories = Category::orderBy('name')->get();
         $statuses = Item::getStatuses();
 
+        // Log activity
+        $filters = [];
+        if ($request->search) $filters[] = 'pencarian: ' . $request->search;
+        if ($request->category_id) $filters[] = 'kategori: ' . Category::find($request->category_id)->name;
+        if ($request->status) $filters[] = 'status: ' . $request->status;
+        
+        $filterDescription = !empty($filters) ? 'Lihat daftar barang dengan filter: ' . implode(', ', $filters) : 'Lihat daftar barang';
+        \App\Models\ActivityLog::log('view', 'item', $filterDescription . ' (' . $items->total() . ' item)');
+
         return view('items.index', compact('items', 'categories', 'statuses'));
     }
 
@@ -35,6 +44,10 @@ class ItemController extends Controller
     {
         $categories = Category::orderBy('name')->get();
         $statuses = Item::getStatuses();
+        
+        // Log activity
+        \App\Models\ActivityLog::log('view', 'item', 'Akses halaman tambah barang baru');
+        
         return view('items.create', compact('categories', 'statuses'));
     }
 
@@ -131,6 +144,9 @@ class ItemController extends Controller
             $message .= ' dengan kode: ' . $unitCodes[0];
         }
 
+        // Log activity
+        \App\Models\ActivityLog::log('create', 'item', 'Menambah barang baru: ' . $validated['name'] . ' (' . count($unitCodes) . ' unit)');
+
         return redirect()
             ->route('items.show', $item)
             ->with('success', $message);
@@ -151,6 +167,9 @@ class ItemController extends Controller
             
         $unitCodes = $relatedItems->pluck('code')->toArray();
         
+        // Log activity
+        \App\Models\ActivityLog::log('view', 'item', 'Lihat detail barang: ' . $item->name . ' (Kode: ' . $item->code . ')');
+        
         return view('items.show', compact('item', 'unitCodes', 'relatedItems'));
     }
 
@@ -158,6 +177,10 @@ class ItemController extends Controller
     {
         $categories = Category::orderBy('name')->get();
         $statuses = Item::getStatuses();
+        
+        // Log activity
+        \App\Models\ActivityLog::log('view', 'item', 'Akses halaman edit barang: ' . $item->name . ' (Kode: ' . $item->code . ')');
+        
         return view('items.edit', compact('item', 'categories', 'statuses'));
     }
 
@@ -269,6 +292,9 @@ class ItemController extends Controller
             $message .= ' dengan perubahan kode unit';
         }
 
+        // Log activity
+        \App\Models\ActivityLog::log('update', 'item', 'Mengedit barang: ' . $item->name . ' (Kode: ' . $item->code . ')');
+
         return redirect()
             ->route('items.show', $item)
             ->with('success', $message);
@@ -294,6 +320,9 @@ class ItemController extends Controller
 
     public function showAddStockForm(Item $item)
     {
+        // Log activity
+        \App\Models\ActivityLog::log('view', 'item', 'Akses halaman tambah stok barang: ' . $item->name . ' (Kode: ' . $item->code . ')');
+        
         return view('items.add-stock', compact('item'));
     }
 

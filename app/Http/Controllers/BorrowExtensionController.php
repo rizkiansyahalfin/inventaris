@@ -17,19 +17,20 @@ class BorrowExtensionController extends Controller
     public function index()
     {
         $user = Auth::user();
+        $query = BorrowExtension::with(['borrow.user', 'borrow.item']);
         
-        if ($user->isAdmin() || $user->isPetugas()) {
-            $extensions = BorrowExtension::with(['borrow.user', 'borrow.item'])
-                ->latest()
-                ->paginate(15);
-        } else {
-            $extensions = BorrowExtension::whereHas('borrow', function ($query) use ($user) {
-                $query->where('user_id', $user->id);
-            })
-            ->with(['borrow.item'])
-            ->latest()
-            ->paginate(15);
+        // Jika user biasa, hanya tampilkan perpanjangan miliknya
+        if ($user->isUser()) {
+            $query->whereHas('borrow', function ($q) use ($user) {
+                $q->where('user_id', $user->id);
+            });
         }
+        
+        $extensions = $query->orderBy('created_at', 'desc')->paginate(10);
+        
+        // Log activity
+        $filterDescription = $user->isUser() ? 'Lihat daftar perpanjangan sendiri' : 'Lihat daftar perpanjangan semua user';
+        \App\Models\ActivityLog::log('view', 'borrow_extension', $filterDescription . ' (' . $extensions->total() . ' perpanjangan)');
         
         return view('extensions.index', compact('extensions'));
     }
@@ -39,10 +40,13 @@ class BorrowExtensionController extends Controller
      */
     public function create(Borrow $borrow)
     {
-        // Pastikan user hanya bisa memperpanjang peminjaman miliknya
+        // Pastikan hanya peminjam yang dapat mengajukan perpanjangan
         if ($borrow->user_id !== Auth::id()) {
             abort(403);
         }
+        
+        // Log activity
+        \App\Models\ActivityLog::log('view', 'borrow_extension', 'Akses halaman buat perpanjangan untuk peminjaman ID: ' . $borrow->id);
         
         // Pastikan peminjaman masih aktif dan belum ada permintaan perpanjangan
         if (!$borrow->canBeExtended()) {
@@ -111,6 +115,9 @@ class BorrowExtensionController extends Controller
         if (!$user->isAdmin() && !$user->isPetugas() && $extension->borrow->user_id !== $user->id) {
             abort(403);
         }
+        
+        // Log activity
+        \App\Models\ActivityLog::log('view', 'borrow_extension', 'Lihat detail perpanjangan ID: ' . $extension->id);
         
         return view('extensions.show', compact('extension'));
     }

@@ -18,56 +18,81 @@ class SystemConfigController extends BaseController
 
     public function index()
     {
-        $configs = SystemConfig::orderBy('key')->paginate(10);
+        $configs = SystemConfig::orderBy('key')->get();
+        
+        // Log activity
+        \App\Models\ActivityLog::log('view', 'system_config', 'Lihat daftar konfigurasi sistem (' . $configs->count() . ' konfigurasi)');
+        
         return view('system-configs.index', compact('configs'));
     }
 
     public function create()
     {
+        // Log activity
+        \App\Models\ActivityLog::log('view', 'system_config', 'Akses halaman tambah konfigurasi sistem baru');
+        
         return view('system-configs.create');
     }
 
     public function store(Request $request)
     {
-        $validated = $request->validate([
+        $request->validate([
             'key' => 'required|string|max:255|unique:system_configs',
             'value' => 'required|string',
             'description' => 'nullable|string',
         ]);
 
-        $systemConfig = SystemConfig::create($validated);
-        \App\Models\ActivityLog::log('create', 'system_config', 'Menambah konfigurasi: ' . $systemConfig->key);
-
+        $config = SystemConfig::create($request->all());
+        
+        // Log activity
+        \App\Models\ActivityLog::log('create', 'system_config', 'Menambah konfigurasi sistem: ' . $config->key);
+        
         return redirect()->route('system-configs.index')
-            ->with('success', 'Konfigurasi sistem berhasil ditambahkan.');
+            ->with('success', 'Konfigurasi berhasil ditambahkan');
+    }
+
+    public function show(SystemConfig $systemConfig)
+    {
+        // Log activity
+        \App\Models\ActivityLog::log('view', 'system_config', 'Lihat detail konfigurasi sistem: ' . $systemConfig->key);
+        
+        return view('system-configs.show', compact('systemConfig'));
     }
 
     public function edit(SystemConfig $systemConfig)
     {
+        // Log activity
+        \App\Models\ActivityLog::log('view', 'system_config', 'Akses halaman edit konfigurasi sistem: ' . $systemConfig->key);
+        
         return view('system-configs.edit', compact('systemConfig'));
     }
 
     public function update(Request $request, SystemConfig $systemConfig)
     {
-        $validated = $request->validate([
+        $request->validate([
+            'key' => 'required|string|max:255|unique:system_configs,key,' . $systemConfig->id,
             'value' => 'required|string',
             'description' => 'nullable|string',
         ]);
 
-        $systemConfig->update($validated);
-        \App\Models\ActivityLog::log('update', 'system_config', 'Mengedit konfigurasi: ' . $systemConfig->key);
-
+        $systemConfig->update($request->all());
+        
+        // Log activity
+        \App\Models\ActivityLog::log('update', 'system_config', 'Mengedit konfigurasi sistem: ' . $systemConfig->key);
+        
         return redirect()->route('system-configs.index')
-            ->with('success', 'Konfigurasi sistem berhasil diperbarui.');
+            ->with('success', 'Konfigurasi berhasil diperbarui');
     }
 
     public function destroy(SystemConfig $systemConfig)
     {
-        $key = $systemConfig->key;
+        $configKey = $systemConfig->key;
         $systemConfig->delete();
-        \App\Models\ActivityLog::log('delete', 'system_config', 'Menghapus konfigurasi: ' . $key);
-
+        
+        // Log activity
+        \App\Models\ActivityLog::log('delete', 'system_config', 'Menghapus konfigurasi sistem: ' . $configKey);
+        
         return redirect()->route('system-configs.index')
-            ->with('success', 'Konfigurasi sistem berhasil dihapus.');
+            ->with('success', 'Konfigurasi berhasil dihapus');
     }
 } 

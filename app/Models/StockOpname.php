@@ -85,4 +85,44 @@ class StockOpname extends Model
 
         return ($this->completed_items_count / $total) * 100;
     }
+
+    /**
+     * Get the progress percentage (alias for completion percentage).
+     *
+     * @return float
+     */
+    public function getProgressAttribute(): float
+    {
+        return $this->completion_percentage;
+    }
+
+    /**
+     * Get the started_at date (alias for start_date).
+     *
+     * @return \Carbon\Carbon|null
+     */
+    public function getStartedAtAttribute()
+    {
+        return $this->start_date;
+    }
+
+    /**
+     * Get the completed_at date (alias for end_date when status is completed).
+     *
+     * @return \Carbon\Carbon|null
+     */
+    public function getCompletedAtAttribute()
+    {
+        return $this->status === 'completed' ? $this->end_date : null;
+    }
+
+    /**
+     * Get the code (alias for id).
+     *
+     * @return string
+     */
+    public function getCodeAttribute(): string
+    {
+        return 'SO-' . str_pad($this->id, 4, '0', STR_PAD_LEFT);
+    }
 }

@@ -14,7 +14,11 @@ class BookmarkController extends Controller
      */
     public function index()
     {
-        $bookmarks = Auth::user()->bookmarks()->with('item')->latest()->paginate(12);
+        $bookmarks = Auth::user()->bookmarks()->with('item')->paginate(10);
+        
+        // Log activity
+        \App\Models\ActivityLog::log('view', 'bookmark', 'Lihat daftar bookmark (' . $bookmarks->total() . ' bookmark)');
+        
         return view('bookmarks.index', compact('bookmarks'));
     }
 
@@ -25,24 +29,17 @@ class BookmarkController extends Controller
     {
         $request->validate([
             'item_id' => 'required|exists:items,id',
-            'notes' => 'nullable|string|max:255',
+            'notes' => 'nullable|string',
         ]);
 
-        // Cek apakah item sudah di-bookmark
-        $exists = Bookmark::where('user_id', Auth::id())
-            ->where('item_id', $request->item_id)
-            ->exists();
-
-        if ($exists) {
-            return back()->with('error', 'Item sudah ada dalam bookmark.');
-        }
-
-        $bookmark = Bookmark::create([
-            'user_id' => Auth::id(),
+        $bookmark = Auth::user()->bookmarks()->create([
             'item_id' => $request->item_id,
             'notes' => $request->notes,
         ]);
-        \App\Models\ActivityLog::log('create', 'bookmark', 'Menambah bookmark: ' . $bookmark->id);
+        
+        // Log activity
+        \App\Models\ActivityLog::log('create', 'bookmark', 'Menambah bookmark untuk item ID: ' . $request->item_id);
+        
         return back()->with('success', 'Item berhasil ditambahkan ke bookmark.');
     }
 
@@ -51,20 +48,22 @@ class BookmarkController extends Controller
      */
     public function update(Request $request, Bookmark $bookmark)
     {
-        // Pastikan hanya pemilik yang bisa update
         if ($bookmark->user_id !== Auth::id()) {
             abort(403);
         }
 
         $request->validate([
-            'notes' => 'nullable|string|max:255',
+            'notes' => 'nullable|string',
         ]);
 
         $bookmark->update([
             'notes' => $request->notes,
         ]);
-        \App\Models\ActivityLog::log('update', 'bookmark', 'Mengedit bookmark: ' . $bookmark->id);
-        return back()->with('success', 'Catatan bookmark berhasil diperbarui.');
+        
+        // Log activity
+        \App\Models\ActivityLog::log('update', 'bookmark', 'Mengedit bookmark ID: ' . $bookmark->id);
+        
+        return back()->with('success', 'Bookmark berhasil diperbarui.');
     }
 
     /**
@@ -72,40 +71,40 @@ class BookmarkController extends Controller
      */
     public function destroy(Bookmark $bookmark)
     {
-        // Pastikan hanya pemilik yang bisa menghapus
         if ($bookmark->user_id !== Auth::id()) {
             abort(403);
         }
 
         $bookmark->delete();
-        \App\Models\ActivityLog::log('delete', 'bookmark', 'Menghapus bookmark: ' . $bookmark->id);
-        return back()->with('success', 'Item berhasil dihapus dari bookmark.');
+        
+        // Log activity
+        \App\Models\ActivityLog::log('delete', 'bookmark', 'Menghapus bookmark ID: ' . $bookmark->id);
+        
+        return back()->with('success', 'Bookmark berhasil dihapus.');
     }
 
     /**
      * Toggle bookmark status
      */
-    public function toggle(Item $item)
+    public function toggle(Request $request, Item $item)
     {
-        $bookmark = Bookmark::where('user_id', Auth::id())
-            ->where('item_id', $item->id)
-            ->first();
+        $bookmark = Auth::user()->bookmarks()->where('item_id', $item->id)->first();
 
         if ($bookmark) {
             $bookmark->delete();
-            $message = 'Item berhasil dihapus dari bookmark.';
+            $message = 'Item dihapus dari bookmark.';
+            $action = 'delete';
         } else {
-            Bookmark::create([
-                'user_id' => Auth::id(),
+            Auth::user()->bookmarks()->create([
                 'item_id' => $item->id,
             ]);
-            $message = 'Item berhasil ditambahkan ke bookmark.';
+            $message = 'Item ditambahkan ke bookmark.';
+            $action = 'create';
         }
-
-        if (request()->wantsJson()) {
-            return response()->json(['message' => $message]);
-        }
-
+        
+        // Log activity
+        \App\Models\ActivityLog::log($action, 'bookmark', ($action === 'create' ? 'Menambah' : 'Menghapus') . ' bookmark untuk item: ' . $item->name . ' (ID: ' . $item->id . ')');
+        
         return back()->with('success', $message);
     }
 }

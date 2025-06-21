@@ -8,15 +8,18 @@ use App\Models\Category;
 use App\Models\User;
 use App\Models\ActivityLog;
 use App\Models\Notification;
+use App\Models\Maintenance;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class DashboardController extends Controller
 {
     public function index()
     {
-        $user = auth()->user();
+        $user = Auth::user();
         
+        // Check user role and return appropriate dashboard
         if ($user->hasRole('admin')) {
             return $this->adminDashboard();
         } elseif ($user->hasRole('petugas')) {
@@ -26,7 +29,7 @@ class DashboardController extends Controller
         }
     }
 
-    private function adminDashboard()
+    public function adminDashboard()
     {
         try {
             // Barang dengan stok rendah
@@ -89,7 +92,7 @@ class DashboardController extends Controller
         }
     }
 
-    private function staffDashboard()
+    public function staffDashboard()
     {
         // Statistik untuk petugas
         $stats = [
@@ -139,7 +142,7 @@ class DashboardController extends Controller
         ));
     }
 
-    private function userDashboard()
+    public function userDashboard()
     {
         $user = auth()->user();
         

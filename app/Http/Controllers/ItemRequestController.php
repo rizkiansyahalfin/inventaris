@@ -17,36 +17,33 @@ class ItemRequestController extends Controller
     public function index(Request $request)
     {
         $user = Auth::user();
-        $query = ItemRequest::with(['user', 'category', 'reviewer', 'item']);
-
-        if (!$user->isAdmin() && !$user->isPetugas()) {
+        $query = ItemRequest::with(['user', 'item']);
+        
+        // Jika user biasa, hanya tampilkan permintaan miliknya
+        if ($user->isUser()) {
             $query->where('user_id', $user->id);
         }
-
-        // Filter status
-        if ($request->filled('status')) {
-            $query->where('status', $request->status);
-        }
-
-        // Search
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $query->where(function($q) use ($search) {
-                $q->where('name', 'like', "%$search%")
-                  ->orWhere('description', 'like', "%$search%")
-                  ->orWhere('reason', 'like', "%$search%")
-                  ->orWhereHas('item', function($q2) use ($search) {
-                      $q2->where('name', 'like', "%$search%")
-                         ->orWhere('code', 'like', "%$search%")
-                         ->orWhere('description', 'like', "%$search%")
-                         ;
-                  });
+        
+        // Filter berdasarkan request
+        $query->when($request->status, function ($query, $status) {
+                return $query->where('status', $status);
+            })
+            ->when($request->search, function ($query, $search) {
+                return $query->where('item_name', 'like', "%{$search}%")
+                    ->orWhere('description', 'like', "%{$search}%");
             });
-        }
 
-        $itemRequests = $query->latest()->paginate(15)->appends($request->all());
+        $itemRequests = $query->orderBy('created_at', 'desc')->paginate(10);
 
-        return view('item_requests.index', compact('itemRequests'));
+        // Log activity
+        $filters = [];
+        if ($request->status) $filters[] = 'status: ' . $request->status;
+        if ($request->search) $filters[] = 'pencarian: ' . $request->search;
+        
+        $filterDescription = !empty($filters) ? 'Lihat daftar permintaan barang dengan filter: ' . implode(', ', $filters) : 'Lihat daftar permintaan barang';
+        \App\Models\ActivityLog::log('view', 'item_request', $filterDescription . ' (' . $itemRequests->total() . ' permintaan)');
+
+        return view('item-requests.index', compact('itemRequests'));
     }
 
     /**
@@ -54,8 +51,10 @@ class ItemRequestController extends Controller
      */
     public function create()
     {
-        $categories = Category::orderBy('name')->get();
-        return view('item_requests.create', compact('categories'));
+        // Log activity
+        \App\Models\ActivityLog::log('view', 'item_request', 'Akses halaman buat permintaan barang baru');
+        
+        return view('item-requests.create');
     }
 
     /**
@@ -111,6 +110,9 @@ class ItemRequestController extends Controller
             abort(403);
         }
         
+        // Log activity
+        \App\Models\ActivityLog::log('view', 'item_request', 'Lihat detail permintaan barang: ' . $itemRequest->name . ' (ID: ' . $itemRequest->id . ')');
+        
         return view('item_requests.show', compact('itemRequest'));
     }
 
@@ -125,6 +127,10 @@ class ItemRequestController extends Controller
         }
         
         $categories = Category::orderBy('name')->get();
+        
+        // Log activity
+        \App\Models\ActivityLog::log('view', 'item_request', 'Akses halaman edit permintaan barang: ' . $itemRequest->name . ' (ID: ' . $itemRequest->id . ')');
+        
         return view('item_requests.edit', compact('itemRequest', 'categories'));
     }
 
@@ -212,6 +218,9 @@ class ItemRequestController extends Controller
                 ($request->status === 'rejected' ? 'ditolak' : 'selesai')) . '.',
             'data' => json_encode(['item_request_id' => $itemRequest->id]),
         ]);
+        
+        // Log activity
+        \App\Models\ActivityLog::log('update_status', 'item_request', 'Update status permintaan barang: ' . $itemRequest->name . ' menjadi ' . $request->status . ' (ID: ' . $itemRequest->id . ')');
         
         return redirect()->route('item-requests.show', $itemRequest)
             ->with('success', 'Status permintaan berhasil diperbarui.');

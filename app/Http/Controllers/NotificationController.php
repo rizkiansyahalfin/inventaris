@@ -13,11 +13,12 @@ class NotificationController extends Controller
      */
     public function index()
     {
-        $user = Auth::user();
-        $notifications = $user->notifications()->latest()->paginate(15);
-        $unreadCount = $user->notifications()->unread()->count();
+        $notifications = Auth::user()->notifications()->orderBy('created_at', 'desc')->paginate(20);
         
-        return view('notifications.index', compact('notifications', 'unreadCount'));
+        // Log activity
+        \App\Models\ActivityLog::log('view', 'notification', 'Lihat daftar notifikasi (' . $notifications->total() . ' notifikasi)');
+        
+        return view('notifications.index', compact('notifications'));
     }
 
     /**
@@ -30,6 +31,10 @@ class NotificationController extends Controller
         }
 
         $notification->markAsRead();
+        
+        // Log activity
+        \App\Models\ActivityLog::log('mark_read', 'notification', 'Tandai notifikasi sebagai dibaca (ID: ' . $notification->id . ')');
+        
         return back()->with('success', 'Notifikasi ditandai sudah dibaca.');
     }
 
@@ -39,7 +44,10 @@ class NotificationController extends Controller
     public function markAllAsRead()
     {
         Auth::user()->notifications()->whereNull('read_at')->update(['read_at' => now()]);
-        \App\Models\ActivityLog::log('mark_all_read', 'notification', 'Menandai semua notifikasi sebagai telah dibaca');
+        
+        // Log activity
+        \App\Models\ActivityLog::log('mark_all_read', 'notification', 'Tandai semua notifikasi sebagai dibaca');
+        
         return back()->with('success', 'Semua notifikasi ditandai sudah dibaca.');
     }
 
@@ -53,7 +61,10 @@ class NotificationController extends Controller
         }
 
         $notification->delete();
-        \App\Models\ActivityLog::log('delete', 'notification', 'Menghapus notifikasi ID: ' . $notification->id);
+        
+        // Log activity
+        \App\Models\ActivityLog::log('delete', 'notification', 'Hapus notifikasi (ID: ' . $notification->id . ')');
+        
         return back()->with('success', 'Notifikasi telah dihapus.');
     }
 }

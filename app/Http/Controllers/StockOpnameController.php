@@ -16,10 +16,13 @@ class StockOpnameController extends Controller
      */
     public function index()
     {
-        $stockOpnames = StockOpname::with('creator')
-            ->latest()
-            ->paginate(15);
-            
+        $stockOpnames = StockOpname::with(['creator'])
+            ->orderBy('created_at', 'desc')
+            ->paginate(10);
+        
+        // Log activity
+        \App\Models\ActivityLog::log('view', 'stock_opname', 'Lihat daftar stock opname (' . $stockOpnames->total() . ' stock opname)');
+        
         return view('stock-opnames.index', compact('stockOpnames'));
     }
 
@@ -28,6 +31,9 @@ class StockOpnameController extends Controller
      */
     public function create()
     {
+        // Log activity
+        \App\Models\ActivityLog::log('view', 'stock_opname', 'Akses halaman buat stock opname baru');
+        
         return view('stock-opnames.create');
     }
 
@@ -65,6 +71,9 @@ class StockOpnameController extends Controller
     {
         $stockOpname->load(['items.item', 'items.checkedBy']);
         
+        // Log activity
+        \App\Models\ActivityLog::log('view', 'stock_opname', 'Lihat detail stock opname: ' . $stockOpname->name . ' (ID: ' . $stockOpname->id . ')');
+        
         return view('stock-opnames.show', compact('stockOpname'));
     }
 
@@ -76,6 +85,9 @@ class StockOpnameController extends Controller
         if ($stockOpname->status !== 'pending') {
             return back()->with('error', 'Stock opname yang sudah dimulai tidak dapat diubah.');
         }
+        
+        // Log activity
+        \App\Models\ActivityLog::log('view', 'stock_opname', 'Akses halaman edit stock opname: ' . $stockOpname->name . ' (ID: ' . $stockOpname->id . ')');
         
         return view('stock-opnames.edit', compact('stockOpname'));
     }
@@ -157,6 +169,9 @@ class StockOpnameController extends Controller
             
             DB::commit();
             
+            // Log activity
+            \App\Models\ActivityLog::log('start', 'stock_opname', 'Memulai stock opname: ' . $stockOpname->name . ' (ID: ' . $stockOpname->id . ')');
+            
             return redirect()->route('stock-opnames.items.index', $stockOpname)
                 ->with('success', 'Stock opname telah dimulai. Silakan lakukan pengecekan item.');
         } catch (\Exception $e) {
@@ -180,6 +195,9 @@ class StockOpnameController extends Controller
             ->with('item')
             ->orderBy('checked_at')
             ->paginate(15);
+        
+        // Log activity
+        \App\Models\ActivityLog::log('view', 'stock_opname', 'Lihat daftar item stock opname: ' . $stockOpname->name . ' (ID: ' . $stockOpname->id . ')');
             
         return view('stock-opnames.items.index', compact('stockOpname', 'items'));
     }
@@ -241,9 +259,15 @@ class StockOpnameController extends Controller
             return back()->with('error', 'Semua item harus dicek terlebih dahulu.');
         }
         
-        $stockOpname->update(['status' => 'completed']);
+        $stockOpname->update([
+            'status' => 'completed',
+            'completed_at' => now(),
+        ]);
+        
+        // Log activity
+        \App\Models\ActivityLog::log('complete', 'stock_opname', 'Menyelesaikan stock opname: ' . $stockOpname->name . ' (ID: ' . $stockOpname->id . ')');
         
         return redirect()->route('stock-opnames.show', $stockOpname)
-            ->with('success', 'Stock opname telah selesai.');
+            ->with('success', 'Stock opname berhasil diselesaikan.');
     }
 }
