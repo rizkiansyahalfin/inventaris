@@ -178,8 +178,8 @@
             </a>
         @endif
 
-        <!-- Laporan Staf - Prioritas 7 untuk Petugas -->
-        @if($user->hasRole('petugas') && !$user->hasRole('admin'))
+        <!-- Laporan Staf - Prioritas 7 untuk Petugas & Admin -->
+        @if($user->hasRole('petugas') || $user->hasRole('admin'))
             <a href="{{ route('staff-reports.index') }}" 
                class="group flex items-center px-3 py-3 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('staff-reports.*') ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200' : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700' }}"
                title="Laporan Staf">

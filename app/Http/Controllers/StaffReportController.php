@@ -18,17 +18,49 @@ class StaffReportController extends Controller
         $user = Auth::user();
         
         if ($user->isAdmin()) {
-            $reports = StaffReport::with(['user', 'reviewer'])
+            $staffReports = StaffReport::with(['user', 'reviewer'])
                 ->latest()
                 ->paginate(15);
         } else {
-            $reports = $user->staffReports()
+            $staffReports = $user->staffReports()
                 ->with('reviewer')
                 ->latest()
                 ->paginate(15);
         }
         
-        return view('staff_reports.index', compact('reports'));
+        // Data untuk dashboard
+        if ($user->isAdmin()) {
+            $totalReports = StaffReport::count();
+            $pendingReviews = StaffReport::where('status', 'submitted')->count();
+            $reviewedReports = StaffReport::where('status', 'reviewed')->count();
+            $draftReports = StaffReport::where('status', 'draft')->count();
+            $totalHours = StaffReport::sum('hours_worked');
+            $recentReports = StaffReport::with(['user', 'reviewer'])->latest()->take(5)->get();
+        } else {
+            $totalReports = $user->staffReports()->count();
+            $pendingReviews = $user->staffReports()->where('status', 'submitted')->count();
+            $reviewedReports = $user->staffReports()->where('status', 'reviewed')->count();
+            $draftReports = $user->staffReports()->where('status', 'draft')->count();
+            $totalHours = $user->staffReports()->sum('hours_worked');
+            $recentReports = $user->staffReports()->with(['user', 'reviewer'])->latest()->take(5)->get();
+        }
+        
+        $stats = [
+            'total_reports' => $totalReports,
+            'pending_reviews' => $pendingReviews,
+            'reviewed_reports' => $reviewedReports,
+            'draft_reports' => $draftReports,
+            'submitted_reports' => $pendingReviews, // Alias untuk konsistensi
+            'total_hours' => number_format($totalHours, 1),
+            'draft_percentage' => $totalReports > 0 ? round(($draftReports / $totalReports) * 100, 1) : 0,
+            'submitted_percentage' => $totalReports > 0 ? round(($pendingReviews / $totalReports) * 100, 1) : 0,
+            'reviewed_percentage' => $totalReports > 0 ? round(($reviewedReports / $totalReports) * 100, 1) : 0,
+        ];
+        
+        // Data untuk export dan bulk actions
+        $users = User::where('role', 'petugas')->get();
+        
+        return view('staff-reports.index', compact('staffReports', 'stats', 'recentReports', 'users'));
     }
 
     /**
@@ -41,7 +73,7 @@ class StaffReportController extends Controller
             abort(403);
         }
         
-        return view('staff_reports.create');
+        return view('staff-reports.create');
     }
 
     /**
@@ -103,7 +135,7 @@ class StaffReportController extends Controller
             abort(403);
         }
         
-        return view('staff_reports.show', compact('staffReport'));
+        return view('staff-reports.show', compact('staffReport'));
     }
 
     /**
@@ -118,7 +150,7 @@ class StaffReportController extends Controller
             abort(403);
         }
         
-        return view('staff_reports.edit', compact('staffReport'));
+        return view('staff-reports.edit', compact('staffReport'));
     }
 
     /**
@@ -227,5 +259,346 @@ class StaffReportController extends Controller
         
         return redirect()->route('staff-reports.show', $staffReport)
             ->with('success', 'Laporan kerja berhasil diulas.');
+    }
+
+    /**
+     * Display the dashboard with statistics
+     */
+    public function dashboard()
+    {
+        $user = Auth::user();
+        
+        if ($user->isAdmin()) {
+            $totalReports = StaffReport::count();
+            $pendingReviews = StaffReport::where('status', 'submitted')->count();
+            $reviewedReports = StaffReport::where('status', 'reviewed')->count();
+            $draftReports = StaffReport::where('status', 'draft')->count();
+            $totalHours = StaffReport::sum('hours_worked');
+            $recentReports = StaffReport::with(['user', 'reviewer'])->latest()->take(5)->get();
+        } else {
+            $totalReports = $user->staffReports()->count();
+            $pendingReviews = $user->staffReports()->where('status', 'submitted')->count();
+            $reviewedReports = $user->staffReports()->where('status', 'reviewed')->count();
+            $draftReports = $user->staffReports()->where('status', 'draft')->count();
+            $totalHours = $user->staffReports()->sum('hours_worked');
+            $recentReports = $user->staffReports()->with(['user', 'reviewer'])->latest()->take(5)->get();
+        }
+        
+        $stats = [
+            'total_reports' => $totalReports,
+            'pending_reviews' => $pendingReviews,
+            'reviewed_reports' => $reviewedReports,
+            'draft_reports' => $draftReports,
+            'total_hours' => number_format($totalHours, 1),
+            'draft_percentage' => $totalReports > 0 ? round(($draftReports / $totalReports) * 100, 1) : 0,
+            'submitted_percentage' => $totalReports > 0 ? round(($pendingReviews / $totalReports) * 100, 1) : 0,
+            'reviewed_percentage' => $totalReports > 0 ? round(($reviewedReports / $totalReports) * 100, 1) : 0,
+        ];
+        
+        return view('staff-reports.dashboard', compact('stats', 'recentReports'));
+    }
+
+    /**
+     * Display export page with filters
+     */
+    public function export(Request $request)
+    {
+        $user = Auth::user();
+        $query = StaffReport::with(['user', 'reviewer']);
+        
+        // Apply filters
+        if ($request->filled('start_date')) {
+            $query->where('report_date', '>=', $request->start_date);
+        }
+        
+        if ($request->filled('end_date')) {
+            $query->where('report_date', '<=', $request->end_date);
+        }
+        
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+        
+        if ($request->filled('user_id')) {
+            $query->where('user_id', $request->user_id);
+        }
+        
+        // If not admin, only show own reports
+        if (!$user->isAdmin()) {
+            $query->where('user_id', $user->id);
+        }
+        
+        $staffReports = $query->latest()->paginate(15);
+        $users = User::where('role', 'petugas')->get();
+        
+        return view('staff-reports.export', compact('staffReports', 'users'));
+    }
+
+    /**
+     * Export to PDF
+     */
+    public function exportPdf(Request $request)
+    {
+        $user = Auth::user();
+        $query = StaffReport::with(['user', 'reviewer']);
+        
+        // Apply filters
+        if ($request->filled('start_date')) {
+            $query->where('report_date', '>=', $request->start_date);
+        }
+        
+        if ($request->filled('end_date')) {
+            $query->where('report_date', '<=', $request->end_date);
+        }
+        
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+        
+        if ($request->filled('user_id')) {
+            $query->where('user_id', $request->user_id);
+        }
+        
+        // If not admin, only show own reports
+        if (!$user->isAdmin()) {
+            $query->where('user_id', $user->id);
+        }
+        
+        $staffReports = $query->latest()->get();
+        
+        $pdf = \PDF::loadView('staff-reports.pdf', compact('staffReports'));
+        
+        return $pdf->download('laporan-staff-' . date('Y-m-d') . '.pdf');
+    }
+
+    /**
+     * Get filtered reports for export tab
+     */
+    public function getFilteredReports(Request $request)
+    {
+        $user = Auth::user();
+        $query = StaffReport::with(['user', 'reviewer']);
+        
+        // Apply filters
+        if ($request->filled('start_date')) {
+            $query->where('report_date', '>=', $request->start_date);
+        }
+        
+        if ($request->filled('end_date')) {
+            $query->where('report_date', '<=', $request->end_date);
+        }
+        
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+        
+        if ($request->filled('user_id')) {
+            $query->where('user_id', $request->user_id);
+        }
+        
+        // If not admin, only show own reports
+        if (!$user->isAdmin()) {
+            $query->where('user_id', $user->id);
+        }
+        
+        $staffReports = $query->latest()->paginate(15);
+        
+        return response()->json([
+            'html' => view('staff-reports.partials.export-table', compact('staffReports'))->render()
+        ]);
+    }
+
+    /**
+     * Get filtered reports for bulk actions tab
+     */
+    public function getBulkFilteredReports(Request $request)
+    {
+        // Pastikan hanya admin yang dapat mengakses
+        if (!Auth::user()->isAdmin()) {
+            abort(403);
+        }
+        
+        $query = StaffReport::with(['user', 'reviewer']);
+        
+        // Apply filters
+        if ($request->filled('status_filter')) {
+            $query->where('status', $request->status_filter);
+        }
+        
+        if ($request->filled('user_filter')) {
+            $query->where('user_id', $request->user_filter);
+        }
+        
+        if ($request->filled('date_from')) {
+            $query->where('report_date', '>=', $request->date_from);
+        }
+        
+        if ($request->filled('date_to')) {
+            $query->where('report_date', '<=', $request->date_to);
+        }
+        
+        $staffReports = $query->latest()->paginate(15);
+        
+        return response()->json([
+            'html' => view('staff-reports.partials.bulk-table', compact('staffReports'))->render()
+        ]);
+    }
+
+    /**
+     * Export to Excel
+     */
+    public function exportExcel(Request $request)
+    {
+        $user = Auth::user();
+        $query = StaffReport::with(['user', 'reviewer']);
+        
+        // Apply filters
+        if ($request->filled('start_date')) {
+            $query->where('report_date', '>=', $request->start_date);
+        }
+        
+        if ($request->filled('end_date')) {
+            $query->where('report_date', '<=', $request->end_date);
+        }
+        
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+        
+        if ($request->filled('user_id')) {
+            $query->where('user_id', $request->user_id);
+        }
+        
+        // If not admin, only show own reports
+        if (!$user->isAdmin()) {
+            $query->where('user_id', $user->id);
+        }
+        
+        $staffReports = $query->latest()->get();
+        
+        return \Excel::download(new \App\Exports\StaffReportsExport($staffReports), 'laporan-staff-' . date('Y-m-d') . '.xlsx');
+    }
+
+    /**
+     * Display bulk actions page
+     */
+    public function bulkActions(Request $request)
+    {
+        // Pastikan hanya admin yang dapat mengakses
+        if (!Auth::user()->isAdmin()) {
+            abort(403);
+        }
+        
+        $query = StaffReport::with(['user', 'reviewer']);
+        
+        // Apply filters
+        if ($request->filled('status_filter')) {
+            $query->where('status', $request->status_filter);
+        }
+        
+        if ($request->filled('user_filter')) {
+            $query->where('user_id', $request->user_filter);
+        }
+        
+        if ($request->filled('date_from')) {
+            $query->where('report_date', '>=', $request->date_from);
+        }
+        
+        if ($request->filled('date_to')) {
+            $query->where('report_date', '<=', $request->date_to);
+        }
+        
+        $staffReports = $query->latest()->paginate(15);
+        $users = User::where('role', 'petugas')->get();
+        
+        return view('staff-reports.bulk-actions', compact('staffReports', 'users'));
+    }
+
+    /**
+     * Process bulk actions
+     */
+    public function bulkProcess(Request $request)
+    {
+        // Pastikan hanya admin yang dapat mengakses
+        if (!Auth::user()->isAdmin()) {
+            abort(403);
+        }
+        
+        $request->validate([
+            'bulk_action' => 'required|in:approve_all,reject_all,delete_selected,export_selected',
+            'selected_reports' => 'required|array|min:1',
+            'selected_reports.*' => 'exists:staff_reports,id'
+        ]);
+        
+        $selectedReports = StaffReport::whereIn('id', $request->selected_reports)->get();
+        
+        switch ($request->bulk_action) {
+            case 'approve_all':
+                foreach ($selectedReports as $report) {
+                    if ($report->status === 'submitted') {
+                        $report->update([
+                            'status' => 'reviewed',
+                            'review_notes' => 'Disetujui secara massal oleh admin',
+                            'reviewed_by' => Auth::id(),
+                        ]);
+                        
+                        // Kirim notifikasi
+                        Notification::create([
+                            'user_id' => $report->user_id,
+                            'type' => 'staff_report_reviewed',
+                            'title' => 'Laporan Kerja Telah Diulas',
+                            'message' => "Laporan kerja Anda tanggal " . $report->report_date->format('d M Y') . " telah diulas.",
+                            'data' => json_encode(['staff_report_id' => $report->id]),
+                        ]);
+                    }
+                }
+                $message = count($selectedReports) . ' laporan berhasil disetujui';
+                break;
+                
+            case 'reject_all':
+                foreach ($selectedReports as $report) {
+                    if ($report->status === 'submitted') {
+                        $report->update([
+                            'status' => 'draft',
+                            'review_notes' => 'Ditolak secara massal oleh admin',
+                            'reviewed_by' => Auth::id(),
+                        ]);
+                        
+                        // Kirim notifikasi
+                        Notification::create([
+                            'user_id' => $report->user_id,
+                            'type' => 'staff_report_rejected',
+                            'title' => 'Laporan Kerja Ditolak',
+                            'message' => "Laporan kerja Anda tanggal " . $report->report_date->format('d M Y') . " telah ditolak.",
+                            'data' => json_encode(['staff_report_id' => $report->id]),
+                        ]);
+                    }
+                }
+                $message = count($selectedReports) . ' laporan berhasil ditolak';
+                break;
+                
+            case 'delete_selected':
+                foreach ($selectedReports as $report) {
+                    $report->delete();
+                }
+                $message = count($selectedReports) . ' laporan berhasil dihapus';
+                break;
+                
+            case 'export_selected':
+                return $this->exportSelected($selectedReports);
+        }
+        
+        \App\Models\ActivityLog::log('bulk_action', 'staff_report', 'Aksi massal: ' . $request->bulk_action . ' - ' . count($selectedReports) . ' laporan');
+        
+        return redirect()->route('staff-reports.bulk-actions')->with('success', $message);
+    }
+
+    /**
+     * Export selected reports
+     */
+    private function exportSelected($reports)
+    {
+        $pdf = \PDF::loadView('staff-reports.pdf', compact('reports'));
+        return $pdf->download('laporan-staff-terpilih-' . date('Y-m-d') . '.pdf');
     }
 }

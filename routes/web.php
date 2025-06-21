@@ -126,12 +126,16 @@ Route::middleware(['auth', 'role:petugas,admin'])->group(function () {
     Route::post('/stock-opnames/{stockOpname}/items/{item}', [StockOpnameController::class, 'saveItemCheck'])->name('stock-opnames.items.save');
     Route::post('/stock-opnames/{stockOpname}/complete', [StockOpnameController::class, 'complete'])->name('stock-opnames.complete');
 
-    // Laporan Staff (khusus petugas)
+    // Laporan Staff (untuk petugas dan admin)
+    Route::get('/staff-reports', [StaffReportController::class, 'index'])->name('staff-reports.index');
+    Route::get('/staff-reports/dashboard', [StaffReportController::class, 'dashboard'])->name('staff-reports.dashboard');
+    Route::get('/staff-reports/export', [StaffReportController::class, 'export'])->name('staff-reports.export');
+    Route::get('/staff-reports/{staffReport}', [StaffReportController::class, 'show'])->name('staff-reports.show');
+    
+    // Laporan Staff (khusus petugas untuk create, edit, delete)
     Route::middleware(['role:petugas'])->group(function () {
-        Route::get('/staff-reports', [StaffReportController::class, 'index'])->name('staff-reports.index');
         Route::get('/staff-reports/create', [StaffReportController::class, 'create'])->name('staff-reports.create');
         Route::post('/staff-reports', [StaffReportController::class, 'store'])->name('staff-reports.store');
-        Route::get('/staff-reports/{staffReport}', [StaffReportController::class, 'show'])->name('staff-reports.show');
         Route::get('/staff-reports/{staffReport}/edit', [StaffReportController::class, 'edit'])->name('staff-reports.edit');
         Route::patch('/staff-reports/{staffReport}', [StaffReportController::class, 'update'])->name('staff-reports.update');
         Route::delete('/staff-reports/{staffReport}', [StaffReportController::class, 'destroy'])->name('staff-reports.destroy');
@@ -164,8 +168,14 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::get('/activity-logs', [ActivityLogController::class, 'index'])->name('activity-logs.index');
     // Konfigurasi Sistem
     Route::resource('system-configs', SystemConfigController::class);
-    // Review laporan staff
-    Route::get('/staff-reports', [StaffReportController::class, 'index'])->name('staff-reports.index');
-    Route::get('/staff-reports/{staffReport}', [StaffReportController::class, 'show'])->name('staff-reports.show');
+    // Review laporan staff (khusus admin)
     Route::post('/staff-reports/{staffReport}/review', [StaffReportController::class, 'review'])->name('staff-reports.review');
+    
+    // Export dan bulk actions untuk staff reports (khusus admin)
+    Route::get('/staff-reports/export/pdf', [StaffReportController::class, 'exportPdf'])->name('staff-reports.export-pdf');
+    Route::get('/staff-reports/export/excel', [StaffReportController::class, 'exportExcel'])->name('staff-reports.export-excel');
+    Route::get('/staff-reports/bulk-actions', [StaffReportController::class, 'bulkActions'])->name('staff-reports.bulk-actions');
+    Route::post('/staff-reports/bulk-process', [StaffReportController::class, 'bulkProcess'])->name('staff-reports.bulk-process');
+    Route::post('/staff-reports/filtered-reports', [StaffReportController::class, 'getFilteredReports'])->name('staff-reports.filtered-reports');
+    Route::post('/staff-reports/bulk-filtered-reports', [StaffReportController::class, 'getBulkFilteredReports'])->name('staff-reports.bulk-filtered-reports');
 });
