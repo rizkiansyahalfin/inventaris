@@ -67,7 +67,10 @@
             </div>
             @endif
             
-            <div class="mt-6 border-t pt-4 flex justify-end">
+            <div class="mt-6 border-t pt-4 flex justify-end space-x-4">
+                <a href="{{ route('maintenances.edit', $maintenance) }}" class="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700">
+                    Edit
+                </a>
                 <form action="{{ route('maintenances.destroy', $maintenance) }}" method="POST">
                     @csrf
                     @method('DELETE')

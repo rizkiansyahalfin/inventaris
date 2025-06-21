@@ -13,10 +13,63 @@ class MaintenanceController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $maintenances = Maintenance::with(['item', 'user'])->orderBy('start_date', 'desc')->paginate(10);
+        $query = Maintenance::with(['item', 'user']);
+
+        // Search functionality
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('title', 'like', "%{$search}%")
+                  ->orWhereHas('item', function($itemQuery) use ($search) {
+                      $itemQuery->where('name', 'like', "%{$search}%")
+                               ->orWhere('code', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        // Filter by status
+        if ($request->filled('status')) {
+            if ($request->status === 'completed') {
+                $query->whereNotNull('completion_date');
+            } elseif ($request->status === 'ongoing') {
+                $query->whereNull('completion_date');
+            }
+        }
+
+        // Filter by type
+        if ($request->filled('type')) {
+            $query->where('type', $request->type);
+        }
+
+        $maintenances = $query->orderBy('start_date', 'desc')->paginate(10);
+
+        // Handle export
+        if ($request->has('export') && $request->export === 'pdf') {
+            return $this->exportPdf($query->get());
+        }
+
         return view('maintenances.index', compact('maintenances'));
+    }
+
+    /**
+     * Export maintenance data to PDF
+     */
+    private function exportPdf($maintenances)
+    {
+        try {
+            if (class_exists('\PDF')) {
+                $pdf = \PDF::loadView('maintenances.pdf', compact('maintenances'));
+                return $pdf->download('riwayat-pemeliharaan-' . date('Y-m-d') . '.pdf');
+            } else {
+                throw new \Exception('PDF package not available');
+            }
+        } catch (\Exception $e) {
+            // Fallback: redirect back with error message
+            return redirect()->route('maintenances.index')
+                ->with('error', 'Export PDF tidak tersedia. Silakan install package PDF terlebih dahulu.');
+        }
     }
 
     /**
@@ -51,6 +104,7 @@ class MaintenanceController extends Controller
             'start_date' => 'required|date',
             'completion_date' => 'nullable|date|after_or_equal:start_date',
             'update_condition' => 'nullable|string|in:Baik,Rusak Ringan,Rusak Berat',
+            'update_item_status' => 'nullable|string|in:Tersedia,Perlu Servis,Rusak,Perlu Ganti',
         ]);
 
         try {
@@ -82,6 +136,10 @@ class MaintenanceController extends Controller
                 // Update kondisi, yang akan mengupdate status otomatis sesuai kondisi
                 $item->updateCondition($validated['update_condition']);
             }
+            // Jika ada update status manual
+            elseif (isset($validated['update_item_status'])) {
+                $item->updateStatus($validated['update_item_status']);
+            }
 
             DB::commit();
 
@@ -110,7 +168,8 @@ class MaintenanceController extends Controller
      */
     public function edit(Maintenance $maintenance)
     {
-        //
+        $maintenance->load(['item', 'user']);
+        return view('maintenances.edit', compact('maintenance'));
     }
 
     /**

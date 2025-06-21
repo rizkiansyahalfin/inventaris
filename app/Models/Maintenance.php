@@ -35,4 +35,12 @@ class Maintenance extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    /**
+     * Check if maintenance is completed
+     */
+    public function getIsCompletedAttribute()
+    {
+        return !is_null($this->completion_date);
+    }
 }

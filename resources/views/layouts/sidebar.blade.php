@@ -29,7 +29,7 @@
 
     <!-- Navigation Menu -->
     <nav class="flex-1 px-2 py-4 space-y-1 overflow-y-auto">
-        <!-- Beranda -->
+        <!-- Beranda - Prioritas 1 untuk semua role -->
         <a href="{{ route('dashboard') }}" 
            class="group flex items-center px-3 py-3 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('dashboard') ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200' : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700' }}"
            title="Beranda">
@@ -41,21 +41,8 @@
             <span class="sidebar-text ml-3">Beranda</span>
         </a>
 
-        <!-- Menu khusus ADMIN -->
+        <!-- Approval Peminjaman - Prioritas 2 untuk Admin -->
         @if($user->hasRole('admin'))
-            <!-- Kategori -->
-            <a href="{{ route('categories.index') }}" 
-               class="group flex items-center px-3 py-3 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('categories.*') ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200' : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700' }}"
-               title="Kategori">
-                <div class="sidebar-icon">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>
-                    </svg>
-                </div>
-                <span class="sidebar-text ml-3">Kategori</span>
-            </a>
-
-            <!-- Approval Peminjaman -->
             <a href="{{ route('admin.borrow-approvals.index') }}" 
                class="group flex items-center px-3 py-3 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('admin.borrow-approvals.*') ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200' : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700' }}"
                title="Approval Peminjaman">
@@ -66,8 +53,34 @@
                 </div>
                 <span class="sidebar-text ml-3">Approval Peminjaman</span>
             </a>
+        @endif
 
-            <!-- Manajemen Pengguna -->
+        <!-- Inventaris - Prioritas 3 untuk semua role -->
+        <a href="{{ route('items.index') }}" 
+           class="group flex items-center px-3 py-3 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('items.*') ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200' : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700' }}"
+           title="Inventaris">
+            <div class="sidebar-icon">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+                </svg>
+            </div>
+            <span class="sidebar-text ml-3">Inventaris</span>
+        </a>
+
+        <!-- Peminjaman - Prioritas 4 untuk semua role -->
+        <a href="{{ route('borrows.index') }}" 
+           class="group flex items-center px-3 py-3 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('borrows.*') ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200' : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700' }}"
+           title="Peminjaman">
+            <div class="sidebar-icon">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
+                </svg>
+            </div>
+            <span class="sidebar-text ml-3">Peminjaman</span>
+        </a>
+
+        <!-- Manajemen Pengguna - Prioritas 5 untuk Admin -->
+        @if($user->hasRole('admin'))
             <a href="{{ route('admin.users.index') }}" 
                class="group flex items-center px-3 py-3 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('admin.users.*') ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200' : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700' }}"
                title="Manajemen Pengguna">
@@ -78,8 +91,66 @@
                 </div>
                 <span class="sidebar-text ml-3">Manajemen Pengguna</span>
             </a>
+        @endif
 
-            <!-- Log Aktivitas -->
+        <!-- Kategori - Prioritas 6 untuk Admin -->
+        @if($user->hasRole('admin'))
+            <a href="{{ route('categories.index') }}" 
+               class="group flex items-center px-3 py-3 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('categories.*') ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200' : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700' }}"
+               title="Kategori">
+                <div class="sidebar-icon">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>
+                    </svg>
+                </div>
+                <span class="sidebar-text ml-3">Kategori</span>
+            </a>
+        @endif
+
+        <!-- Laporan - Prioritas 7 untuk Admin & Petugas -->
+        @if($user->hasRole('petugas') || $user->hasRole('admin'))
+            <a href="{{ route('reports.index') }}" 
+               class="group flex items-center px-3 py-3 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('reports.*') ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200' : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700' }}"
+               title="Laporan">
+                <div class="sidebar-icon">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                    </svg>
+                </div>
+                <span class="sidebar-text ml-3">Laporan</span>
+            </a>
+        @endif
+
+        <!-- Pemeliharaan - Prioritas 8 untuk Admin & Petugas -->
+        @if($user->hasRole('petugas') || $user->hasRole('admin'))
+            <a href="{{ route('maintenances.index') }}" 
+               class="group flex items-center px-3 py-3 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('maintenances.*') ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200' : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700' }}"
+               title="Pemeliharaan">
+                <div class="sidebar-icon">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a1 1 0 01-1-1V9a1 1 0 011-1h1a2 2 0 100-4H4a1 1 0 01-1-1V4a1 1 0 011-1h3a1 1 0 011 1v1z"/>
+                    </svg>
+                </div>
+                <span class="sidebar-text ml-3">Pemeliharaan</span>
+            </a>
+        @endif
+
+        <!-- Stok Opname - Prioritas 9 untuk Admin & Petugas -->
+        @if($user->hasRole('petugas') || $user->hasRole('admin'))
+            <a href="{{ route('stock-opnames.index') }}" 
+               class="group flex items-center px-3 py-3 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('stock-opnames.*') ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200' : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700' }}"
+               title="Stok Opname">
+                <div class="sidebar-icon">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/>
+                    </svg>
+                </div>
+                <span class="sidebar-text ml-3">Stok Opname</span>
+            </a>
+        @endif
+
+        <!-- Log Aktivitas - Prioritas 10 untuk Admin -->
+        @if($user->hasRole('admin'))
             <a href="{{ route('activity-logs.index') }}" 
                class="group flex items-center px-3 py-3 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('activity-logs.*') ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200' : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700' }}"
                title="Log Aktivitas">
@@ -90,8 +161,10 @@
                 </div>
                 <span class="sidebar-text ml-3">Log Aktivitas</span>
             </a>
+        @endif
 
-            <!-- Konfigurasi Sistem -->
+        <!-- Konfigurasi Sistem - Prioritas 11 untuk Admin -->
+        @if($user->hasRole('admin'))
             <a href="{{ route('system-configs.index') }}" 
                class="group flex items-center px-3 py-3 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('system-configs.*') ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200' : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700' }}"
                title="Konfigurasi Sistem">
@@ -105,48 +178,8 @@
             </a>
         @endif
 
-        <!-- Menu khusus PETUGAS & ADMIN -->
-        @if($user->hasRole('petugas') || $user->hasRole('admin'))
-            <!-- Pemeliharaan -->
-            <a href="{{ route('maintenances.index') }}" 
-               class="group flex items-center px-3 py-3 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('maintenances.*') ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200' : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700' }}"
-               title="Pemeliharaan">
-                <div class="sidebar-icon">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a1 1 0 01-1-1V9a1 1 0 011-1h1a2 2 0 100-4H4a1 1 0 01-1-1V4a1 1 0 011-1h3a1 1 0 011 1v1z"/>
-                    </svg>
-                </div>
-                <span class="sidebar-text ml-3">Pemeliharaan</span>
-            </a>
-
-            <!-- Stok Opname -->
-            <a href="{{ route('stock-opnames.index') }}" 
-               class="group flex items-center px-3 py-3 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('stock-opnames.*') ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200' : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700' }}"
-               title="Stok Opname">
-                <div class="sidebar-icon">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/>
-                    </svg>
-                </div>
-                <span class="sidebar-text ml-3">Stok Opname</span>
-            </a>
-
-            <!-- Laporan -->
-            <a href="{{ route('reports.index') }}" 
-               class="group flex items-center px-3 py-3 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('reports.*') ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200' : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700' }}"
-               title="Laporan">
-                <div class="sidebar-icon">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
-                    </svg>
-                </div>
-                <span class="sidebar-text ml-3">Laporan</span>
-            </a>
-        @endif
-
-        <!-- Menu khusus PETUGAS SAJA -->
+        <!-- Laporan Staf - Prioritas 7 untuk Petugas -->
         @if($user->hasRole('petugas') && !$user->hasRole('admin'))
-            <!-- Laporan Staf -->
             <a href="{{ route('staff-reports.index') }}" 
                class="group flex items-center px-3 py-3 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('staff-reports.*') ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200' : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700' }}"
                title="Laporan Staf">
@@ -159,47 +192,7 @@
             </a>
         @endif
 
-        <!-- Menu untuk SEMUA USER (user, petugas, admin) -->
-        <a href="{{ route('items.index') }}" 
-           class="group flex items-center px-3 py-3 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('items.*') ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200' : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700' }}"
-           title="Inventaris">
-            <div class="sidebar-icon">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
-                </svg>
-            </div>
-            <span class="sidebar-text ml-3">Inventaris</span>
-        </a>
-        <a href="{{ route('borrows.index') }}" 
-           class="group flex items-center px-3 py-3 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('borrows.*') ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200' : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700' }}"
-           title="Peminjaman">
-            <div class="sidebar-icon">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
-                </svg>
-            </div>
-            <span class="sidebar-text ml-3">Peminjaman</span>
-        </a>
-        <a href="{{ route('bookmarks.index') }}" 
-           class="group flex items-center px-3 py-3 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('bookmarks.*') ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200' : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700' }}"
-           title="Tanda">
-            <div class="sidebar-icon">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/>
-                </svg>
-            </div>
-            <span class="sidebar-text ml-3">Tanda</span>
-        </a>
-        <a href="{{ route('feedbacks.index') }}" 
-           class="group flex items-center px-3 py-3 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('feedbacks.*') ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200' : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700' }}"
-           title="Umpan Balik">
-            <div class="sidebar-icon">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
-                </svg>
-            </div>
-            <span class="sidebar-text ml-3">Umpan Balik</span>
-        </a>
+        <!-- Permintaan Barang - Prioritas 12 untuk Admin, 8 untuk Petugas, 4 untuk User -->
         <a href="{{ route('item-requests.index') }}" 
            class="group flex items-center px-3 py-3 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('item-requests.*') ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200' : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700' }}"
            title="Permintaan Barang">
@@ -210,6 +203,8 @@
             </div>
             <span class="sidebar-text ml-3">Permintaan Barang</span>
         </a>
+
+        <!-- Notifikasi - Prioritas 13 untuk Admin, 9 untuk Petugas, 5 untuk User -->
         <a href="{{ route('notifications.index') }}" 
            class="group flex items-center px-3 py-3 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('notifications.*') ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200' : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700' }}"
            title="Notifikasi">
@@ -219,6 +214,30 @@
                 </svg>
             </div>
             <span class="sidebar-text ml-3">Notifikasi</span>
+        </a>
+
+        <!-- Umpan Balik - Prioritas 14 untuk Admin, 10 untuk Petugas, 6 untuk User -->
+        <a href="{{ route('feedbacks.index') }}" 
+           class="group flex items-center px-3 py-3 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('feedbacks.*') ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200' : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700' }}"
+           title="Umpan Balik">
+            <div class="sidebar-icon">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+                </svg>
+            </div>
+            <span class="sidebar-text ml-3">Umpan Balik</span>
+        </a>
+
+        <!-- Tanda - Prioritas 15 untuk Admin, 11 untuk Petugas, 7 untuk User -->
+        <a href="{{ route('bookmarks.index') }}" 
+           class="group flex items-center px-3 py-3 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('bookmarks.*') ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200' : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700' }}"
+           title="Tanda">
+            <div class="sidebar-icon">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/>
+                </svg>
+            </div>
+            <span class="sidebar-text ml-3">Tanda</span>
         </a>
     </nav>
 
