@@ -22,10 +22,8 @@ class CheckRole
 
         $user = Auth::user();
         
-        foreach ($roles as $role) {
-            if ($user->hasRole($role)) {
-                return $next($request);
-            }
+        if (in_array($user->role, $roles)) {
+            return $next($request);
         }
         
         return redirect()->route('dashboard')->with('error', 'Anda tidak memiliki hak akses untuk fitur ini.');
