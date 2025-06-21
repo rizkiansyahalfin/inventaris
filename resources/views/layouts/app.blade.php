@@ -386,16 +386,90 @@
                     }
                 });
                 
-                // Close sidebar on mobile when clicking a link
+                // Preserve sidebar scroll position when clicking menu items
                 const sidebarLinks = sidebar.querySelectorAll('a');
                 sidebarLinks.forEach(link => {
-                    link.addEventListener('click', function() {
+                    link.addEventListener('click', function(e) {
+                        // Store current scroll position in sessionStorage
+                        const navElement = sidebar.querySelector('nav');
+                        if (navElement) {
+                            const scrollPosition = navElement.scrollTop;
+                            console.log('Saving scroll position:', scrollPosition);
+                            try {
+                                sessionStorage.setItem('sidebar_scroll_position', scrollPosition.toString());
+                                sessionStorage.setItem('sidebar_scroll_timestamp', Date.now().toString());
+                            } catch (e) {
+                                console.error('Failed to save scroll position:', e);
+                            }
+                        }
+                        
+                        // Close sidebar on mobile when clicking a link
                         if (window.innerWidth < 769) {
                             sidebar.classList.add('sidebar-closed');
                             overlay.classList.remove('active');
                         }
                     });
                 });
+                
+                // Store scroll position before page unload
+                window.addEventListener('beforeunload', function() {
+                    const navElement = sidebar.querySelector('nav');
+                    if (navElement) {
+                        const scrollPosition = navElement.scrollTop;
+                        console.log('Before unload - saving scroll position:', scrollPosition);
+                        try {
+                            sessionStorage.setItem('sidebar_scroll_position', scrollPosition.toString());
+                            sessionStorage.setItem('sidebar_scroll_timestamp', Date.now().toString());
+                        } catch (e) {
+                            console.error('Failed to save scroll position on unload:', e);
+                        }
+                    }
+                });
+                
+                // Restore sidebar scroll position on page load
+                const navElement = sidebar.querySelector('nav');
+                if (navElement) {
+                    try {
+                        const savedScrollPosition = sessionStorage.getItem('sidebar_scroll_position');
+                        const savedTimestamp = sessionStorage.getItem('sidebar_scroll_timestamp');
+                        
+                        if (savedScrollPosition !== null && savedTimestamp !== null) {
+                            const now = Date.now();
+                            const savedTime = parseInt(savedTimestamp);
+                            const timeDiff = now - savedTime;
+                            
+                            // Only restore if the saved position is recent (within 5 minutes)
+                            if (timeDiff < 300000) { // 5 minutes in milliseconds
+                                console.log('Restoring scroll position:', savedScrollPosition, 'Time diff:', timeDiff);
+                                
+                                // Restore scroll position after a longer delay to ensure DOM is ready
+                                setTimeout(() => {
+                                    navElement.scrollTop = parseInt(savedScrollPosition);
+                                    console.log('Scroll position restored to:', navElement.scrollTop);
+                                }, 200);
+                            } else {
+                                console.log('Saved scroll position is too old, clearing');
+                                sessionStorage.removeItem('sidebar_scroll_position');
+                                sessionStorage.removeItem('sidebar_scroll_timestamp');
+                            }
+                        }
+                    } catch (e) {
+                        console.error('Failed to restore scroll position:', e);
+                    }
+                    
+                    // Clear saved scroll position when user manually scrolls to top
+                    navElement.addEventListener('scroll', function() {
+                        if (this.scrollTop === 0) {
+                            try {
+                                sessionStorage.removeItem('sidebar_scroll_position');
+                                sessionStorage.removeItem('sidebar_scroll_timestamp');
+                                console.log('Cleared scroll position - user scrolled to top');
+                            } catch (e) {
+                                console.error('Failed to clear scroll position:', e);
+                            }
+                        }
+                    });
+                }
                 
                 // Handle window resize
                 window.addEventListener('resize', function() {
@@ -436,6 +510,19 @@
                         navbar.classList.add('navbar-collapsed');
                         mainContent.classList.add('main-content-collapsed');
                     }
+                }
+                
+                // Clear saved scroll position when logging out
+                const logoutForm = document.querySelector('form[action*="logout"]');
+                if (logoutForm) {
+                    logoutForm.addEventListener('submit', function() {
+                        try {
+                            sessionStorage.removeItem('sidebar_scroll_position');
+                            sessionStorage.removeItem('sidebar_scroll_timestamp');
+                        } catch (e) {
+                            // Ignore if sessionStorage not available
+                        }
+                    });
                 }
             });
         </script>
