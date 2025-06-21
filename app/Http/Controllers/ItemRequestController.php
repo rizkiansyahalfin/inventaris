@@ -18,12 +18,12 @@ class ItemRequestController extends Controller
     {
         $user = Auth::user();
         $query = ItemRequest::with(['user', 'item']);
-        
+
         // Jika user biasa, hanya tampilkan permintaan miliknya
         if ($user->isUser()) {
             $query->where('user_id', $user->id);
         }
-        
+
         // Filter berdasarkan request
         $query->when($request->status, function ($query, $status) {
                 return $query->where('status', $status);

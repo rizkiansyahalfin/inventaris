@@ -22,7 +22,7 @@ class StockOpnameController extends Controller
         
         // Log activity
         \App\Models\ActivityLog::log('view', 'stock_opname', 'Lihat daftar stock opname (' . $stockOpnames->total() . ' stock opname)');
-        
+            
         return view('stock-opnames.index', compact('stockOpnames'));
     }
 

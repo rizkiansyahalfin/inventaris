@@ -101,10 +101,10 @@ class BookmarkController extends Controller
             $message = 'Item ditambahkan ke bookmark.';
             $action = 'create';
         }
-        
+
         // Log activity
         \App\Models\ActivityLog::log($action, 'bookmark', ($action === 'create' ? 'Menambah' : 'Menghapus') . ' bookmark untuk item: ' . $item->name . ' (ID: ' . $item->id . ')');
-        
+
         return back()->with('success', $message);
     }
 }

@@ -46,7 +46,7 @@ class SystemConfigController extends BaseController
         
         // Log activity
         \App\Models\ActivityLog::log('create', 'system_config', 'Menambah konfigurasi sistem: ' . $config->key);
-        
+
         return redirect()->route('system-configs.index')
             ->with('success', 'Konfigurasi berhasil ditambahkan');
     }
@@ -79,7 +79,7 @@ class SystemConfigController extends BaseController
         
         // Log activity
         \App\Models\ActivityLog::log('update', 'system_config', 'Mengedit konfigurasi sistem: ' . $systemConfig->key);
-        
+
         return redirect()->route('system-configs.index')
             ->with('success', 'Konfigurasi berhasil diperbarui');
     }
@@ -91,7 +91,7 @@ class SystemConfigController extends BaseController
         
         // Log activity
         \App\Models\ActivityLog::log('delete', 'system_config', 'Menghapus konfigurasi sistem: ' . $configKey);
-        
+
         return redirect()->route('system-configs.index')
             ->with('success', 'Konfigurasi berhasil dihapus');
     }

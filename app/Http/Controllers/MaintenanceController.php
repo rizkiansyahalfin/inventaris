@@ -17,7 +17,7 @@ class MaintenanceController extends Controller
     public function index(Request $request)
     {
         $query = Maintenance::with(['item', 'user']);
-        
+
         // Filter berdasarkan request
         $query->when($request->status, function ($query, $status) {
                 if ($status === 'completed') {
@@ -30,8 +30,8 @@ class MaintenanceController extends Controller
             ->when($request->search, function ($query, $search) {
                 return $query->whereHas('item', function ($q) use ($search) {
                     $q->where('name', 'like', "%{$search}%")
-                        ->orWhere('code', 'like', "%{$search}%");
-                });
+                               ->orWhere('code', 'like', "%{$search}%");
+                  });
             })
             ->when($request->type, function ($query, $type) {
                 return $query->where('type', $type);
@@ -77,9 +77,9 @@ class MaintenanceController extends Controller
     {
         $items = Item::where('status', Item::STATUS_MAINTENANCE)
             ->orWhere('condition', '!=', 'Baik')
-            ->orderBy('name')
-            ->get();
-
+                    ->orderBy('name')
+                    ->get();
+                    
         // Prepare items data for JavaScript
         $itemsWithCondition = $items->keyBy('id')->map(function ($item) {
             return ['condition' => $item->condition];

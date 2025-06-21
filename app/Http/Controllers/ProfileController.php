@@ -74,7 +74,7 @@ class ProfileController extends Controller
         
         // Log activity
         \App\Models\ActivityLog::log('update', 'profile', 'Mengedit profil');
-        
+
         return Redirect::route('profile.edit')->with('status', 'profile-updated');
     }
 
@@ -95,7 +95,7 @@ class ProfileController extends Controller
         
         // Log activity
         \App\Models\ActivityLog::log('delete', 'profile', 'Menghapus akun profil');
-        
+
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
