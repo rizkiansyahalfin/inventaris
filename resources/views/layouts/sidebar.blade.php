@@ -1,5 +1,6 @@
 @php
     $user = auth()->user();
+    $unreadNotifications = $user->notifications()->unread()->count();
 @endphp
 
 <!-- Sidebar Navigation -->
@@ -208,10 +209,17 @@
         <a href="{{ route('notifications.index') }}" 
            class="group flex items-center px-3 py-3 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('notifications.*') ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200' : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700' }}"
            title="Notifikasi">
-            <div class="sidebar-icon">
+            <div class="sidebar-icon relative">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-5 5v-5zM11 19H6.5A2.5 2.5 0 014 16.5v-9A2.5 2.5 0 016.5 5h11A2.5 2.5 0 0120 7.5V13"/>
                 </svg>
+                @if($unreadNotifications > 0)
+                    <span class="absolute -top-1 -right-1 h-4 w-4 bg-red-500 rounded-full flex items-center justify-center text-xs text-white font-medium">
+                        {{ $unreadNotifications > 9 ? '9+' : $unreadNotifications }}
+                    </span>
+                @else
+                    <span class="absolute -top-1 -right-1 h-2 w-2 bg-gray-300 dark:bg-gray-600 rounded-full"></span>
+                @endif
             </div>
             <span class="sidebar-text ml-3">Notifikasi</span>
         </a>
