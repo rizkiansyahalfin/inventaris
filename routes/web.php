@@ -26,6 +26,56 @@ Route::get('/', function () {
     return redirect()->route('login');
 });
 
+// Untuk PETUGAS & ADMIN (manajemen barang, approval, dsb)
+Route::middleware(['auth', 'role:petugas,admin'])->group(function () {
+    // Manajemen barang
+    Route::resource('items', ItemController::class)->except(['index', 'show']);
+    Route::get('/items/{item}/add-stock', [ItemController::class, 'showAddStockForm'])->name('items.add-stock.form');
+    Route::post('/items/{item}/add-stock', [ItemController::class, 'addStock'])->name('items.add-stock');
+
+    // Tambahkan resource route untuk maintenances
+    Route::resource('maintenances', MaintenanceController::class);
+
+    // Perpanjangan Peminjaman
+    Route::get('/borrows/{borrow}/extend', [BorrowExtensionController::class, 'create'])->name('borrows.extend');
+    Route::post('/borrows/{borrow}/extend', [BorrowExtensionController::class, 'store'])->name('borrows.extend.store');
+    Route::get('/extensions', [BorrowExtensionController::class, 'index'])->name('extensions.index');
+    Route::get('/extensions/{extension}', [BorrowExtensionController::class, 'show'])->name('extensions.show');
+    Route::post('/extensions/{extension}/status', [BorrowExtensionController::class, 'updateStatus'])->name('extensions.update_status');
+
+    // Kelola peminjaman (update status, approval, dsb)
+    Route::post('/borrows/{borrow}/status', [BorrowController::class, 'updateStatus'])->name('borrows.update_status');
+    Route::post('/borrows/{borrow}/approve', [BorrowController::class, 'approve'])->name('borrows.approve');
+    Route::post('/borrows/{borrow}/reject', [BorrowController::class, 'reject'])->name('borrows.reject');
+    Route::resource('borrows', BorrowController::class)->except(['index', 'show', 'create', 'store']);
+
+    // Akses ke lampiran
+    Route::resource('attachments', AttachmentController::class)->only(['destroy']);
+
+    // Laporan dasar
+    Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
+
+    // Kelola Permintaan Barang
+    Route::post('/item-requests/{itemRequest}/status', [ItemRequestController::class, 'updateStatus'])->name('item-requests.update_status');
+    Route::patch('/item-requests/{itemRequest}/approve', [ItemRequestController::class, 'approve'])->name('item-requests.approve');
+    Route::patch('/item-requests/{itemRequest}/reject', [ItemRequestController::class, 'reject'])->name('item-requests.reject');
+
+    // Stock Opname
+    Route::get('/stock-opnames', [StockOpnameController::class, 'index'])->name('stock-opnames.index');
+    Route::get('/stock-opnames/create', [StockOpnameController::class, 'create'])->name('stock-opnames.create');
+    Route::post('/stock-opnames', [StockOpnameController::class, 'store'])->name('stock-opnames.store');
+    Route::get('/stock-opnames/{stockOpname}', [StockOpnameController::class, 'show'])->name('stock-opnames.show');
+    Route::get('/stock-opnames/{stockOpname}/edit', [StockOpnameController::class, 'edit'])->name('stock-opnames.edit');
+    Route::patch('/stock-opnames/{stockOpname}', [StockOpnameController::class, 'update'])->name('stock-opnames.update');
+    Route::delete('/stock-opnames/{stockOpname}', [StockOpnameController::class, 'destroy'])->name('stock-opnames.destroy');
+    Route::post('/stock-opnames/{stockOpname}/start', [StockOpnameController::class, 'start'])->name('stock-opnames.start');
+    Route::get('/stock-opnames/{stockOpname}/items', [StockOpnameController::class, 'itemsIndex'])->name('stock-opnames.items.index');
+    Route::get('/stock-opnames/{stockOpname}/items/{item}', [StockOpnameController::class, 'checkItem'])->name('stock-opnames.items.check');
+    Route::post('/stock-opnames/{stockOpname}/items/{item}', [StockOpnameController::class, 'saveItemCheck'])->name('stock-opnames.items.save');
+    Route::post('/stock-opnames/{stockOpname}/complete', [StockOpnameController::class, 'complete'])->name('stock-opnames.complete');
+});
+
+
 // Untuk semua user yang sudah login (user, petugas, admin)
 Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
@@ -80,54 +130,6 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/notifications', [NotificationController::class, 'clearAll'])->name('notifications.clear-all');
 });
 
-// Untuk PETUGAS & ADMIN (manajemen barang, approval, dsb)
-Route::middleware(['auth', 'role:petugas,admin'])->group(function () {
-    // Manajemen barang
-    Route::resource('items', ItemController::class)->except(['index', 'show']);
-    Route::get('/items/{item}/add-stock', [ItemController::class, 'showAddStockForm'])->name('items.add-stock.form');
-    Route::post('/items/{item}/add-stock', [ItemController::class, 'addStock'])->name('items.add-stock');
-
-    // Tambahkan resource route untuk maintenances
-    Route::resource('maintenances', MaintenanceController::class);
-
-    // Perpanjangan Peminjaman
-    Route::get('/borrows/{borrow}/extend', [BorrowExtensionController::class, 'create'])->name('borrows.extend');
-    Route::post('/borrows/{borrow}/extend', [BorrowExtensionController::class, 'store'])->name('borrows.extend.store');
-    Route::get('/extensions', [BorrowExtensionController::class, 'index'])->name('extensions.index');
-    Route::get('/extensions/{extension}', [BorrowExtensionController::class, 'show'])->name('extensions.show');
-    Route::post('/extensions/{extension}/status', [BorrowExtensionController::class, 'updateStatus'])->name('extensions.update_status');
-
-    // Kelola peminjaman (update status, approval, dsb)
-    Route::post('/borrows/{borrow}/status', [BorrowController::class, 'updateStatus'])->name('borrows.update_status');
-    Route::post('/borrows/{borrow}/approve', [BorrowController::class, 'approve'])->name('borrows.approve');
-    Route::post('/borrows/{borrow}/reject', [BorrowController::class, 'reject'])->name('borrows.reject');
-    Route::resource('borrows', BorrowController::class)->except(['index', 'show', 'create', 'store']);
-
-    // Akses ke lampiran
-    Route::resource('attachments', AttachmentController::class)->only(['destroy']);
-
-    // Laporan dasar
-    Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
-
-    // Kelola Permintaan Barang
-    Route::post('/item-requests/{itemRequest}/status', [ItemRequestController::class, 'updateStatus'])->name('item-requests.update_status');
-    Route::patch('/item-requests/{itemRequest}/approve', [ItemRequestController::class, 'approve'])->name('item-requests.approve');
-    Route::patch('/item-requests/{itemRequest}/reject', [ItemRequestController::class, 'reject'])->name('item-requests.reject');
-
-    // Stock Opname
-    Route::get('/stock-opnames', [StockOpnameController::class, 'index'])->name('stock-opnames.index');
-    Route::get('/stock-opnames/create', [StockOpnameController::class, 'create'])->name('stock-opnames.create');
-    Route::post('/stock-opnames', [StockOpnameController::class, 'store'])->name('stock-opnames.store');
-    Route::get('/stock-opnames/{stockOpname}', [StockOpnameController::class, 'show'])->name('stock-opnames.show');
-    Route::get('/stock-opnames/{stockOpname}/edit', [StockOpnameController::class, 'edit'])->name('stock-opnames.edit');
-    Route::patch('/stock-opnames/{stockOpname}', [StockOpnameController::class, 'update'])->name('stock-opnames.update');
-    Route::delete('/stock-opnames/{stockOpname}', [StockOpnameController::class, 'destroy'])->name('stock-opnames.destroy');
-    Route::post('/stock-opnames/{stockOpname}/start', [StockOpnameController::class, 'start'])->name('stock-opnames.start');
-    Route::get('/stock-opnames/{stockOpname}/items', [StockOpnameController::class, 'itemsIndex'])->name('stock-opnames.items.index');
-    Route::get('/stock-opnames/{stockOpname}/items/{item}', [StockOpnameController::class, 'checkItem'])->name('stock-opnames.items.check');
-    Route::post('/stock-opnames/{stockOpname}/items/{item}', [StockOpnameController::class, 'saveItemCheck'])->name('stock-opnames.items.save');
-    Route::post('/stock-opnames/{stockOpname}/complete', [StockOpnameController::class, 'complete'])->name('stock-opnames.complete');
-});
 
 // Rute khusus admin
 Route::middleware(['auth', 'role:admin'])->group(function () {
