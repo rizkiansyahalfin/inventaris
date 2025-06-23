@@ -9,7 +9,6 @@ use App\Models\Borrow;
 use App\Models\ItemRequest;
 use App\Models\Maintenance;
 use App\Models\StockOpname;
-use App\Models\ActivityLog;
 use Illuminate\Database\Seeder;
 use Carbon\Carbon;
 
@@ -52,8 +51,6 @@ class DummyDataSeeder extends Seeder
         // Create additional stock opnames
         $this->createAdditionalStockOpnames($additionalStaff, $additionalItems);
 
-        // Create additional activity logs
-        $this->createAdditionalActivityLogs($additionalSantri, $additionalStaff, $additionalItems);
 
         $this->command->info('Data dummy berhasil dibuat!');
     }
@@ -248,32 +245,6 @@ class DummyDataSeeder extends Seeder
                 'created_at' => $opnameDate,
                 'updated_at' => $opnameDate,
             ]);
-        }
-    }
-
-    private function createAdditionalActivityLogs($santri, $staff, $items)
-    {
-        $allUsers = $santri->merge($staff);
-        
-        foreach ($items as $item) {
-            // Create 1-3 activities per item
-            $activityCount = rand(1, 3);
-            
-            for ($i = 0; $i < $activityCount; $i++) {
-                $user = $allUsers->random();
-                $timestamp = Carbon::now()->subDays(rand(1, 30));
-                
-                ActivityLog::create([
-                    'user_id' => $user->id,
-                    'action' => 'Mengakses detail barang',
-                    'module' => 'items',
-                    'description' => 'Mengakses detail barang - ' . $item->name,
-                    'ip_address' => rand(192, 223) . '.' . rand(0, 255) . '.' . rand(0, 255) . '.' . rand(1, 254),
-                    'user_agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-                    'created_at' => $timestamp,
-                    'updated_at' => $timestamp,
-                ]);
-            }
         }
     }
 }
