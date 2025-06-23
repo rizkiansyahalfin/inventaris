@@ -16,10 +16,18 @@ class ItemFeedbackController extends Controller
     {
         $user = Auth::user();
         $query = ItemFeedback::with(['user', 'item']);
+        $borrowsTanpaFeedback = null;
         
         // Jika user biasa, hanya tampilkan feedback miliknya
         if ($user->isUser()) {
             $query->where('user_id', $user->id);
+            // Ambil daftar peminjaman yang sudah selesai, belum diberi feedback
+            $borrowsTanpaFeedback = \App\Models\Borrow::where('user_id', $user->id)
+                ->where('status', 'returned')
+                ->whereDoesntHave('feedback')
+                ->with('item')
+                ->orderBy('borrow_date', 'desc')
+                ->get();
         }
         
         $feedbacks = $query->orderBy('created_at', 'desc')->paginate(10);
@@ -28,7 +36,7 @@ class ItemFeedbackController extends Controller
         $filterDescription = $user->isUser() ? 'Lihat daftar feedback sendiri' : 'Lihat daftar feedback semua user';
         \App\Models\ActivityLog::log('view', 'feedback', $filterDescription . ' (' . $feedbacks->total() . ' feedback)');
         
-        return view('feedbacks.index', compact('feedbacks'));
+        return view('feedbacks.index', compact('feedbacks', 'borrowsTanpaFeedback'));
     }
 
     /**

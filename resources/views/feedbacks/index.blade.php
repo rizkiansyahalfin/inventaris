@@ -6,66 +6,66 @@
 <div class="py-12">
     <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
         <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-xl sm:rounded-lg p-6">
-            @if ($feedbacks->isEmpty())
-                <div class="text-center py-8">
-                    <p class="text-gray-500">Anda belum memberikan feedback untuk barang yang dipinjam</p>
-                    @if(isset($borrowsTanpaFeedback) && $borrowsTanpaFeedback->count())
-                        <div class="mt-6">
-                            <h3 class="text-lg font-semibold mb-4">Peminjaman yang Bisa Diberi Feedback</h3>
-                            <div class="overflow-x-auto">
-                                <table class="min-w-full bg-white border">
-                                    <thead>
-                                        <tr>
-                                            <th class="py-3 px-4 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Barang</th>
-                                            <th class="py-3 px-4 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal Peminjaman</th>
-                                            <th class="py-3 px-4 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal Kembali</th>
-                                            <th class="py-3 px-4 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody class="divide-y divide-gray-200">
-                                        @foreach ($borrowsTanpaFeedback as $borrow)
-                                            <tr>
-                                                <td class="py-4 px-4 whitespace-nowrap">
-                                                    <div class="flex items-center">
-                                                        <div class="flex-shrink-0 h-10 w-10">
-                                                            @if ($borrow->item->image)
-                                                                <img class="h-10 w-10 rounded-full object-cover" src="{{ asset('storage/' . $borrow->item->image) }}" alt="{{ $borrow->item->name }}">
-                                                            @else
-                                                                <div class="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center">
-                                                                    <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                                                                    </svg>
-                                                                </div>
-                                                            @endif
+            {{-- Tabel peminjaman yang bisa diberi feedback --}}
+            @if(isset($borrowsTanpaFeedback) && $borrowsTanpaFeedback->count())
+                <div class="mb-8">
+                    <h3 class="text-lg font-semibold mb-4">Peminjaman yang Bisa Diberi Feedback</h3>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full bg-white border">
+                            <thead>
+                                <tr>
+                                    <th class="py-3 px-4 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Barang</th>
+                                    <th class="py-3 px-4 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal Peminjaman</th>
+                                    <th class="py-3 px-4 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal Kembali</th>
+                                    <th class="py-3 px-4 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-200">
+                                @foreach ($borrowsTanpaFeedback as $borrow)
+                                    <tr>
+                                        <td class="py-4 px-4 whitespace-nowrap">
+                                            <div class="flex items-center">
+                                                <div class="flex-shrink-0 h-10 w-10">
+                                                    @if ($borrow->item->image)
+                                                        <img class="h-10 w-10 rounded-full object-cover" src="{{ asset('storage/' . $borrow->item->image) }}" alt="{{ $borrow->item->name }}">
+                                                    @else
+                                                        <div class="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center">
+                                                            <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                                            </svg>
                                                         </div>
-                                                        <div class="ml-4">
-                                                            <div class="text-sm font-medium text-gray-900">{{ $borrow->item->name }}</div>
-                                                            <div class="text-sm text-gray-500">Kode: {{ $borrow->item->code ?? '-' }}</div>
-                                                        </div>
-                                                    </div>
-                                                </td>
-                                                <td class="py-4 px-4 whitespace-nowrap text-sm text-gray-500">
-                                                    {{ $borrow->borrow_date->format('d M Y') }}
-                                                </td>
-                                                <td class="py-4 px-4 whitespace-nowrap text-sm text-gray-500">
-                                                    {{ $borrow->return_date ? $borrow->return_date->format('d M Y') : '-' }}
-                                                </td>
-                                                <td class="py-4 px-4 whitespace-nowrap text-sm font-medium">
-                                                    <a href="{{ route('feedbacks.create', $borrow) }}" class="text-indigo-600 hover:text-indigo-900 font-semibold">Beri Feedback</a>
-                                                </td>
-                                            </tr>
-                                        @endforeach
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    @else
-                        <a href="{{ route('borrows.index') }}" class="mt-4 inline-flex items-center px-4 py-2 bg-gray-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700">
-                            {{ __('Lihat Peminjaman Saya') }}
-                        </a>
-                    @endif
+                                                    @endif
+                                                </div>
+                                                <div class="ml-4">
+                                                    <div class="text-sm font-medium text-gray-900">{{ $borrow->item->name }}</div>
+                                                    <div class="text-sm text-gray-500">Kode: {{ $borrow->item->code ?? '-' }}</div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="py-4 px-4 whitespace-nowrap text-sm text-gray-500">
+                                            {{ $borrow->borrow_date->format('d M Y') }}
+                                        </td>
+                                        <td class="py-4 px-4 whitespace-nowrap text-sm text-gray-500">
+                                            {{ $borrow->return_date ? $borrow->return_date->format('d M Y') : '-' }}
+                                        </td>
+                                        <td class="py-4 px-4 whitespace-nowrap text-sm font-medium">
+                                            <a href="{{ route('feedbacks.create', $borrow) }}" class="text-indigo-600 hover:text-indigo-900 font-semibold">Beri Feedback</a>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
-            @else
+            @endif
+            {{-- Tabel feedback yang sudah diberikan --}}
+            @if($feedbacks->count())
+                <h3 class="text-lg font-semibold mb-4">Feedback yang Sudah Diberikan</h3>
+                @if(auth()->user()->isAdmin() || auth()->user()->isPetugas())
+                    <div class="mb-4 p-3 bg-yellow-100 text-yellow-800 rounded">
+                        Anda hanya dapat melihat daftar dan detail feedback. Edit, hapus, dan tambah feedback hanya dapat dilakukan oleh pemilik feedback.
+                    </div>
+                @endif
                 <div class="overflow-x-auto">
                     <table class="min-w-full bg-white border">
                         <thead>
@@ -119,9 +119,11 @@
                                         {{ $feedback->created_at->format('d M Y') }}
                                     </td>
                                     <td class="py-4 px-4 whitespace-nowrap text-sm font-medium">
-                                        <div class="flex space-x-2">
-                                            <a href="{{ route('feedbacks.show', $feedback) }}" class="text-blue-600 hover:text-blue-900">Lihat</a>
-                                            <a href="{{ route('feedbacks.edit', $feedback) }}" class="text-green-600 hover:text-green-900">Edit</a>
+                                        <div class="flex flex-row-reverse gap-2">
+                                            <a href="{{ route('feedbacks.show', $feedback) }}" class="inline-flex items-center px-3 py-1.5 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 transition">Lihat</a>
+                                            @if(auth()->id() === $feedback->user_id && !(auth()->user()->isAdmin() || auth()->user()->isPetugas()))
+                                                <a href="{{ route('feedbacks.edit', $feedback) }}" class="inline-flex items-center px-3 py-1.5 bg-green-100 text-green-700 rounded hover:bg-green-200 transition">Edit</a>
+                                            @endif
                                         </div>
                                     </td>
                                 </tr>
@@ -131,6 +133,13 @@
                 </div>
                 <div class="mt-6">
                     {{ $feedbacks->links() }}
+                </div>
+            @else
+                <div class="text-center py-8">
+                    <p class="text-gray-500">Belum ada feedback yang diberikan.</p>
+                    <a href="{{ route('borrows.index') }}" class="mt-4 inline-flex items-center px-4 py-2 bg-gray-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700">
+                        {{ __('Lihat Peminjaman Saya') }}
+                    </a>
                 </div>
             @endif
         </div>

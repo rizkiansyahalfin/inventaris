@@ -50,17 +50,17 @@
                 <div class="mt-1 text-gray-800 dark:text-gray-200">{{ $feedback->created_at->format('d M Y H:i') }}</div>
             </div>
             <div class="flex justify-between items-center mt-6">
-                <a href="{{ route('feedbacks.index') }}" class="inline-flex items-center px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300">Kembali</a>
-                @if (auth()->id() === $feedback->user_id || (auth()->user() && (auth()->user()->isAdmin() ?? false)))
+                @if (auth()->id() === $feedback->user_id && !(auth()->user()->isAdmin() || auth()->user()->isPetugas()))
                     <div class="flex space-x-2">
                         <a href="{{ route('feedbacks.edit', $feedback) }}" class="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">Edit</a>
-                        <form action="{{ route('feedbacks.destroy', $feedback) }}" method="POST" onsubmit="return confirm('Yakin ingin menghapus feedback ini?')">
+                        <form action="{{ route('feedbacks.destroy', $feedback) }}" method="POST" onsubmit="return confirm('Yakin ingin menghapus feedback ini?')" class="inline-block ml-2">
                             @csrf
                             @method('DELETE')
                             <button type="submit" class="inline-flex items-center px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700">Hapus</button>
                         </form>
                     </div>
                 @endif
+                <a href="{{ route('feedbacks.index') }}" class="inline-flex items-center px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 ml-4">Kembali</a>
             </div>
         </div>
     </div>
