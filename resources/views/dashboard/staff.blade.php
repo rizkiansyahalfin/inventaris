@@ -13,25 +13,45 @@
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
                 <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm rounded-lg">
                     <div class="p-6">
-                        <div class="text-sm font-medium text-gray-500 dark:text-gray-400">Peminjaman Hari Ini</div>
+                        <div class="flex items-center justify-between mb-2">
+                            <a href="{{ route('borrows.index', ['created_at' => 'today']) }}" class="text-sm font-medium text-gray-500 dark:text-gray-400 hover:underline">Peminjaman Hari Ini</a>
+                            <a href="{{ route('borrows.index', ['created_at' => 'today']) }}" class="ml-2 text-blue-500 hover:underline text-xs flex items-center" title="Lihat Detail">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 3h7m0 0v7m0-7L10 14m-7 7h7a2 2 0 002-2v-7" /></svg>
+                            </a>
+                        </div>
                         <div class="mt-2 text-3xl font-semibold text-gray-900 dark:text-gray-100">{{ $stats['today_borrows'] }}</div>
                     </div>
                 </div>
                 <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm rounded-lg">
                     <div class="p-6">
-                        <div class="text-sm font-medium text-gray-500 dark:text-gray-400">Pengembalian Hari Ini</div>
+                        <div class="flex items-center justify-between mb-2">
+                            <a href="{{ route('borrows.index', ['return_date' => 'today']) }}" class="text-sm font-medium text-gray-500 dark:text-gray-400 hover:underline">Pengembalian Hari Ini</a>
+                            <a href="{{ route('borrows.index', ['return_date' => 'today']) }}" class="ml-2 text-blue-500 hover:underline text-xs flex items-center" title="Lihat Detail">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 3h7m0 0v7m0-7L10 14m-7 7h7a2 2 0 002-2v-7" /></svg>
+                            </a>
+                        </div>
                         <div class="mt-2 text-3xl font-semibold text-gray-900 dark:text-gray-100">{{ $stats['today_returns'] }}</div>
                     </div>
                 </div>
                 <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm rounded-lg">
                     <div class="p-6">
-                        <div class="text-sm font-medium text-gray-500 dark:text-gray-400">Terlambat Dikembalikan</div>
+                        <div class="flex items-center justify-between mb-2">
+                            <a href="{{ route('borrows.index', ['status' => 'borrowed', 'overdue' => '1']) }}" class="text-sm font-medium text-gray-500 dark:text-gray-400 hover:underline">Terlambat Dikembalikan</a>
+                            <a href="{{ route('borrows.index', ['status' => 'borrowed', 'overdue' => '1']) }}" class="ml-2 text-blue-500 hover:underline text-xs flex items-center" title="Lihat Detail">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 3h7m0 0v7m0-7L10 14m-7 7h7a2 2 0 002-2v-7" /></svg>
+                            </a>
+                        </div>
                         <div class="mt-2 text-3xl font-semibold text-gray-900 dark:text-gray-100">{{ $stats['pending_returns'] }}</div>
                     </div>
                 </div>
                 <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm rounded-lg">
                     <div class="p-6">
-                        <div class="text-sm font-medium text-gray-500 dark:text-gray-400">Stok Kritis</div>
+                        <div class="flex items-center justify-between mb-2">
+                            <a href="{{ route('items.index', ['stock' => 'low']) }}" class="text-sm font-medium text-gray-500 dark:text-gray-400 hover:underline">Stok Kritis</a>
+                            <a href="{{ route('items.index', ['stock' => 'low']) }}" class="ml-2 text-blue-500 hover:underline text-xs flex items-center" title="Lihat Detail">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 3h7m0 0v7m0-7L10 14m-7 7h7a2 2 0 002-2v-7" /></svg>
+                            </a>
+                        </div>
                         <div class="mt-2 text-3xl font-semibold text-gray-900 dark:text-gray-100">{{ $stats['low_stock_items'] }}</div>
                     </div>
                 </div>
@@ -42,7 +62,12 @@
                 <!-- Grafik Peminjaman per Bulan -->
                 <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm rounded-lg">
                     <div class="p-6">
-                        <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Peminjaman per Bulan</h3>
+                        <div class="flex items-center justify-between mb-4">
+                            <a href="{{ route('borrows.index') }}" class="text-lg font-medium text-gray-900 dark:text-gray-100 hover:underline">Peminjaman per Bulan</a>
+                            <a href="{{ route('borrows.index') }}" class="ml-2 text-blue-500 hover:underline text-sm flex items-center" title="Lihat Detail">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 3h7m0 0v7m0-7L10 14m-7 7h7a2 2 0 002-2v-7" /></svg>
+                            </a>
+                        </div>
                         <canvas id="borrowsChart" height="300"></canvas>
                     </div>
                 </div>
@@ -50,7 +75,12 @@
                 <!-- Grafik Barang per Kategori -->
                 <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm rounded-lg">
                     <div class="p-6">
-                        <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Barang per Kategori</h3>
+                        <div class="flex items-center justify-between mb-4">
+                            <a href="{{ route('items.index') }}" class="text-lg font-medium text-gray-900 dark:text-gray-100 hover:underline">Barang per Kategori</a>
+                            <a href="{{ route('items.index') }}" class="ml-2 text-blue-500 hover:underline text-sm flex items-center" title="Lihat Detail">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 3h7m0 0v7m0-7L10 14m-7 7h7a2 2 0 002-2v-7" /></svg>
+                            </a>
+                        </div>
                         <canvas id="categoryChart" height="300"></canvas>
                     </div>
                 </div>
@@ -61,49 +91,59 @@
             <!-- Peminjaman Hari Ini -->
                 <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm rounded-lg">
                 <div class="p-6">
-                    <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Peminjaman Hari Ini</h3>
-                        <div class="overflow-x-auto" style="max-height: 300px; overflow-y: auto; min-height: 60px;">
-                            @if($todayBorrows->count() > 5)
-                                <small class="text-gray-400">Scroll ke bawah untuk melihat semua data</small>
-                            @endif
-                        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                            <thead>
-                                <tr>
-                                    <th class="px-6 py-3 bg-gray-50 dark:bg-gray-700 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Pengguna</th>
-                                    <th class="px-6 py-3 bg-gray-50 dark:bg-gray-700 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Barang</th>
-                                    <th class="px-6 py-3 bg-gray-50 dark:bg-gray-700 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Tanggal</th>
-                                    <th class="px-6 py-3 bg-gray-50 dark:bg-gray-700 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Aksi</th>
-                                </tr>
-                            </thead>
-                            <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                                @foreach($todayBorrows as $borrow)
-                                <tr>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">{{ $borrow->user?->name ?? 'User tidak ditemukan' }}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">{{ $borrow->item?->name ?? 'Barang tidak ditemukan' }}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">{{ $borrow->created_at->format('d/m/Y') }}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
-                                        <form action="{{ route('borrows.approve', $borrow) }}" method="POST" class="inline">
-                                            @csrf
-                                            <button type="submit" class="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300 mr-2" onclick="return confirm('Setujui peminjaman ini?')">Setujui</button>
-                                        </form>
-                                        <form action="{{ route('borrows.reject', $borrow) }}" method="POST" class="inline">
-                                            @csrf
-                                            <input type="hidden" name="rejection_reason" value="Ditolak oleh petugas dari dashboard">
-                                            <button type="submit" class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300" onclick="return confirm('Tolak peminjaman ini?')">Tolak</button>
-                                        </form>
-                                    </td>
-                                </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
+                    <div class="flex items-center justify-between mb-4">
+                        <a href="{{ route('borrows.index', ['created_at' => 'today', 'approval_status' => 'pending']) }}" class="text-lg font-medium text-gray-900 dark:text-gray-100 hover:underline">Peminjaman Hari Ini</a>
+                        <a href="{{ route('borrows.index', ['created_at' => 'today', 'approval_status' => 'pending']) }}" class="ml-2 text-blue-500 hover:underline text-sm flex items-center" title="Lihat Semua">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 3h7m0 0v7m0-7L10 14m-7 7h7a2 2 0 002-2v-7" /></svg>
+                        </a>
                     </div>
+                    <div class="overflow-x-auto" style="max-height: 300px; overflow-y: auto; min-height: 60px;">
+                        @if($todayBorrows->count() > 5)
+                            <small class="text-gray-400">Scroll ke bawah untuk melihat semua data</small>
+                        @endif
+                    <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                        <thead>
+                            <tr>
+                                <th class="px-6 py-3 bg-gray-50 dark:bg-gray-700 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Pengguna</th>
+                                <th class="px-6 py-3 bg-gray-50 dark:bg-gray-700 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Barang</th>
+                                <th class="px-6 py-3 bg-gray-50 dark:bg-gray-700 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Tanggal</th>
+                                <th class="px-6 py-3 bg-gray-50 dark:bg-gray-700 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                            @foreach($todayBorrows as $borrow)
+                            <tr>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">{{ $borrow->user?->name ?? 'User tidak ditemukan' }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">{{ $borrow->item?->name ?? 'Barang tidak ditemukan' }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">{{ $borrow->created_at->format('d/m/Y') }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
+                                    <form action="{{ route('borrows.approve', $borrow) }}" method="POST" class="inline">
+                                        @csrf
+                                        <button type="submit" class="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300 mr-2" onclick="return confirm('Setujui peminjaman ini?')">Setujui</button>
+                                    </form>
+                                    <form action="{{ route('borrows.reject', $borrow) }}" method="POST" class="inline">
+                                        @csrf
+                                        <input type="hidden" name="rejection_reason" value="Ditolak oleh petugas dari dashboard">
+                                        <button type="submit" class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300" onclick="return confirm('Tolak peminjaman ini?')">Tolak</button>
+                                    </form>
+                                </td>
+                            </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
                 </div>
             </div>
+        </div>
 
                 <!-- Pengembalian yang Akan Datang -->
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm rounded-lg">
                 <div class="p-6">
-                        <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Pengembalian yang Akan Datang</h3>
+                    <div class="flex items-center justify-between mb-4">
+                        <a href="{{ route('borrows.index', ['status' => 'borrowed', 'due_soon' => '1']) }}" class="text-lg font-medium text-gray-900 dark:text-gray-100 hover:underline">Pengembalian yang Akan Datang</a>
+                        <a href="{{ route('borrows.index', ['status' => 'borrowed', 'due_soon' => '1']) }}" class="ml-2 text-blue-500 hover:underline text-sm flex items-center" title="Lihat Semua">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 3h7m0 0v7m0-7L10 14m-7 7h7a2 2 0 002-2v-7" /></svg>
+                        </a>
+                    </div>
                     <div class="overflow-x-auto">
                         <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                             <thead>

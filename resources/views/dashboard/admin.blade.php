@@ -5,25 +5,45 @@
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm rounded-lg">
             <div class="p-6">
-                <div class="text-sm font-medium text-gray-500 dark:text-gray-400">Total Barang</div>
+                <div class="flex items-center justify-between mb-2">
+                    <a href="{{ route('items.index') }}" class="text-sm font-medium text-gray-500 dark:text-gray-400 hover:underline">Total Barang</a>
+                    <a href="{{ route('items.index') }}" class="ml-2 text-blue-500 hover:underline text-xs flex items-center" title="Lihat Barang">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 3h7m0 0v7m0-7L10 14m-7 7h7a2 2 0 002-2v-7" /></svg>
+                    </a>
+                </div>
                 <div class="mt-2 text-3xl font-semibold text-gray-900 dark:text-gray-100">{{ $stats['total_items'] }}</div>
             </div>
         </div>
         <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm rounded-lg">
             <div class="p-6">
-                <div class="text-sm font-medium text-gray-500 dark:text-gray-400">Total Pengguna</div>
+                <div class="flex items-center justify-between mb-2">
+                    <a href="{{ route('admin.users.index') }}" class="text-sm font-medium text-gray-500 dark:text-gray-400 hover:underline">Total Pengguna</a>
+                    <a href="{{ route('admin.users.index') }}" class="ml-2 text-blue-500 hover:underline text-xs flex items-center" title="Lihat Pengguna">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 3h7m0 0v7m0-7L10 14m-7 7h7a2 2 0 002-2v-7" /></svg>
+                    </a>
+                </div>
                 <div class="mt-2 text-3xl font-semibold text-gray-900 dark:text-gray-100">{{ $stats['total_users'] }}</div>
             </div>
         </div>
         <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm rounded-lg">
             <div class="p-6">
-                <div class="text-sm font-medium text-gray-500 dark:text-gray-400">Total Peminjaman</div>
+                <div class="flex items-center justify-between mb-2">
+                    <a href="{{ route('borrows.index') }}" class="text-sm font-medium text-gray-500 dark:text-gray-400 hover:underline">Total Peminjaman</a>
+                    <a href="{{ route('borrows.index') }}" class="ml-2 text-blue-500 hover:underline text-xs flex items-center" title="Lihat Peminjaman">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 3h7m0 0v7m0-7L10 14m-7 7h7a2 2 0 002-2v-7" /></svg>
+                    </a>
+                </div>
                 <div class="mt-2 text-3xl font-semibold text-gray-900 dark:text-gray-100">{{ $stats['total_borrows'] }}</div>
             </div>
         </div>
         <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm rounded-lg">
             <div class="p-6">
-                <div class="text-sm font-medium text-gray-500 dark:text-gray-400">Permintaan Pending</div>
+                <div class="flex items-center justify-between mb-2">
+                    <a href="{{ route('borrows.index', ['approval_status' => 'pending']) }}" class="text-sm font-medium text-gray-500 dark:text-gray-400 hover:underline">Permintaan Pending</a>
+                    <a href="{{ route('borrows.index', ['approval_status' => 'pending']) }}" class="ml-2 text-blue-500 hover:underline text-xs flex items-center" title="Lihat Pending">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 3h7m0 0v7m0-7L10 14m-7 7h7a2 2 0 002-2v-7" /></svg>
+                    </a>
+                </div>
                 <div class="mt-2 text-3xl font-semibold text-gray-900 dark:text-gray-100">{{ $stats['pending_requests'] }}</div>
             </div>
         </div>
@@ -34,7 +54,12 @@
         <!-- Grafik Peminjaman per Bulan -->
         <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm rounded-lg">
             <div class="p-6">
-                <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Peminjaman per Bulan</h3>
+                <div class="flex items-center justify-between mb-4">
+                    <a href="{{ route('borrows.index') }}" class="text-lg font-medium text-gray-900 dark:text-gray-100 hover:underline">Peminjaman per Bulan</a>
+                    <a href="{{ route('borrows.index') }}" class="ml-2 text-blue-500 hover:underline text-sm flex items-center" title="Lihat Detail">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 3h7m0 0v7m0-7L10 14m-7 7h7a2 2 0 002-2v-7" /></svg>
+                    </a>
+                </div>
                 <canvas id="borrowsChart" height="300"></canvas>
             </div>
         </div>
@@ -42,7 +67,12 @@
         <!-- Grafik Barang per Kategori -->
         <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm rounded-lg">
             <div class="p-6">
-                <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Barang per Kategori</h3>
+                <div class="flex items-center justify-between mb-4">
+                    <a href="{{ route('items.index') }}" class="text-lg font-medium text-gray-900 dark:text-gray-100 hover:underline">Barang per Kategori</a>
+                    <a href="{{ route('items.index') }}" class="ml-2 text-blue-500 hover:underline text-sm flex items-center" title="Lihat Detail">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 3h7m0 0v7m0-7L10 14m-7 7h7a2 2 0 002-2v-7" /></svg>
+                    </a>
+                </div>
                 <canvas id="categoryChart" height="300"></canvas>
             </div>
         </div>
@@ -53,7 +83,12 @@
         <!-- Peminjaman yang Perlu Persetujuan -->
         <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm rounded-lg">
             <div class="p-6">
-                <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Peminjaman yang Perlu Persetujuan</h3>
+                <div class="flex items-center justify-between mb-4">
+                    <a href="{{ route('borrows.index', ['approval_status' => 'pending']) }}" class="text-lg font-medium text-gray-900 dark:text-gray-100 hover:underline">Peminjaman yang Perlu Persetujuan</a>
+                    <a href="{{ route('borrows.index', ['approval_status' => 'pending']) }}" class="ml-2 text-blue-500 hover:underline text-sm flex items-center" title="Lihat Semua">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 3h7m0 0v7m0-7L10 14m-7 7h7a2 2 0 002-2v-7" /></svg>
+                    </a>
+                </div>
                 <div class="overflow-x-auto" style="max-height: 300px; overflow-y: auto; min-height: 60px;">
                     @if($pendingApprovals->count() > 5)
                         <small class="text-gray-400">Scroll ke bawah untuk melihat semua data</small>
@@ -95,7 +130,12 @@
         <!-- Stok Barang Kritis -->
         <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm rounded-lg">
             <div class="p-6">
-                <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Stok Barang Kritis</h3>
+                <div class="flex items-center justify-between mb-4">
+                    <a href="{{ route('items.index', ['stock' => 'low']) }}" class="text-lg font-medium text-gray-900 dark:text-gray-100 hover:underline">Stok Barang Kritis</a>
+                    <a href="{{ route('items.index', ['stock' => 'low']) }}" class="ml-2 text-blue-500 hover:underline text-sm flex items-center" title="Lihat Semua">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 3h7m0 0v7m0-7L10 14m-7 7h7a2 2 0 002-2v-7" /></svg>
+                    </a>
+                </div>
                 <div class="overflow-x-auto">
                     <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                         <thead>
