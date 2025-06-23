@@ -100,12 +100,14 @@
                                 </span>
                             @endif
                         </div>
+                        @if($totalNotifications > 0)
                         <div class="flex items-center space-x-2">
                             <span class="text-xs text-gray-500 dark:text-gray-400">{{ $totalNotifications }} total</span>
                             <a href="{{ route('notifications.index') }}" class="text-xs text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">
                                 Lihat Semua
                             </a>
                         </div>
+                        @endif
                     </div>
                     <div class="h-96 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600 scrollbar-track-gray-100 dark:scrollbar-track-gray-800" style="overflow-y: scroll !important;" x-ref="scrollContainer">
                         @if($recentNotifications->isEmpty())
@@ -145,9 +147,10 @@
                                             </div>
                                             <div class="flex-1 min-w-0 max-w-full">
                                                 <div class="flex flex-col space-y-1">
-                                                    <p class="text-sm font-medium text-gray-800 dark:text-gray-200 {{ !$notification->isRead() ? 'font-semibold' : '' }} break-words leading-tight">
+                                                    <a href="{{ route('notifications.index') }}?notification_id={{ $notification->id }}"
+                                                       class="text-sm font-medium text-gray-800 dark:text-gray-200 {{ !$notification->isRead() ? 'font-semibold' : '' }} break-words leading-tight hover:underline">
                                                         {{ $notification->title }}
-                                                    </p>
+                                                    </a>
                                                     <p class="text-xs text-gray-500 dark:text-gray-400 line-clamp-2 break-words leading-relaxed">
                                                         {{ $notification->message }}
                                                     </p>

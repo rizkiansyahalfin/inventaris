@@ -11,14 +11,42 @@ class NotificationController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
+        // Mark notification as read if coming from a link with notification_id
+        if ($request->has('notification_id')) {
+            $notification = Auth::user()->notifications()->where('id', $request->notification_id)->first();
+            if ($notification) {
+                $notification->markAsRead();
+            }
+        }
+
         $notifications = Auth::user()->notifications()->orderBy('created_at', 'desc')->paginate(20);
         
         // Log activity
         \App\Models\ActivityLog::log('view', 'notification', 'Lihat daftar notifikasi (' . $notifications->total() . ' notifikasi)');
         
         return view('notifications.index', compact('notifications'));
+    }
+
+    /**
+     * Display the specified resource.
+     */
+    public function show(Notification $notification)
+    {
+        if ($notification->user_id !== Auth::id()) {
+            abort(403);
+        }
+
+        // Mark notification as read when viewed
+        if (!$notification->read_at) {
+            $notification->markAsRead();
+            
+            // Log activity
+            \App\Models\ActivityLog::log('view', 'notification', 'Lihat detail notifikasi (ID: ' . $notification->id . ')');
+        }
+        
+        return view('notifications.show', compact('notification'));
     }
 
     /**
@@ -66,5 +94,18 @@ class NotificationController extends Controller
         \App\Models\ActivityLog::log('delete', 'notification', 'Hapus notifikasi (ID: ' . $notification->id . ')');
         
         return back()->with('success', 'Notifikasi telah dihapus.');
+    }
+
+    /**
+     * Delete all notifications for the authenticated user.
+     */
+    public function clearAll()
+    {
+        Auth::user()->notifications()->delete();
+
+        // Log activity
+        \App\Models\ActivityLog::log('delete', 'notification', 'Hapus semua notifikasi');
+
+        return redirect()->route('notifications.index')->with('success', 'Semua notifikasi telah dihapus.');
     }
 }

@@ -343,28 +343,33 @@ class BorrowController extends Controller
 
     private function createApprovalNotification(Borrow $borrow, $type = 'pending')
     {
-        $adminUsers = User::whereIn('role', ['admin', 'petugas'])->get();
-        
-        foreach ($adminUsers as $admin) {
-            if ($type === 'pending') {
-                Notification::create([
+        if ($type === 'pending') {
+            $adminUsers = User::whereIn('role', ['admin', 'petugas'])->get();
+            $notifications = [];
+            foreach ($adminUsers as $admin) {
+                $notifications[] = [
                     'user_id' => $admin->id,
                     'title' => 'Pengajuan Peminjaman Baru',
                     'message' => "Pengguna {$borrow->user->name} mengajukan peminjaman barang {$borrow->item->name}",
                     'type' => 'borrow_request',
-                    'data' => json_encode(['borrow_id' => $borrow->id]),
-                ]);
-            } else {
-                Notification::create([
-                    'user_id' => $borrow->user_id,
-                    'title' => $type === 'approved' ? 'Peminjaman Disetujui' : 'Peminjaman Ditolak',
-                    'message' => $type === 'approved' 
-                        ? "Pengajuan peminjaman barang {$borrow->item->name} telah disetujui"
-                        : "Pengajuan peminjaman barang {$borrow->item->name} ditolak: {$borrow->rejection_reason}",
-                    'type' => 'borrow_approval',
-                    'data' => json_encode(['borrow_id' => $borrow->id, 'status' => $type]),
-                ]);
+                    'data' => json_encode(['borrow_id' => $borrow->id, 'action_link' => route('borrows.show', $borrow->id)]),
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ];
             }
+            if (!empty($notifications)) {
+                Notification::insert($notifications);
+            }
+        } else {
+            Notification::create([
+                'user_id' => $borrow->user_id,
+                'title' => $type === 'approved' ? 'Peminjaman Disetujui' : 'Peminjaman Ditolak',
+                'message' => $type === 'approved' 
+                    ? "Pengajuan peminjaman barang {$borrow->item->name} telah disetujui."
+                    : "Pengajuan peminjaman barang {$borrow->item->name} ditolak. Alasan: {$borrow->rejection_reason}",
+                'type' => 'borrow_approval',
+                'data' => json_encode(['borrow_id' => $borrow->id, 'status' => $type, 'action_link' => route('borrows.show', $borrow->id)]),
+            ]);
         }
     }
 } 
