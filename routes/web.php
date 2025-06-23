@@ -153,6 +153,10 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     });
     // Log Aktivitas
     Route::get('/activity-logs', [ActivityLogController::class, 'index'])->name('activity-logs.index');
+    Route::get('/activity-logs/export', [ActivityLogController::class, 'export'])->name('activity-logs.export');
+    Route::get('/activity-logs/export/pdf', [ActivityLogController::class, 'exportPdf'])->name('activity-logs.export-pdf');
+    Route::get('/activity-logs/export/csv', [ActivityLogController::class, 'exportCsv'])->name('activity-logs.export-csv');
+    Route::get('/activity-logs/{id}', [ActivityLogController::class, 'show'])->name('activity-logs.show');
     // Konfigurasi Sistem
     Route::resource('system-configs', SystemConfigController::class);
 });
