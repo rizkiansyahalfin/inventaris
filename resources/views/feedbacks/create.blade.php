@@ -53,8 +53,9 @@
                         <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
                     @enderror
                 </div>
-                <div class="flex justify-end">
+                <div class="flex flex-row-reverse justify-end gap-2">
                     <button type="submit" class="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700">Kirim Feedback</button>
+                    <a href="{{ route('feedbacks.index') }}" class="bg-gray-200 text-gray-800 px-4 py-2 rounded-md hover:bg-gray-300">Kembali</a>
                 </div>
             </form>
         </div>

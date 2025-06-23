@@ -14,7 +14,7 @@
 
         <!-- Filter dan Pencarian -->
         <div class="mb-4">
-            <form action="{{ route('items.index') }}" method="GET" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <form action="{{ route('items.index') }}" method="GET" class="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div>
                     <label for="search" class="block text-sm font-medium text-gray-700">Cari</label>
                     <input type="text" name="search" id="search" value="{{ request('search') }}"
@@ -47,10 +47,13 @@
                     </select>
                 </div>
 
-                <div class="flex items-end">
+                <div class="flex items-end space-x-4">
                     <button type="submit" class="bg-gray-100 text-gray-800 px-4 py-2 rounded-md hover:bg-gray-200">
                         Filter
                     </button>
+                    <a href="{{ route('items.index') }}" class="bg-gray-200 text-gray-800 px-4 py-2 rounded-md hover:bg-gray-300">
+                        Reset
+                    </a>
                 </div>
             </form>
         </div>
