@@ -53,8 +53,8 @@ class ItemRequestController extends Controller
     {
         // Log activity
         \App\Models\ActivityLog::log('view', 'item_request', 'Akses halaman buat permintaan barang baru');
-        
-        return view('item-requests.create');
+        $categories = \App\Models\Category::orderBy('name')->get();
+        return view('item-requests.create', compact('categories'));
     }
 
     /**
@@ -113,7 +113,7 @@ class ItemRequestController extends Controller
         // Log activity
         \App\Models\ActivityLog::log('view', 'item_request', 'Lihat detail permintaan barang: ' . $itemRequest->name . ' (ID: ' . $itemRequest->id . ')');
         
-        return view('item_requests.show', compact('itemRequest'));
+        return view('item-requests.show', compact('itemRequest'));
     }
 
     /**
@@ -131,7 +131,7 @@ class ItemRequestController extends Controller
         // Log activity
         \App\Models\ActivityLog::log('view', 'item_request', 'Akses halaman edit permintaan barang: ' . $itemRequest->name . ' (ID: ' . $itemRequest->id . ')');
         
-        return view('item_requests.edit', compact('itemRequest', 'categories'));
+        return view('item-requests.edit', compact('itemRequest', 'categories'));
     }
 
     /**
