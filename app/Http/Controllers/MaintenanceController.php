@@ -52,19 +52,46 @@ class MaintenanceController extends Controller
     }
 
     /**
-     * Export maintenance data to PDF
+     * Export maintenance data to PDF (public route)
      */
-    private function exportPdf($maintenances)
+    public function exportPdf(Request $request)
     {
-        try {
-            if (class_exists('\PDF')) {
-                $pdf = \PDF::loadView('maintenances.pdf', compact('maintenances'));
-                return $pdf->download('riwayat-pemeliharaan-' . date('Y-m-d') . '.pdf');
-            } else {
-                throw new \Exception('PDF package not available');
-            }
-        } catch (\Exception $e) {
-            // Fallback: redirect back with error message
+        $query = Maintenance::with(['item', 'user']);
+
+        // Terapkan filter yang sama seperti index
+        $query->when($request->status, function ($query, $status) {
+                if ($status === 'completed') {
+                    return $query->whereNotNull('completion_date');
+                } elseif ($status === 'ongoing') {
+                    return $query->whereNull('completion_date');
+                }
+                return $query;
+            })
+            ->when($request->search, function ($query, $search) {
+                return $query->whereHas('item', function ($q) use ($search) {
+                    $q->where('name', 'like', "%{$search}%")
+                      ->orWhere('code', 'like', "%{$search}%");
+                });
+            })
+            ->when($request->type, function ($query, $type) {
+                return $query->where('type', $type);
+            });
+
+        $maintenances = $query->orderBy('created_at', 'desc')->get();
+
+        // Log activity
+        $filters = [];
+        if ($request->status) $filters[] = 'status: ' . $request->status;
+        if ($request->search) $filters[] = 'pencarian: ' . $request->search;
+        if ($request->type) $filters[] = 'tipe: ' . $request->type;
+        $filterDescription = !empty($filters) ? 'Export PDF maintenance dengan filter: ' . implode(', ', $filters) : 'Export PDF semua maintenance';
+        \App\Models\ActivityLog::log('export', 'maintenance', $filterDescription . ' (' . $maintenances->count() . ' maintenance)');
+
+        // Generate PDF
+        if (class_exists('\PDF')) {
+            $pdf = \PDF::loadView('maintenances.pdf', compact('maintenances'));
+            return $pdf->download('riwayat-pemeliharaan-' . date('Y-m-d') . '.pdf');
+        } else {
             return redirect()->route('maintenances.index')
                 ->with('error', 'Export PDF tidak tersedia. Silakan install package PDF terlebih dahulu.');
         }

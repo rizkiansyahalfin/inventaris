@@ -8,7 +8,7 @@
             <a href="{{ route('maintenances.create') }}" class="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700">
                 Tambah Data
             </a>
-            <a href="{{ route('maintenances.index', array_merge(request()->query(), ['export' => 'pdf'])) }}" class="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700">
+            <a href="{{ route('maintenances.export.pdf', request()->query()) }}" class="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700">
                 Export PDF
             </a>
         </div>

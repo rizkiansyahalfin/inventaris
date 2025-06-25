@@ -73,6 +73,9 @@ Route::middleware(['auth', 'role:petugas,admin'])->group(function () {
     Route::get('/stock-opnames/{stockOpname}/items/{item}', [StockOpnameController::class, 'checkItem'])->name('stock-opnames.items.check');
     Route::post('/stock-opnames/{stockOpname}/items/{item}', [StockOpnameController::class, 'saveItemCheck'])->name('stock-opnames.items.save');
     Route::post('/stock-opnames/{stockOpname}/complete', [StockOpnameController::class, 'complete'])->name('stock-opnames.complete');
+
+    // Export PDF untuk maintenances
+    Route::get('/maintenances/export/pdf', [MaintenanceController::class, 'exportPdf'])->name('maintenances.export.pdf');
 });
 
 
