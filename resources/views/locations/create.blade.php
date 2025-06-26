@@ -45,14 +45,14 @@
                 </div>
 
                 <div class="flex justify-end space-x-3">
+                    <button type="submit" 
+                            class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded">
+                        Simpan Lokasi
+                    </button>
                     <a href="{{ route('locations.index') }}" 
                        class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">
                         Batal
                     </a>
-                    <button type="submit" 
-                            class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-                        Simpan Lokasi
-                    </button>
                 </div>
             </form>
         </div>

@@ -11,7 +11,7 @@
                     </div>
                     <!-- Tombol Buat Permintaan Baru -->
                     <div class="mb-6 flex justify-end">
-                        <a href="{{ route('item-requests.create') }}" class="px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-900 transition-colors duration-200">Buat Permintaan Baru</a>
+                        <a href="{{ route('item-requests.create') }}" class="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700">Buat Permintaan Baru</a>
                     </div>
                     <!-- Filter Section -->
                     <form method="GET" action="" class="mb-6 flex flex-wrap gap-4 items-end">
