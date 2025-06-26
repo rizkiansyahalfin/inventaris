@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Item;
 use App\Models\Category;
+use App\Models\Location;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -12,7 +13,7 @@ class ItemController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Item::with(['category'])
+        $query = Item::with(['category', 'location'])
             ->when($request->search, function ($query, $search) {
                 return $query->where('name', 'like', "%{$search}%")
                     ->orWhere('code', 'like', "%{$search}%");
@@ -43,12 +44,13 @@ class ItemController extends Controller
     public function create()
     {
         $categories = Category::orderBy('name')->get();
+        $locations = Location::orderBy('name')->get();
         $statuses = Item::getStatuses();
         
         // Log activity
         \App\Models\ActivityLog::log('view', 'item', 'Akses halaman tambah barang baru');
         
-        return view('items.create', compact('categories', 'statuses'));
+        return view('items.create', compact('categories', 'locations', 'statuses'));
     }
 
     public function store(Request $request)
@@ -59,7 +61,7 @@ class ItemController extends Controller
             'stock' => 'required|integer|min:1',
             'condition' => 'required|string|in:Baik,Rusak Ringan,Rusak Berat',
             'status' => 'required|string|in:Tersedia,Dipinjam,Dalam Perbaikan,Rusak,Hilang',
-            'location' => 'nullable|string',
+            'location_id' => 'nullable|exists:locations,id',
             'purchase_price' => 'nullable|numeric|min:0',
             'purchase_date' => 'required|date',
             'category_id' => 'required|exists:categories,id',
@@ -154,7 +156,7 @@ class ItemController extends Controller
 
     public function show(Item $item)
     {
-        $item->load(['category', 'attachments', 'borrows.user'])->loadCount('borrows');
+        $item->load(['category', 'location', 'attachments', 'borrows.user'])->loadCount('borrows');
         
         // Cari semua unit dengan kode dasar yang sama
         $baseCode = preg_replace('/-\d+$/', '', $item->code);
@@ -176,12 +178,13 @@ class ItemController extends Controller
     public function edit(Item $item)
     {
         $categories = Category::orderBy('name')->get();
+        $locations = Location::orderBy('name')->get();
         $statuses = Item::getStatuses();
         
         // Log activity
         \App\Models\ActivityLog::log('view', 'item', 'Akses halaman edit barang: ' . $item->name . ' (Kode: ' . $item->code . ')');
         
-        return view('items.edit', compact('item', 'categories', 'statuses'));
+        return view('items.edit', compact('item', 'categories', 'locations', 'statuses'));
     }
 
     public function update(Request $request, Item $item)
@@ -192,7 +195,7 @@ class ItemController extends Controller
             'stock' => 'required|integer|min:1',
             'condition' => 'required|string|in:Baik,Rusak Ringan,Rusak Berat',
             'status' => 'required|string|in:Tersedia,Dipinjam,Dalam Perbaikan,Rusak,Hilang',
-            'location' => 'nullable|string',
+            'location_id' => 'nullable|exists:locations,id',
             'purchase_price' => 'nullable|numeric|min:0',
             'purchase_date' => 'required|date',
             'category_id' => 'required|exists:categories,id',
@@ -379,7 +382,7 @@ class ItemController extends Controller
                     'description' => $item->description,
                     'stock' => 1,
                     'condition' => $validated['condition'],
-                    'location' => $item->location,
+                    'location_id' => $item->location_id,
                     'purchase_price' => $validated['purchase_price'] ?? $item->purchase_price,
                     'purchase_date' => $validated['purchase_date'] ?? now(),
                     'image' => $item->image,

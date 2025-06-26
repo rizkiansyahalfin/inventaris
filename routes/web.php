@@ -3,6 +3,7 @@
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ItemController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\LocationController;
 use App\Http\Controllers\BorrowController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Api\AttachmentController;
@@ -138,6 +139,8 @@ Route::middleware(['auth'])->group(function () {
 Route::middleware(['auth', 'role:admin'])->group(function () {
     // Manajemen kategori (khusus admin)
     Route::resource('categories', CategoryController::class);
+    // Manajemen lokasi (khusus admin)
+    Route::resource('locations', LocationController::class);
     // Akses penuh ke laporan dengan ekspor
     Route::get('/reports/export/{format}', [ReportController::class, 'export'])->name('reports.export');
     // Manajemen Pengguna

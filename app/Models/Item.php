@@ -21,7 +21,7 @@ class Item extends Model
         'stock',
         'condition',
         'status',
-        'location',
+        'location_id',
         'purchase_price',
         'purchase_date',
         'warranty_expiry',
@@ -111,6 +111,11 @@ class Item extends Model
     public function category(): BelongsTo
     {
         return $this->belongsTo(Category::class);
+    }
+
+    public function location(): BelongsTo
+    {
+        return $this->belongsTo(Location::class);
     }
 
     public function attachments(): MorphMany

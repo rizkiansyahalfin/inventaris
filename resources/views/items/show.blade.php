@@ -85,7 +85,15 @@
                         </div>
                         <div>
                             <dt class="text-sm font-medium text-gray-500">Lokasi</dt>
-                            <dd class="mt-1 text-sm text-gray-900">{{ $item->location ?: '-' }}</dd>
+                            <dd class="mt-1 text-sm text-gray-900">
+                                @if($item->location)
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                        {{ $item->location->name }}
+                                    </span>
+                                @else
+                                    <span class="text-gray-400 text-xs">Tidak ada lokasi</span>
+                                @endif
+                            </dd>
                         </div>
                         <div>
                             <dt class="text-sm font-medium text-gray-500">Kategori</dt>
