@@ -43,7 +43,7 @@ class ItemsExport implements FromCollection, WithHeadings, WithMapping
             $categoryName,
             $item->status,
             $item->condition,
-            $item->location,
+            $item->location->name ?? '-',
             number_format($item->purchase_price, 2),
             $item->purchase_date->format('d/m/Y')
         ];

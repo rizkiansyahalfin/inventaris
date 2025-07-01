@@ -257,22 +257,13 @@ class ItemSeeder extends Seeder
 
     private function createItem($category, $itemData)
     {
-        $code = $this->generateItemCode($category, $itemData['name']);
-        
-        Item::create([
-            'name' => $itemData['name'],
-            'code' => $code,
-            'description' => 'Peralatan pondok pesantren - ' . $itemData['name'],
-            'condition' => 'Baik',
-            'status' => 'Tersedia',
-            'location' => $this->getLocationByCategory($category->code),
-            'purchase_price' => $itemData['purchase_price'],
-            'purchase_date' => Carbon::now()->subMonths(rand(1, 12)),
-            'category_id' => $category->id,
-            'stock' => $itemData['stock'],
-            'unit' => $itemData['unit'],
-            'minimum_stock' => max(1, intval($itemData['stock'] * 0.2)),
-        ]);
+        // Jika itemData memiliki 'location', ubah ke 'location_id' berdasarkan nama lokasi
+        if (isset($itemData['location'])) {
+            $itemData['location_id'] = \App\Models\Location::where('name', $itemData['location'])->value('id');
+            unset($itemData['location']);
+        }
+        $itemData['category_id'] = $category->id;
+        Item::create($itemData);
     }
 
     private function generateItemCode($category, $itemName): string

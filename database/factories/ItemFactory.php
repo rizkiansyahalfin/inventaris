@@ -30,7 +30,7 @@ class ItemFactory extends Factory
             'description' => 'Peralatan pondok pesantren - ' . $name,
             'condition' => fake()->randomElement(['Baik', 'Rusak Ringan', 'Rusak Sedang']),
             'status' => fake()->randomElement(['Tersedia', 'Dipinjam', 'Dalam Perbaikan']),
-            'location' => $this->generatePondokLocation(),
+            'location_id' => \App\Models\Location::inRandomOrder()->value('id'),
             'purchase_price' => fake()->optional()->randomFloat(2, 10000, 5000000),
             'purchase_date' => fake()->optional()->dateTimeBetween('-2 years', 'now'),
             'category_id' => Category::factory(),

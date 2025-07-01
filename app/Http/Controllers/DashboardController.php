@@ -193,10 +193,10 @@ class DashboardController extends Controller
             9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
         ];
 
-        $borrows = Borrow::selectRaw('COUNT(*) as total, MONTH(created_at) as month')
+        $borrows = Borrow::selectRaw('COUNT(*) as total, EXTRACT(MONTH FROM created_at) as month')
             ->whereYear('created_at', Carbon::now()->year)
-            ->groupBy('month')
-            ->orderBy('month')
+            ->groupByRaw('EXTRACT(MONTH FROM created_at)')
+            ->orderByRaw('EXTRACT(MONTH FROM created_at)')
             ->get();
 
         $data = [];

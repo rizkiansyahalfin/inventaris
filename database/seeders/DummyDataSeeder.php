@@ -62,13 +62,14 @@ class DummyDataSeeder extends Seeder
         // Additional Kitab items
         $kitabCategory = $categories->where('code', 'KTB')->first();
         if ($kitabCategory) {
+            $perpustakaanId = \App\Models\Location::where('name', 'Perpustakaan')->value('id');
             $additionalItems[] = Item::create([
                 'name' => 'Kitab Ihya Ulumuddin',
                 'code' => 'KTB/' . Carbon::now()->format('ym') . '/009',
                 'description' => 'Kitab klasik tentang tasawuf dan akhlak',
                 'condition' => 'Baik',
                 'status' => 'Tersedia',
-                'location' => 'Perpustakaan',
+                'location_id' => $perpustakaanId,
                 'purchase_price' => 75000,
                 'purchase_date' => Carbon::now()->subMonths(2),
                 'category_id' => $kitabCategory->id,
@@ -83,7 +84,7 @@ class DummyDataSeeder extends Seeder
                 'description' => 'Kitab tentang adab dan akhlak',
                 'condition' => 'Baik',
                 'status' => 'Tersedia',
-                'location' => 'Perpustakaan',
+                'location_id' => $perpustakaanId,
                 'purchase_price' => 45000,
                 'purchase_date' => Carbon::now()->subMonths(1),
                 'category_id' => $kitabCategory->id,
@@ -96,13 +97,14 @@ class DummyDataSeeder extends Seeder
         // Additional ATK items
         $atkCategory = $categories->where('code', 'ATK')->first();
         if ($atkCategory) {
+            $atkId = \App\Models\Location::where('name', 'Gudang ATK')->value('id');
             $additionalItems[] = Item::create([
                 'name' => 'Tipe-X',
                 'code' => 'ATK/' . Carbon::now()->format('ym') . '/009',
                 'description' => 'Peralatan tulis untuk menghapus kesalahan',
                 'condition' => 'Baik',
                 'status' => 'Tersedia',
-                'location' => 'Gudang ATK',
+                'location_id' => $atkId,
                 'purchase_price' => 8000,
                 'purchase_date' => Carbon::now()->subWeeks(2),
                 'category_id' => $atkCategory->id,
@@ -115,13 +117,14 @@ class DummyDataSeeder extends Seeder
         // Additional Elektronik items
         $elektronikCategory = $categories->where('code', 'ELK')->first();
         if ($elektronikCategory) {
+            $elektronikId = \App\Models\Location::where('name', 'Gudang Elektronik')->value('id');
             $additionalItems[] = Item::create([
                 'name' => 'Kabel HDMI 2m',
                 'code' => 'ELK/' . Carbon::now()->format('ym') . '/007',
                 'description' => 'Kabel HDMI untuk koneksi audio video',
                 'condition' => 'Baik',
                 'status' => 'Tersedia',
-                'location' => 'Gudang Elektronik',
+                'location_id' => $elektronikId,
                 'purchase_price' => 85000,
                 'purchase_date' => Carbon::now()->subWeeks(1),
                 'category_id' => $elektronikCategory->id,
