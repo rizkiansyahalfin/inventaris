@@ -7,11 +7,12 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Item extends Model
 {
-    use HasFactory;
-    
+    use HasFactory, SoftDeletes;
+
     protected $fillable = [
         'name',
         'code',
@@ -62,7 +63,7 @@ class Item extends Model
 
         $codes = [];
         $baseCode = $this->code;
-        
+
         // Generate kode unik untuk setiap unit
         for ($i = 1; $i <= $this->stock; $i++) {
             $codes[] = $baseCode . '-' . str_pad($i, 3, '0', STR_PAD_LEFT);
@@ -75,22 +76,22 @@ class Item extends Model
     {
         $this->status = $newStatus;
         $this->save();
-        
+
         return $this;
     }
 
     public function updateCondition($newCondition)
     {
         $this->condition = $newCondition;
-        
+
         // Perbarui status berdasarkan kondisi
         $this->updateStatusFromCondition();
-        
+
         $this->save();
-        
+
         return $this;
     }
-    
+
     public function updateStatusFromCondition()
     {
         // Hanya ubah status jika barang tidak sedang dipinjam
@@ -104,7 +105,7 @@ class Item extends Model
                 $this->status = self::STATUS_AVAILABLE;
             }
         }
-        
+
         return $this;
     }
 
@@ -132,4 +133,4 @@ class Item extends Model
     {
         return $this->hasMany(Maintenance::class)->orderBy('start_date', 'desc');
     }
-} 
+}
