@@ -1,66 +1,392 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# 📦 Sistem Inventaris Pondok Pesantren
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Aplikasi **Sistem Inventaris** berbasis web untuk mengelola barang, peminjaman, dan aset di lingkungan Pondok Pesantren. Dibangun menggunakan **Laravel 11** dengan antarmuka modern menggunakan **TailwindCSS** dan **Alpine.js**.
 
-## About Laravel
+---
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## 📋 Daftar Isi
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+- [Fitur Utama](#-fitur-utama)
+- [Tech Stack](#-tech-stack)
+- [Persyaratan Sistem](#-persyaratan-sistem)
+- [Instalasi](#-instalasi)
+- [Konfigurasi](#-konfigurasi)
+- [Menjalankan Aplikasi](#-menjalankan-aplikasi)
+- [Akun Default](#-akun-default)
+- [Peran Pengguna](#-peran-pengguna)
+- [Modul & Fitur](#-modul--fitur)
+- [API Endpoint](#-api-endpoint)
+- [Struktur Proyek](#-struktur-proyek)
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+---
 
-## Learning Laravel
+## ✨ Fitur Utama
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+| Modul                       | Deskripsi                                                              |
+| --------------------------- | ---------------------------------------------------------------------- |
+| **Manajemen Barang**        | CRUD barang, kategori, lokasi, QR Code, gambar, pencarian & filter     |
+| **Peminjaman**              | Ajukan peminjaman, approval workflow, pencatatan kondisi, pengembalian |
+| **Perpanjangan Peminjaman** | Request perpanjangan durasi pinjam dengan persetujuan petugas          |
+| **Stock Opname**            | Audit fisik inventaris secara berkala dengan pencocokan stok           |
+| **Maintenance / Perbaikan** | Pencatatan jadwal pemeliharaan dan perbaikan barang                    |
+| **Permintaan Barang Baru**  | Santri dapat mengajukan permintaan pengadaan barang baru               |
+| **Feedback / Ulasan**       | Feedback terhadap barang setelah peminjaman dikembalikan               |
+| **Bookmark**                | Tandai barang favorit untuk akses cepat                                |
+| **Laporan Petugas**         | Petugas membuat laporan harian; admin me-review                        |
+| **Notifikasi**              | Sistem notifikasi untuk aktivitas penting                              |
+| **Log Aktivitas**           | Audit trail seluruh aktivitas pengguna                                 |
+| **Manajemen Pengguna**      | Kelola akun, role, status aktif/nonaktif, reset password               |
+| **Konfigurasi Sistem**      | Pengaturan sistem yang dapat disesuaikan oleh admin                    |
+| **Dashboard**               | Dashboard dinamis sesuai peran (admin/petugas/user) dengan grafik      |
+| **Ekspor Data**             | Ekspor laporan ke PDF & Excel                                          |
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+---
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+## 🛠 Tech Stack
 
-## Laravel Sponsors
+| Komponen           | Teknologi                                 |
+| ------------------ | ----------------------------------------- |
+| **Backend**        | PHP 8.2+, Laravel 11                      |
+| **Frontend**       | Blade Templates, TailwindCSS 4, Alpine.js |
+| **Build Tool**     | Vite                                      |
+| **Database**       | SQLite (default) / MySQL / PostgreSQL     |
+| **Authentication** | Laravel Breeze, Laravel Sanctum (API)     |
+| **PDF Export**     | barryvdh/laravel-dompdf                   |
+| **Excel Export**   | maatwebsite/excel                         |
+| **QR Code**        | simplesoftwareio/simple-qrcode            |
+| **Testing**        | Pest PHP                                  |
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+---
 
-### Premium Partners
+## 💻 Persyaratan Sistem
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+- **PHP** ≥ 8.2
+- **Composer** ≥ 2.x
+- **Node.js** 18.x
+- **NPM** ≥ 8.x
+- **Database**: SQLite (default), MySQL 8+, atau PostgreSQL 14+
 
-## Contributing
+---
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+## 🚀 Instalasi
 
-## Code of Conduct
+### 1. Clone Repository
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+```bash
+git clone https://github.com/rizkiansyahalfin/inventaris.git
+cd inventaris
+```
 
-## Security Vulnerabilities
+### 2. Install Dependensi PHP
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+```bash
+composer install
+```
 
-## License
+### 3. Install Dependensi Node.js
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+```bash
+npm install
+```
+
+### 4. Setup Environment
+
+```bash
+cp .env.example .env
+php artisan key:generate
+```
+
+### 5. Setup Database
+
+**SQLite (default, tanpa konfigurasi tambahan):**
+
+```bash
+touch database/database.sqlite
+php artisan migrate
+```
+
+**MySQL / PostgreSQL:**
+
+Edit file `.env` dan sesuaikan konfigurasi database:
+
+```env
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=inventaris
+DB_USERNAME=root
+DB_PASSWORD=
+```
+
+Lalu jalankan migrasi:
+
+```bash
+php artisan migrate
+```
+
+### 6. Seed Data Awal
+
+```bash
+php artisan db:seed
+```
+
+Ini akan membuat data contoh termasuk user, kategori, barang, peminjaman, dan lainnya.
+
+---
+
+## ⚙ Konfigurasi
+
+File `.env` berisi konfigurasi utama:
+
+| Variabel           | Deskripsi      | Default  |
+| ------------------ | -------------- | -------- |
+| `APP_NAME`         | Nama aplikasi  | Laravel  |
+| `DB_CONNECTION`    | Jenis database | sqlite   |
+| `SESSION_DRIVER`   | Driver sesi    | database |
+| `QUEUE_CONNECTION` | Driver antrian | database |
+| `CACHE_STORE`      | Driver cache   | database |
+
+---
+
+## ▶ Menjalankan Aplikasi
+
+### Mode Development (Disarankan)
+
+Jalankan semua service sekaligus:
+
+```bash
+composer dev
+```
+
+Perintah ini akan menjalankan:
+
+- **PHP Server** → `http://localhost:8000`
+- **Vite** → Hot reload untuk asset frontend
+- **Queue Worker** → Pemrosesan antrian
+- **Pail** → Real-time log viewer
+
+### Atau Jalankan Manual
+
+```bash
+# Terminal 1 - Laravel Server
+php artisan serve
+
+# Terminal 2 - Vite Dev Server
+npm run dev
+```
+
+Buka browser dan akses: **http://localhost:8000**
+
+---
+
+## 👤 Akun Default
+
+Setelah menjalankan `php artisan db:seed`, akun berikut tersedia:
+
+| Peran             | Email                       | Password   |
+| ----------------- | --------------------------- | ---------- |
+| **Admin**         | `admin@pondok.com`          | `password` |
+| **Admin**         | `rizki@pondok.com`          | `password` |
+| **Petugas**       | `soleh@pondok.com`          | `password` |
+| **Petugas**       | `hadi@pondok.com`           | `password` |
+| **Petugas**       | `siti@pondok.com`           | `password` |
+| **User (Santri)** | `ahmad.fadillah@pondok.com` | `password` |
+
+> ⚠️ **Penting:** Segera ganti password default setelah deploy ke production!
+
+---
+
+## 🎭 Peran Pengguna
+
+### 🔴 Admin (Pengurus Pondok)
+
+- Akses penuh ke seluruh fitur
+- Dashboard dengan statistik lengkap (total barang, peminjaman, pengguna, grafik)
+- Manajemen user (CRUD, ubah role, reset password, aktif/nonaktif)
+- Manajemen kategori dan lokasi
+- Approval peminjaman (termasuk bulk approve/reject)
+- Review laporan petugas
+- Ekspor laporan ke PDF & Excel
+- Log aktivitas & konfigurasi sistem
+
+### 🟡 Petugas (Staff Pondok)
+
+- Manajemen barang (CRUD, tambah stok)
+- Kelola peminjaman (approve/reject, update status, pengembalian)
+- Kelola perpanjangan peminjaman
+- Pencatatan maintenance / perbaikan
+- Stock opname
+- Kelola permintaan barang
+- Buat laporan petugas harian
+- Lihat laporan dasar
+
+### 🟢 User (Santri)
+
+- Dashboard pribadi (peminjaman aktif, riwayat, notifikasi)
+- Lihat daftar barang & detail
+- Ajukan peminjaman barang
+- Ajukan permintaan barang baru
+- Berikan feedback setelah pengembalian
+- Bookmark barang favorit
+- Kelola notifikasi
+
+---
+
+## 📦 Modul & Fitur
+
+### 1. Manajemen Barang (`/items`)
+
+- Daftar barang dengan pencarian, filter, dan paginasi
+- Detail barang lengkap: nama, kode, QR Code, gambar, stok, kondisi, status
+- Status barang: **Tersedia**, **Dipinjam**, **Dalam Perbaikan**, **Rusak**, **Hilang**
+- Tracking harga beli, tanggal beli, garansi, supplier
+- Relasi ke kategori dan lokasi
+- Lampiran file (attachments)
+- Penambahan stok (add stock)
+
+### 2. Peminjaman (`/borrows`)
+
+- Alur peminjaman: **Ajukan** → **Pending Approval** → **Disetujui/Ditolak** → **Dipinjam** → **Dikembalikan**
+- Pencatatan kondisi barang saat pinjam dan saat kembali
+- Perpanjangan peminjaman (`/extensions`)
+- Tracking tanggal pinjam, jatuh tempo, dan pengembalian
+
+### 3. Stock Opname (`/stock-opnames`)
+
+- Buat sesi stock opname baru
+- Mulai, periksa item satu per satu, selesaikan
+- Pencocokan stok sistem dengan stok fisik
+
+### 4. Maintenance (`/maintenances`)
+
+- Pencatatan jadwal perbaikan barang
+- Ekspor ke PDF
+
+### 5. Permintaan Barang (`/item-requests`)
+
+- User mengajukan permintaan barang baru
+- Admin/petugas menyetujui atau menolak
+
+### 6. Feedback (`/feedbacks`)
+
+- User memberikan ulasan setelah mengembalikan barang pinjaman
+
+### 7. Laporan Petugas (`/staff-reports`)
+
+- Petugas membuat laporan harian
+- Admin me-review, approve, atau reject
+- Ekspor ke PDF & Excel
+- Bulk actions untuk proses massal
+
+### 8. Dashboard (`/dashboard`)
+
+- **Admin**: Total barang, peminjaman, pengguna, pending approval, grafik bulanan
+- **Petugas**: Peminjaman hari ini, pengembalian hari ini, overdue, stok rendah
+- **User**: Peminjaman aktif, riwayat, notifikasi terbaru
+
+### 9. Laporan & Ekspor (`/reports`)
+
+- Laporan komprehensif
+- Ekspor ke PDF & Excel
+
+---
+
+## 🔌 API Endpoint
+
+API tersedia melalui `/api/` dengan autentikasi **Laravel Sanctum** (Bearer Token).
+
+| Method   | Endpoint                          | Deskripsi                  |
+| -------- | --------------------------------- | -------------------------- |
+| `GET`    | `/api/categories`                 | Daftar kategori            |
+| `POST`   | `/api/categories`                 | Buat kategori baru         |
+| `GET`    | `/api/items`                      | Daftar barang              |
+| `POST`   | `/api/items`                      | Buat barang baru           |
+| `POST`   | `/api/items/{id}/categories/{id}` | Tambah kategori ke barang  |
+| `DELETE` | `/api/items/{id}/categories/{id}` | Hapus kategori dari barang |
+| `POST`   | `/api/attachments`                | Upload lampiran            |
+| `DELETE` | `/api/attachments/{id}`           | Hapus lampiran             |
+| `GET`    | `/api/borrows`                    | Daftar peminjaman          |
+| `POST`   | `/api/borrows`                    | Buat peminjaman baru       |
+| `PATCH`  | `/api/borrows/{id}/return`        | Kembalikan barang          |
+
+---
+
+## 📁 Struktur Proyek
+
+```
+inventaris/
+├── app/
+│   ├── Exports/             # Export classes (PDF, Excel)
+│   ├── Http/
+│   │   ├── Controllers/     # 33 controllers (Web + API + Admin)
+│   │   ├── Middleware/       # CheckRole, CheckUserStatus, LogActivity
+│   │   └── Requests/        # Form request validation
+│   ├── Models/              # 17 Eloquent models
+│   ├── Traits/              # HasRoles trait
+│   └── View/                # View components
+├── database/
+│   ├── factories/           # 8 model factories
+│   ├── migrations/          # 35 migration files
+│   └── seeders/             # 12 seeder classes
+├── resources/
+│   └── views/               # 92 Blade templates
+│       ├── admin/           # Admin-specific views
+│       ├── auth/            # Authentication views
+│       ├── borrows/         # Peminjaman views
+│       ├── dashboard/       # Dashboard (admin/staff/user)
+│       ├── items/           # Manajemen barang views
+│       ├── layouts/         # Layout templates
+│       ├── maintenances/    # Maintenance views
+│       ├── staff-reports/   # Laporan petugas views
+│       ├── stock-opnames/   # Stock opname views
+│       └── ...              # Dan lainnya
+├── routes/
+│   ├── web.php              # Web routes (224 baris)
+│   ├── api.php              # API routes (Sanctum)
+│   └── auth.php             # Authentication routes
+├── tailwind.config.js       # TailwindCSS configuration
+├── vite.config.js           # Vite build configuration
+└── vercel.json              # Vercel deployment config
+```
+
+---
+
+## 🧪 Testing
+
+Proyek ini menggunakan **Pest PHP** untuk testing:
+
+```bash
+# Jalankan semua test
+php artisan test
+
+# Atau menggunakan Pest langsung
+./vendor/bin/pest
+```
+
+---
+
+## 🚢 Deployment
+
+### Vercel
+
+Proyek sudah dikonfigurasi untuk deployment di Vercel (`vercel.json`):
+
+```bash
+vercel --prod
+```
+
+### Production Build
+
+```bash
+npm run build
+php artisan optimize
+php artisan config:cache
+php artisan route:cache
+php artisan view:cache
+```
+
+---
+
+## 📄 Lisensi
+
+Proyek ini dilisensikan di bawah [MIT License](https://opensource.org/licenses/MIT).
