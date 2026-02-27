@@ -1,12 +1,14 @@
 # 📦 Sistem Inventaris Pondok Pesantren
 
-Aplikasi **Sistem Inventaris** berbasis web untuk mengelola barang, peminjaman, dan aset di lingkungan Pondok Pesantren. Dibangun menggunakan **Laravel 11** dengan antarmuka modern menggunakan **TailwindCSS** dan **Alpine.js**.
+Aplikasi **Sistem Inventaris** berbasis web untuk mengelola barang, peminjaman, dan aset di lingkungan Pondok Pesantren. Dibangun menggunakan **Laravel 11** dengan arsitektur **MVC + Service Layer**, antarmuka modern menggunakan **TailwindCSS** dan **Alpine.js**, serta dukungan penuh **Dark Mode**.
 
 ---
 
 ## 📋 Daftar Isi
 
 - [Fitur Utama](#-fitur-utama)
+- [Arsitektur & Best Practices](#-arsitektur--best-practices)
+- [Struktur Proyek](#-struktur-proyek)
 - [Tech Stack](#-tech-stack)
 - [Persyaratan Sistem](#-persyaratan-sistem)
 - [Instalasi](#-instalasi)
@@ -16,7 +18,8 @@ Aplikasi **Sistem Inventaris** berbasis web untuk mengelola barang, peminjaman, 
 - [Peran Pengguna](#-peran-pengguna)
 - [Modul & Fitur](#-modul--fitur)
 - [API Endpoint](#-api-endpoint)
-- [Struktur Proyek](#-struktur-proyek)
+- [Testing](#-testing)
+- [Deployment](#-deployment)
 
 ---
 
@@ -39,6 +42,130 @@ Aplikasi **Sistem Inventaris** berbasis web untuk mengelola barang, peminjaman, 
 | **Konfigurasi Sistem**      | Pengaturan sistem yang dapat disesuaikan oleh admin                    |
 | **Dashboard**               | Dashboard dinamis sesuai peran (admin/petugas/user) dengan grafik      |
 | **Ekspor Data**             | Ekspor laporan ke PDF & Excel                                          |
+| **Dark Mode**               | Tema gelap/terang persisten dengan class-based toggling                |
+
+---
+
+## 🏗 Arsitektur & Best Practices
+
+Proyek ini menerapkan arsitektur **MVC + Service Layer** yang bersih dan terstruktur:
+
+### Alur Request
+
+```
+Route → Middleware → Controller → Service → Model → Database
+                         ↓                      ↑
+                   FormRequest            Eloquent ORM
+                   (Validasi)           (Query & Relasi)
+                         ↓
+                       View
+                   (Blade Template)
+```
+
+### Prinsip yang Diterapkan
+
+| Prinsip                          | Implementasi                                                                            |
+| -------------------------------- | --------------------------------------------------------------------------------------- |
+| **Thin Controller**              | Controller hanya mengatur request/response, tidak mengandung business logic             |
+| **Service Layer**                | Business logic kompleks dipusatkan di `app/Services/`                                   |
+| **Form Request Validation**      | Semua validasi input menggunakan dedicated `FormRequest` class di `app/Http/Requests/`  |
+| **Eloquent Relationships**       | Relasi antar model didefinisikan secara eksplisit (`hasMany`, `belongsTo`, `morphMany`) |
+| **Eager Loading**                | Penggunaan `with()` untuk menghindari N+1 query problem                                 |
+| **Query Scopes**                 | Filter umum didefinisikan sebagai model scope (misal: `Borrow::pending()`)              |
+| **Separation of Concerns**       | Setiap layer memiliki tanggung jawab yang jelas dan tidak tumpang tindih                |
+| **Dependency Injection**         | Service di-inject melalui constructor controller                                        |
+| **Authorization in FormRequest** | Logika otorisasi (ownership, status check) ditangani di `authorize()` FormRequest       |
+
+### Service Layer
+
+| Service              | Tanggung Jawab                                                      |
+| -------------------- | ------------------------------------------------------------------- |
+| `BorrowService`      | Create, approve, reject, return peminjaman; notifikasi; auto-reject |
+| `ItemService`        | Create/update barang multi-unit; add stock; generate kode barang    |
+| `StaffReportService` | Kalkulasi statistik dashboard; filter & deskripsi filter laporan    |
+
+### Form Requests (14 class)
+
+| FormRequest                 | Digunakan Oleh                       |
+| --------------------------- | ------------------------------------ |
+| `StoreBorrowRequest`        | `BorrowController@store`             |
+| `StoreItemRequest`          | `ItemController@store`               |
+| `UpdateItemRequest`         | `ItemController@update`              |
+| `UpdateStockRequest`        | `ItemController@addStock`            |
+| `StoreMaintenanceRequest`   | `MaintenanceController@store`        |
+| `UpdateMaintenanceRequest`  | `MaintenanceController@update`       |
+| `StoreStaffReportRequest`   | `StaffReportController@store`        |
+| `UpdateStaffReportRequest`  | `StaffReportController@update`       |
+| `StoreStockOpnameRequest`   | `StockOpnameController@store/update` |
+| `StoreItemRequestRequest`   | `ItemRequestController@store`        |
+| `UpdateItemRequestRequest`  | `ItemRequestController@update`       |
+| `StoreItemFeedbackRequest`  | `ItemFeedbackController@store`       |
+| `UpdateItemFeedbackRequest` | `ItemFeedbackController@update`      |
+| `ProfileUpdateRequest`      | `ProfileController@update`           |
+
+---
+
+## 📁 Struktur Proyek
+
+```
+inventaris/
+├── app/
+│   ├── Exceptions/              # Custom exception handlers
+│   ├── Exports/                 # Export classes (PDF, Excel)
+│   ├── Http/
+│   │   ├── Controllers/
+│   │   │   ├── Admin/           # Admin-only controllers (UserManagement, BorrowApproval)
+│   │   │   ├── Api/             # API controllers (Items, Categories, Borrows, Attachments)
+│   │   │   ├── Auth/            # Authentication controllers (Laravel Breeze)
+│   │   │   ├── BorrowController.php
+│   │   │   ├── ItemController.php
+│   │   │   ├── StaffReportController.php
+│   │   │   ├── DashboardController.php
+│   │   │   └── ...              # 18 controllers total
+│   │   ├── Middleware/
+│   │   │   ├── CheckRole.php         # Role-based access control
+│   │   │   ├── CheckUserStatus.php   # Block inactive users
+│   │   │   └── LogActivity.php       # Auto-log request activity
+│   │   └── Requests/            # 14 FormRequest validation classes
+│   ├── Models/                  # 17 Eloquent models
+│   │   ├── User.php             # User model (HasRoles trait, relasi lengkap)
+│   │   ├── Item.php             # Barang (status constants, updateCondition, scopes)
+│   │   ├── Borrow.php           # Peminjaman (scopes: pending, approved, borrowed, etc.)
+│   │   └── ...
+│   ├── Services/                # Business logic layer
+│   │   ├── BorrowService.php    # Logic peminjaman (approve, reject, notifikasi)
+│   │   ├── ItemService.php      # Logic barang (multi-unit, generate code, stock)
+│   │   └── StaffReportService.php # Logic laporan (stats, filter, export)
+│   ├── Traits/
+│   │   └── HasRoles.php         # Role checking trait
+│   └── View/                    # Blade view components
+├── database/
+│   ├── factories/               # 8 model factories
+│   ├── migrations/              # 35 migration files
+│   └── seeders/                 # 12 seeder classes
+├── resources/
+│   └── views/                   # 95+ Blade templates (dark mode ready)
+│       ├── admin/               # Admin-specific views (user management, borrow approvals)
+│       ├── auth/                # Authentication views (login, register, etc.)
+│       ├── borrows/             # Peminjaman views (index, create, show)
+│       ├── dashboard/           # Role-based dashboards (admin, staff, user)
+│       ├── items/               # Manajemen barang (index, create, edit, show, add-stock)
+│       ├── layouts/             # Layout templates (app, navigation, guest)
+│       ├── maintenances/        # Maintenance views
+│       ├── staff-reports/       # Laporan petugas (index, create, show, dashboard, export, bulk)
+│       ├── stock-opnames/       # Stock opname views
+│       └── ...                  # feedbacks, item-requests, notifications, reports, etc.
+├── routes/
+│   ├── web.php                  # Main web routes + route file includes
+│   ├── web/
+│   │   ├── staff.php            # Routes untuk petugas & admin (items, borrows, maintenances)
+│   │   └── admin.php            # Routes khusus admin (users, categories, locations)
+│   ├── api.php                  # REST API routes (Sanctum authenticated)
+│   └── auth.php                 # Authentication routes (Laravel Breeze)
+├── tailwind.config.js           # TailwindCSS config (darkMode: 'class')
+├── vite.config.js               # Vite build configuration
+└── vercel.json                  # Vercel deployment config
+```
 
 ---
 
@@ -54,6 +181,7 @@ Aplikasi **Sistem Inventaris** berbasis web untuk mengelola barang, peminjaman, 
 | **PDF Export**     | barryvdh/laravel-dompdf                   |
 | **Excel Export**   | maatwebsite/excel                         |
 | **QR Code**        | simplesoftwareio/simple-qrcode            |
+| **Charts**         | Chart.js (tema otomatis dark/light)       |
 | **Testing**        | Pest PHP                                  |
 
 ---
@@ -242,12 +370,13 @@ Setelah menjalankan `php artisan db:seed`, akun berikut tersedia:
 - Tracking harga beli, tanggal beli, garansi, supplier
 - Relasi ke kategori dan lokasi
 - Lampiran file (attachments)
-- Penambahan stok (add stock)
+- Penambahan stok multi-unit (auto-generate kode unit)
 
 ### 2. Peminjaman (`/borrows`)
 
 - Alur peminjaman: **Ajukan** → **Pending Approval** → **Disetujui/Ditolak** → **Dipinjam** → **Dikembalikan**
 - Pencatatan kondisi barang saat pinjam dan saat kembali
+- Auto-reject pengajuan lain saat satu peminjaman disetujui
 - Perpanjangan peminjaman (`/extensions`)
 - Tracking tanggal pinjam, jatuh tempo, dan pengembalian
 
@@ -260,6 +389,7 @@ Setelah menjalankan `php artisan db:seed`, akun berikut tersedia:
 ### 4. Maintenance (`/maintenances`)
 
 - Pencatatan jadwal perbaikan barang
+- Update kondisi barang otomatis setelah perbaikan selesai
 - Ekspor ke PDF
 
 ### 5. Permintaan Barang (`/item-requests`)
@@ -277,6 +407,7 @@ Setelah menjalankan `php artisan db:seed`, akun berikut tersedia:
 - Admin me-review, approve, atau reject
 - Ekspor ke PDF & Excel
 - Bulk actions untuk proses massal
+- Dashboard statistik laporan
 
 ### 8. Dashboard (`/dashboard`)
 
@@ -311,43 +442,17 @@ API tersedia melalui `/api/` dengan autentikasi **Laravel Sanctum** (Bearer Toke
 
 ---
 
-## 📁 Struktur Proyek
+## 🛡 Keamanan
 
-```
-inventaris/
-├── app/
-│   ├── Exports/             # Export classes (PDF, Excel)
-│   ├── Http/
-│   │   ├── Controllers/     # 33 controllers (Web + API + Admin)
-│   │   ├── Middleware/       # CheckRole, CheckUserStatus, LogActivity
-│   │   └── Requests/        # Form request validation
-│   ├── Models/              # 17 Eloquent models
-│   ├── Traits/              # HasRoles trait
-│   └── View/                # View components
-├── database/
-│   ├── factories/           # 8 model factories
-│   ├── migrations/          # 35 migration files
-│   └── seeders/             # 12 seeder classes
-├── resources/
-│   └── views/               # 92 Blade templates
-│       ├── admin/           # Admin-specific views
-│       ├── auth/            # Authentication views
-│       ├── borrows/         # Peminjaman views
-│       ├── dashboard/       # Dashboard (admin/staff/user)
-│       ├── items/           # Manajemen barang views
-│       ├── layouts/         # Layout templates
-│       ├── maintenances/    # Maintenance views
-│       ├── staff-reports/   # Laporan petugas views
-│       ├── stock-opnames/   # Stock opname views
-│       └── ...              # Dan lainnya
-├── routes/
-│   ├── web.php              # Web routes (224 baris)
-│   ├── api.php              # API routes (Sanctum)
-│   └── auth.php             # Authentication routes
-├── tailwind.config.js       # TailwindCSS configuration
-├── vite.config.js           # Vite build configuration
-└── vercel.json              # Vercel deployment config
-```
+| Fitur                 | Implementasi                                                |
+| --------------------- | ----------------------------------------------------------- |
+| **Authentication**    | Laravel Breeze (session-based) + Sanctum (API token)        |
+| **Role-Based Access** | Custom `CheckRole` middleware (`admin`, `petugas`, `user`)  |
+| **User Status Check** | `CheckUserStatus` middleware (blokir user nonaktif)         |
+| **Form Validation**   | Dedicated `FormRequest` classes dengan `authorize()` method |
+| **CSRF Protection**   | Laravel built-in CSRF token                                 |
+| **Soft Deletes**      | Item dan Borrow menggunakan `SoftDeletes` trait             |
+| **Activity Logging**  | Semua aksi penting dicatat di `activity_logs` table         |
 
 ---
 
