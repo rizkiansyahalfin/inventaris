@@ -9,8 +9,9 @@ use App\Models\Maintenance;
 use App\Exports\ItemsExport;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use PDF;
-use Excel;
+use Maatwebsite\Excel\Facades\Excel;
+use Barryvdh\DomPDF\Facade\Pdf;
+use App\Models\ActivityLog;
 use Illuminate\Support\Facades\Auth;
 
 class ReportController extends Controller
@@ -63,7 +64,7 @@ class ReportController extends Controller
         $items = $query->paginate(10);
 
         // Log activity
-        \App\Models\ActivityLog::log('view', 'report', 'Akses halaman laporan (Items: ' . $totalItems . ', Borrows: ' . $totalTransactions . ')');
+        ActivityLog::log('view', 'report', 'Akses halaman laporan (Items: ' . $totalItems . ', Borrows: ' . $totalTransactions . ')');
 
         return view('reports.index', compact(
             'items',
@@ -83,7 +84,7 @@ class ReportController extends Controller
         if (!Auth::user()->isAdmin()) {
             abort(403);
         }
-        
+
         $query = Item::with('category');
 
         // Apply filters
@@ -107,10 +108,10 @@ class ReportController extends Controller
         $items = $query->get();
 
         // Log activity
-        \App\Models\ActivityLog::log('export', 'report', 'Export laporan dalam format: ' . $format);
+        ActivityLog::log('export', 'report', 'Export laporan dalam format: ' . $format);
 
         if ($format === 'pdf') {
-            $pdf = PDF::loadView('reports.pdf', compact('items'));
+            $pdf = Pdf::loadView('reports.pdf', compact('items'));
             return $pdf->download('laporan-barang.pdf');
         }
 

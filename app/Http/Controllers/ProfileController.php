@@ -20,7 +20,7 @@ class ProfileController extends Controller
     {
         // Log activity
         \App\Models\ActivityLog::log('view', 'profile', 'Akses halaman profil');
-        
+
         return view('profile.index', [
             'user' => $request->user(),
         ]);
@@ -33,7 +33,7 @@ class ProfileController extends Controller
     {
         // Log activity
         \App\Models\ActivityLog::log('view', 'profile', 'Lihat detail profil');
-        
+
         return view('profile.show', [
             'user' => $request->user(),
         ]);
@@ -46,7 +46,7 @@ class ProfileController extends Controller
     {
         // Log activity
         \App\Models\ActivityLog::log('view', 'profile', 'Akses halaman edit profil');
-        
+
         return view('profile.edit', [
             'user' => $request->user(),
         ]);
@@ -71,11 +71,11 @@ class ProfileController extends Controller
         }
 
         $user->save();
-        
+
         // Log activity
         \App\Models\ActivityLog::log('update', 'profile', 'Mengedit profil');
 
-        return Redirect::route('profile.edit')->with('status', 'profile-updated');
+        return Redirect::route('profile.index')->with('status', 'profile-updated');
     }
 
     /**
@@ -92,7 +92,7 @@ class ProfileController extends Controller
         Auth::logout();
 
         $user->delete();
-        
+
         // Log activity
         \App\Models\ActivityLog::log('delete', 'profile', 'Menghapus akun profil');
 

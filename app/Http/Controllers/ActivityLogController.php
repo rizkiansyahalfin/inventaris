@@ -3,6 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\ActivityLog;
+use App\Models\User;
+use App\Exports\ActivityLogsExport;
+use Maatwebsite\Excel\Facades\Excel;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Routing\Controller as BaseController;
@@ -18,12 +22,12 @@ class ActivityLogController extends BaseController
 
     public function index(Request $request)
     {
-        $query = \App\Models\ActivityLog::with('user');
-        
+        $query = ActivityLog::with('user');
+
         // Filter berdasarkan request
         $query->when($request->action, function ($query, $action) {
-                return $query->where('action', $action);
-            })
+            return $query->where('action', $action);
+        })
             ->when($request->model, function ($query, $model) {
                 return $query->where('model', $model);
             })
@@ -41,28 +45,33 @@ class ActivityLogController extends BaseController
             });
 
         $activityLogs = $query->orderBy('created_at', 'desc')->paginate(20);
-        $users = \App\Models\User::orderBy('name')->get();
-        
+        $users = User::orderBy('name')->get();
+
         // Log activity
         $filters = [];
-        if ($request->action) $filters[] = 'action: ' . $request->action;
-        if ($request->model) $filters[] = 'model: ' . $request->model;
-        if ($request->user_id) $filters[] = 'user: ' . \App\Models\User::find($request->user_id)->name ?? 'Unknown';
-        if ($request->date_from) $filters[] = 'dari tanggal: ' . $request->date_from;
-        if ($request->date_to) $filters[] = 'sampai tanggal: ' . $request->date_to;
-        
+        if ($request->action)
+            $filters[] = 'action: ' . $request->action;
+        if ($request->model)
+            $filters[] = 'model: ' . $request->model;
+        if ($request->user_id)
+            $filters[] = 'user: ' . User::find($request->user_id)->name ?? 'Unknown';
+        if ($request->date_from)
+            $filters[] = 'dari tanggal: ' . $request->date_from;
+        if ($request->date_to)
+            $filters[] = 'sampai tanggal: ' . $request->date_to;
+
         $filterDescription = !empty($filters) ? 'Lihat log aktivitas dengan filter: ' . implode(', ', $filters) : 'Lihat log aktivitas';
-        \App\Models\ActivityLog::log('view', 'activity_log', $filterDescription . ' (' . $activityLogs->total() . ' log)');
-        
+        ActivityLog::log('view', 'activity_log', $filterDescription . ' (' . $activityLogs->total() . ' log)');
+
         return view('activity-logs.index', compact('activityLogs', 'users'));
     }
 
     public function export(Request $request)
     {
-        $query = \App\Models\ActivityLog::with('user');
+        $query = ActivityLog::with('user');
         $query->when($request->action, function ($query, $action) {
-                return $query->where('action', $action);
-            })
+            return $query->where('action', $action);
+        })
             ->when($request->model, function ($query, $model) {
                 return $query->where('model', $model);
             })
@@ -79,17 +88,17 @@ class ActivityLogController extends BaseController
         $activityLogs = $query->orderBy('created_at', 'desc')->get();
 
         // Log activity
-        \App\Models\ActivityLog::log('export', 'activity_log', 'Export log aktivitas ke Excel (' . $activityLogs->count() . ' log)');
+        ActivityLog::log('export', 'activity_log', 'Export log aktivitas ke Excel (' . $activityLogs->count() . ' log)');
 
-        return \Excel::download(new \App\Exports\ActivityLogsExport($activityLogs), 'log-aktivitas-' . now()->format('Ymd_His') . '.xlsx');
+        return Excel::download(new ActivityLogsExport($activityLogs), 'log-aktivitas-' . now()->format('Ymd_His') . '.xlsx');
     }
 
     public function exportPdf(Request $request)
     {
-        $query = \App\Models\ActivityLog::with('user');
+        $query = ActivityLog::with('user');
         $query->when($request->action, function ($query, $action) {
-                return $query->where('action', $action);
-            })
+            return $query->where('action', $action);
+        })
             ->when($request->model, function ($query, $model) {
                 return $query->where('model', $model);
             })
@@ -106,18 +115,18 @@ class ActivityLogController extends BaseController
         $activityLogs = $query->orderBy('created_at', 'desc')->get();
 
         // Log activity
-        \App\Models\ActivityLog::log('export', 'activity_log', 'Export log aktivitas ke PDF (' . $activityLogs->count() . ' log)');
+        ActivityLog::log('export', 'activity_log', 'Export log aktivitas ke PDF (' . $activityLogs->count() . ' log)');
 
-        $pdf = \PDF::loadView('activity-logs.pdf', compact('activityLogs'));
+        $pdf = Pdf::loadView('activity-logs.pdf', compact('activityLogs'));
         return $pdf->download('log-aktivitas-' . now()->format('Ymd_His') . '.pdf');
     }
 
     public function exportCsv(Request $request)
     {
-        $query = \App\Models\ActivityLog::with('user');
+        $query = ActivityLog::with('user');
         $query->when($request->action, function ($query, $action) {
-                return $query->where('action', $action);
-            })
+            return $query->where('action', $action);
+        })
             ->when($request->model, function ($query, $model) {
                 return $query->where('model', $model);
             })
@@ -134,14 +143,14 @@ class ActivityLogController extends BaseController
         $activityLogs = $query->orderBy('created_at', 'desc')->get();
 
         // Log activity
-        \App\Models\ActivityLog::log('export', 'activity_log', 'Export log aktivitas ke CSV (' . $activityLogs->count() . ' log)');
+        ActivityLog::log('export', 'activity_log', 'Export log aktivitas ke CSV (' . $activityLogs->count() . ' log)');
 
-        return \Excel::download(new \App\Exports\ActivityLogsExport($activityLogs), 'log-aktivitas-' . now()->format('Ymd_His') . '.csv', \Maatwebsite\Excel\Excel::CSV);
+        return Excel::download(new ActivityLogsExport($activityLogs), 'log-aktivitas-' . now()->format('Ymd_His') . '.csv', \Maatwebsite\Excel\Excel::CSV);
     }
 
     public function show($id)
     {
-        $log = \App\Models\ActivityLog::with('user')->findOrFail($id);
+        $log = ActivityLog::with('user')->findOrFail($id);
         $geo = null;
         if ($log->ip_address) {
             try {
@@ -163,4 +172,4 @@ class ActivityLogController extends BaseController
         }
         return view('activity-logs.show', compact('log', 'geo', 'before', 'after'));
     }
-} 
+}

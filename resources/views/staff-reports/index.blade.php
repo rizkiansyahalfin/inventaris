@@ -1,35 +1,35 @@
 @extends('layouts.app')
 
 @section('content')
-    <x-slot name="header">
-        <div class="flex justify-between items-center">
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-                {{ __('Laporan Staff') }}
-            </h2>
-        @if(auth()->user()->isPetugas())
-            <a href="{{ route('staff-reports.create') }}" class="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700 active:bg-blue-800">
-                {{ __('Buat Laporan Baru') }}
-            </a>
-        @endif
-        </div>
-    </x-slot>
+@section('header')
+    <div class="flex justify-between items-center">
+        <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
+            {{ __('Laporan Staff') }}
+        </h2>
+    @if(auth()->user()->isPetugas())
+        <a href="{{ route('staff-reports.create') }}" class="inline-flex items-center px-4 py-2 bg-blue-600 dark:bg-blue-500 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700 dark:hover:bg-blue-600 active:bg-blue-800 dark:active:bg-blue-700 transition-colors">
+            {{ __('Buat Laporan Baru') }}
+        </a>
+    @endif
+    </div>
+@endsection
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
         <!-- Tab Navigation -->
         <div class="mb-6">
             <nav class="flex space-x-8" aria-label="Tabs">
-                <button onclick="showTab('list')" id="tab-list" class="tab-button active border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm">
+                <button onclick="showTab('list')" id="tab-list" class="tab-button active border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:border-gray-300 whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm">
                     Daftar Laporan
                 </button>
-                <button onclick="showTab('dashboard')" id="tab-dashboard" class="tab-button border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm">
+                <button onclick="showTab('dashboard')" id="tab-dashboard" class="tab-button border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:border-gray-300 whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm">
                     Dashboard
                 </button>
-                <button onclick="showTab('export')" id="tab-export" class="tab-button border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm">
+                <button onclick="showTab('export')" id="tab-export" class="tab-button border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:border-gray-300 whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm">
                     Export
                 </button>
                 @if(auth()->user()->hasRole('admin'))
-                <button onclick="showTab('bulk')" id="tab-bulk" class="tab-button border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm">
+                <button onclick="showTab('bulk')" id="tab-bulk" class="tab-button border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:border-gray-300 whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm">
                     Aksi Massal
                 </button>
                 @endif
@@ -40,16 +40,16 @@
         <div id="tab-content">
             <!-- Tab 1: Daftar Laporan -->
             <div id="content-list" class="tab-content active">
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900">
+            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg transition-colors">
+                <div class="p-6 text-gray-900 dark:text-gray-100">
                         @if (session('success'))
-                        <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-4" role="alert">
+                        <div class="bg-green-100 dark:bg-green-900/30 border-l-4 border-green-500 text-green-700 dark:text-green-300 p-4 mb-4" role="alert">
                                 <p>{{ session('success') }}</p>
                             </div>
                         @endif
 
                         @if (session('error'))
-                            <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-4" role="alert">
+                            <div class="bg-red-100 dark:bg-red-900/30 border-l-4 border-red-500 text-red-700 dark:text-red-300 p-4 mb-4" role="alert">
                                 <p>{{ session('error') }}</p>
                         </div>
                     @endif
@@ -59,7 +59,7 @@
                             <p class="text-gray-500">Belum ada laporan staff yang dibuat</p>
                                 @if(auth()->user()->isPetugas())
                                 <div class="mt-4">
-                                    <a href="{{ route('staff-reports.create') }}" class="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700 active:bg-blue-800">
+                                    <a href="{{ route('staff-reports.create') }}" class="inline-flex items-center px-4 py-2 bg-blue-600 dark:bg-blue-500 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700 dark:hover:bg-blue-600 active:bg-blue-800 dark:active:bg-blue-700 transition-colors">
                                         Buat Laporan Pertama
                                     </a>
                                 </div>
@@ -67,49 +67,49 @@
                         </div>
                     @else
                         <div class="overflow-x-auto">
-                            <table class="min-w-full bg-white border">
+                            <table class="min-w-full bg-white dark:bg-gray-800 border dark:border-gray-700">
                                 <thead>
                                     <tr>
-                                            <th class="py-3 px-4 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal Laporan</th>
-                                            <th class="py-3 px-4 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jam Kerja</th>
-                                        <th class="py-3 px-4 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                                        <th class="py-3 px-4 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Dibuat Oleh</th>
-                                            <th class="py-3 px-4 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal Dibuat</th>
-                                            <th class="py-3 px-4 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Reviewer</th>
-                                        <th class="py-3 px-4 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+                                            <th class="py-3 px-4 bg-gray-50 dark:bg-gray-900 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Tanggal Laporan</th>
+                                            <th class="py-3 px-4 bg-gray-50 dark:bg-gray-900 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Jam Kerja</th>
+                                        <th class="py-3 px-4 bg-gray-50 dark:bg-gray-900 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
+                                        <th class="py-3 px-4 bg-gray-50 dark:bg-gray-900 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Dibuat Oleh</th>
+                                            <th class="py-3 px-4 bg-gray-50 dark:bg-gray-900 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Tanggal Dibuat</th>
+                                            <th class="py-3 px-4 bg-gray-50 dark:bg-gray-900 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Reviewer</th>
+                                        <th class="py-3 px-4 bg-gray-50 dark:bg-gray-900 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Aksi</th>
                                     </tr>
                                 </thead>
-                                <tbody class="divide-y divide-gray-200">
+                                <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
                                     @foreach ($staffReports as $report)
                                         <tr>
                                             <td class="py-4 px-4">
-                                                    <div class="text-sm font-medium text-gray-900">{{ $report->report_date->format('d M Y') }}</div>
+                                                    <div class="text-sm font-medium text-gray-900 dark:text-gray-100">{{ $report->report_date->format('d M Y') }}</div>
                                             </td>
-                                            <td class="py-4 px-4 whitespace-nowrap text-sm text-gray-500">
+                                            <td class="py-4 px-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                                                     {{ $report->hours_worked }} jam
                                             </td>
                                             <td class="py-4 px-4 whitespace-nowrap">
                                                 @if ($report->status === 'draft')
-                                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300">
                                                         Draft
                                                     </span>
                                                 @elseif ($report->status === 'submitted')
-                                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">
                                                         Diajukan
                                                     </span>
                                                 @elseif ($report->status === 'reviewed')
-                                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
                                                         Diulas
                                                     </span>
                                                 @endif
                                             </td>
-                                            <td class="py-4 px-4 whitespace-nowrap text-sm text-gray-500">
+                                            <td class="py-4 px-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                                                 {{ $report->user->name }}
                                             </td>
-                                            <td class="py-4 px-4 whitespace-nowrap text-sm text-gray-500">
+                                            <td class="py-4 px-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                                                 {{ $report->created_at->format('d M Y') }}
                                             </td>
-                                            <td class="py-4 px-4 whitespace-nowrap text-sm text-gray-500">
+                                            <td class="py-4 px-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                                                     @if ($report->reviewer)
                                                         {{ $report->reviewer->name }}
                                                 @else
@@ -118,14 +118,14 @@
                                             </td>
                                             <td class="py-4 px-4 whitespace-nowrap text-sm font-medium">
                                                 <div class="flex space-x-2">
-                                                    <a href="{{ route('staff-reports.show', $report) }}" class="text-blue-600 hover:text-blue-900">Lihat</a>
+                                                    <a href="{{ route('staff-reports.show', $report) }}" class="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300">Lihat</a>
                                                     
                                                     @if ($report->status === 'draft' && auth()->id() === $report->user_id)
-                                                        <a href="{{ route('staff-reports.edit', $report) }}" class="text-green-600 hover:text-green-900">Edit</a>
+                                                        <a href="{{ route('staff-reports.edit', $report) }}" class="text-green-600 dark:text-green-400 hover:text-green-900 dark:hover:text-green-300">Edit</a>
                                                         
                                                         <button
                                                             onclick="event.preventDefault(); if(confirm('Apakah Anda yakin ingin menghapus laporan ini?')) document.getElementById('delete-form-{{ $report->id }}').submit();"
-                                                            class="text-red-600 hover:text-red-900"
+                                                            class="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300"
                                                         >
                                                             Hapus
                                                         </button>
@@ -136,7 +136,7 @@
                                                     @endif
                                                     
                                                     @if (auth()->user()->hasRole('admin') && $report->status === 'submitted')
-                                                            <a href="{{ route('staff-reports.review.form', $report) }}" class="text-purple-600 hover:text-purple-900">Ulas</a>
+                                                            <a href="{{ route('staff-reports.review.form', $report) }}" class="text-purple-600 dark:text-purple-400 hover:text-purple-900 dark:hover:text-purple-300">Ulas</a>
                                                     @endif
                                                 </div>
                                             </td>

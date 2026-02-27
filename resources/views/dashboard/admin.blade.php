@@ -60,7 +60,9 @@
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 3h7m0 0v7m0-7L10 14m-7 7h7a2 2 0 002-2v-7" /></svg>
                     </a>
                 </div>
-                <canvas id="borrowsChart" height="300"></canvas>
+                <div class="relative h-[300px]">
+                    <canvas id="borrowsChart"></canvas>
+                </div>
             </div>
         </div>
 
@@ -73,7 +75,9 @@
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 3h7m0 0v7m0-7L10 14m-7 7h7a2 2 0 002-2v-7" /></svg>
                     </a>
                 </div>
-                <canvas id="categoryChart" height="300"></canvas>
+                <div class="relative h-[300px]">
+                    <canvas id="categoryChart"></canvas>
+                </div>
             </div>
         </div>
     </div>
@@ -174,6 +178,15 @@
     const categoryLabels = Object.keys(itemsByCategory);
     const categoryData = Object.values(itemsByCategory);
 
+    // Chart.js Theme Detection and Configuration
+    const isDarkMode = document.documentElement.classList.contains('dark');
+    const chartTextColor = isDarkMode ? '#e5e7eb' : '#374151';
+    const chartGridColor = isDarkMode ? 'rgba(75, 85, 99, 0.3)' : 'rgba(209, 213, 219, 0.3)';
+
+    // Set Chart.js defaults
+    Chart.defaults.color = chartTextColor;
+    Chart.defaults.borderColor = chartGridColor;
+
     // Grafik peminjaman per bulan
     const borrowsChart = new Chart(
         document.getElementById('borrowsChart'),
@@ -185,18 +198,44 @@
                     label: 'Jumlah Peminjaman',
                     data: borrowsData,
                     borderColor: 'rgb(75, 192, 192)',
-                    tension: 0.1
+                    tension: 0.1,
+                    fill: true,
+                    backgroundColor: 'rgba(75, 192, 192, 0.1)'
                 }]
             },
             options: {
                 responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: chartGridColor
+                        },
+                        ticks: {
+                            color: chartTextColor
+                        }
+                    },
+                    x: {
+                        grid: {
+                            color: chartGridColor
+                        },
+                        ticks: {
+                            color: chartTextColor
+                        }
+                    }
+                },
                 plugins: {
                     legend: {
                         position: 'top',
+                        labels: {
+                            color: chartTextColor
+                        }
                     },
                     title: {
                         display: true,
-                        text: 'Peminjaman per Bulan'
+                        text: 'Peminjaman per Bulan',
+                        color: chartTextColor
                     }
                 }
             }
@@ -207,30 +246,44 @@
     const categoryChart = new Chart(
         document.getElementById('categoryChart'),
         {
-            type: 'pie',
+            type: 'doughnut',
             data: {
                 labels: categoryLabels,
                 datasets: [{
                     data: categoryData,
                     backgroundColor: [
-                        'rgb(255, 99, 132)',
-                        'rgb(54, 162, 235)',
-                        'rgb(255, 205, 86)',
-                        'rgb(75, 192, 192)',
-                        'rgb(153, 102, 255)',
-                        'rgb(255, 159, 64)'
-                    ]
+                        'rgba(255, 99, 132, 0.8)',
+                        'rgba(54, 162, 235, 0.8)',
+                        'rgba(255, 205, 86, 0.8)',
+                        'rgba(75, 192, 192, 0.8)',
+                        'rgba(153, 102, 255, 0.8)',
+                        'rgba(255, 159, 64, 0.8)'
+                    ],
+                    borderColor: isDarkMode ? '#1f2937' : '#ffffff',
+                    borderWidth: 2
                 }]
             },
             options: {
                 responsive: true,
+                maintainAspectRatio: false,
                 plugins: {
                     legend: {
-                        position: 'top',
+                        position: 'right',
+                        labels: {
+                            color: chartTextColor,
+                            padding: 20,
+                            font: {
+                                size: 12
+                            }
+                        }
                     },
                     title: {
                         display: true,
-                        text: 'Jumlah Barang per Kategori'
+                        text: 'Jumlah Barang per Kategori',
+                        color: chartTextColor,
+                        font: {
+                            size: 16
+                        }
                     }
                 }
             }

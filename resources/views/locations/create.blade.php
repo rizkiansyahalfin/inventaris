@@ -1,61 +1,76 @@
 @extends('layouts.app')
 
-@section('title', 'Tambah Lokasi')
-
 @section('content')
-<div class="container mx-auto px-4 py-8">
-    <div class="max-w-2xl mx-auto">
-        <div class="flex items-center mb-6">
-            <a href="{{ route('locations.index') }}" class="text-blue-600 hover:text-blue-900 mr-4">
-                ← Kembali
-            </a>
-            <h1 class="text-3xl font-bold text-gray-900">Tambah Lokasi Baru</h1>
-        </div>
-
-        @if($errors->any())
-            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-                <ul class="list-disc list-inside">
-                    @foreach($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
+    <div class="max-w-2xl mx-auto bg-white dark:bg-gray-800 overflow-hidden shadow-sm rounded-lg transition-colors">
+        <div class="p-6 text-gray-900 dark:text-gray-100">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-xl font-semibold">Tambah Lokasi Baru</h2>
+                <a href="{{ route('locations.index') }}"
+                    class="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors">
+                    Kembali ke Daftar
+                </a>
             </div>
-        @endif
 
-        <div class="bg-white shadow-md rounded-lg p-6">
-            <form action="{{ route('locations.store') }}" method="POST">
+            <form action="{{ route('locations.store') }}" method="POST" class="space-y-6">
                 @csrf
-                
-                <div class="mb-4">
-                    <label for="name" class="block text-sm font-medium text-gray-700 mb-2">
-                        Nama Lokasi <span class="text-red-500">*</span>
-                    </label>
-                    <input type="text" name="name" id="name" value="{{ old('name') }}" 
-                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                           placeholder="Contoh: Ruang Kelas 1A" required>
+
+                <div>
+                    <label for="name" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Nama Lokasi</label>
+                    <input type="text" name="name" id="name" value="{{ old('name') }}"
+                        class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm @error('name') border-red-500 @enderror"
+                        required placeholder="Contoh: Lab Komputer 1">
+                    @error('name')
+                        <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
+                    @enderror
                 </div>
 
-                <div class="mb-6">
-                    <label for="description" class="block text-sm font-medium text-gray-700 mb-2">
-                        Deskripsi
-                    </label>
-                    <textarea name="description" id="description" rows="4" 
-                              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                              placeholder="Deskripsi lokasi (opsional)">{{ old('description') }}</textarea>
+                <div>
+                    <label for="code" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Kode Lokasi</label>
+                    <input type="text" name="code" id="code" value="{{ old('code') }}"
+                        class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm @error('code') border-red-500 @enderror"
+                        required placeholder="Contoh: LAB-01">
+                    @error('code')
+                        <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
+                    @enderror
                 </div>
 
-                <div class="flex justify-end space-x-3">
-                    <button type="submit" 
-                            class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded">
-                        Simpan Lokasi
-                    </button>
-                    <a href="{{ route('locations.index') }}" 
-                       class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label for="building" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Gedung
+                            (Opsional)</label>
+                        <input type="text" name="building" id="building" value="{{ old('building') }}"
+                            class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                    </div>
+
+                    <div>
+                        <label for="floor" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Lantai
+                            (Opsional)</label>
+                        <input type="text" name="floor" id="floor" value="{{ old('floor') }}"
+                            class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                    </div>
+                </div>
+
+                <div>
+                    <label for="description" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Deskripsi
+                        (Opsional)</label>
+                    <textarea name="description" id="description" rows="3"
+                        class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm @error('description') border-red-500 @enderror">{{ old('description') }}</textarea>
+                    @error('description')
+                        <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div class="flex items-center justify-end space-x-3 pt-4 border-t dark:border-gray-700">
+                    <a href="{{ route('locations.index') }}"
+                        class="bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 px-4 py-2 rounded-md hover:bg-gray-300 dark:hover:bg-gray-600 transition">
                         Batal
                     </a>
+                    <button type="submit"
+                        class="bg-indigo-600 text-white px-6 py-2 rounded-md hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 transition-colors">
+                        Simpan Lokasi
+                    </button>
                 </div>
             </form>
         </div>
     </div>
-</div>
-@endsection 
+@endsection

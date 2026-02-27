@@ -18,11 +18,11 @@ class SystemConfigController extends BaseController
 
     public function index()
     {
-        $configs = SystemConfig::orderBy('key')->get();
-        
+        $configs = SystemConfig::orderBy('key')->paginate(15);
+
         // Log activity
-        \App\Models\ActivityLog::log('view', 'system_config', 'Lihat daftar konfigurasi sistem (' . $configs->count() . ' konfigurasi)');
-        
+        \App\Models\ActivityLog::log('view', 'system_config', 'Lihat daftar konfigurasi sistem (' . $configs->total() . ' konfigurasi)');
+
         return view('system-configs.index', compact('configs'));
     }
 
@@ -30,7 +30,7 @@ class SystemConfigController extends BaseController
     {
         // Log activity
         \App\Models\ActivityLog::log('view', 'system_config', 'Akses halaman tambah konfigurasi sistem baru');
-        
+
         return view('system-configs.create');
     }
 
@@ -43,7 +43,7 @@ class SystemConfigController extends BaseController
         ]);
 
         $config = SystemConfig::create($request->all());
-        
+
         // Log activity
         \App\Models\ActivityLog::log('create', 'system_config', 'Menambah konfigurasi sistem: ' . $config->key);
 
@@ -55,7 +55,7 @@ class SystemConfigController extends BaseController
     {
         // Log activity
         \App\Models\ActivityLog::log('view', 'system_config', 'Lihat detail konfigurasi sistem: ' . $systemConfig->key);
-        
+
         return view('system-configs.show', compact('systemConfig'));
     }
 
@@ -63,7 +63,7 @@ class SystemConfigController extends BaseController
     {
         // Log activity
         \App\Models\ActivityLog::log('view', 'system_config', 'Akses halaman edit konfigurasi sistem: ' . $systemConfig->key);
-        
+
         return view('system-configs.edit', compact('systemConfig'));
     }
 
@@ -76,7 +76,7 @@ class SystemConfigController extends BaseController
         ]);
 
         $systemConfig->update($request->all());
-        
+
         // Log activity
         \App\Models\ActivityLog::log('update', 'system_config', 'Mengedit konfigurasi sistem: ' . $systemConfig->key);
 
@@ -88,11 +88,11 @@ class SystemConfigController extends BaseController
     {
         $configKey = $systemConfig->key;
         $systemConfig->delete();
-        
+
         // Log activity
         \App\Models\ActivityLog::log('delete', 'system_config', 'Menghapus konfigurasi sistem: ' . $configKey);
 
         return redirect()->route('system-configs.index')
             ->with('success', 'Konfigurasi berhasil dihapus');
     }
-} 
+}
