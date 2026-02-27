@@ -5,6 +5,10 @@ namespace App\Http\Controllers;
 use App\Models\Maintenance;
 use App\Models\Item;
 use App\Models\User;
+use App\Models\ActivityLog;
+use App\Http\Requests\StoreMaintenanceRequest;
+use App\Http\Requests\UpdateMaintenanceRequest;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -20,18 +24,18 @@ class MaintenanceController extends Controller
 
         // Filter berdasarkan request
         $query->when($request->status, function ($query, $status) {
-                if ($status === 'completed') {
-                    return $query->whereNotNull('completion_date');
-                } elseif ($status === 'ongoing') {
-                    return $query->whereNull('completion_date');
-                }
-                return $query;
-            })
+            if ($status === 'completed') {
+                return $query->whereNotNull('completion_date');
+            } elseif ($status === 'ongoing') {
+                return $query->whereNull('completion_date');
+            }
+            return $query;
+        })
             ->when($request->search, function ($query, $search) {
                 return $query->whereHas('item', function ($q) use ($search) {
                     $q->where('name', 'like', "%{$search}%")
-                               ->orWhere('code', 'like', "%{$search}%");
-                  });
+                        ->orWhere('code', 'like', "%{$search}%");
+                });
             })
             ->when($request->type, function ($query, $type) {
                 return $query->where('type', $type);
@@ -41,12 +45,15 @@ class MaintenanceController extends Controller
 
         // Log activity
         $filters = [];
-        if ($request->status) $filters[] = 'status: ' . $request->status;
-        if ($request->search) $filters[] = 'pencarian: ' . $request->search;
-        if ($request->type) $filters[] = 'tipe: ' . $request->type;
-        
+        if ($request->status)
+            $filters[] = 'status: ' . $request->status;
+        if ($request->search)
+            $filters[] = 'pencarian: ' . $request->search;
+        if ($request->type)
+            $filters[] = 'tipe: ' . $request->type;
+
         $filterDescription = !empty($filters) ? 'Lihat daftar maintenance dengan filter: ' . implode(', ', $filters) : 'Lihat daftar maintenance';
-        \App\Models\ActivityLog::log('view', 'maintenance', $filterDescription . ' (' . $maintenances->total() . ' maintenance)');
+        ActivityLog::log('view', 'maintenance', $filterDescription . ' (' . $maintenances->total() . ' maintenance)');
 
         return view('maintenances.index', compact('maintenances'));
     }
@@ -60,17 +67,17 @@ class MaintenanceController extends Controller
 
         // Terapkan filter yang sama seperti index
         $query->when($request->status, function ($query, $status) {
-                if ($status === 'completed') {
-                    return $query->whereNotNull('completion_date');
-                } elseif ($status === 'ongoing') {
-                    return $query->whereNull('completion_date');
-                }
-                return $query;
-            })
+            if ($status === 'completed') {
+                return $query->whereNotNull('completion_date');
+            } elseif ($status === 'ongoing') {
+                return $query->whereNull('completion_date');
+            }
+            return $query;
+        })
             ->when($request->search, function ($query, $search) {
                 return $query->whereHas('item', function ($q) use ($search) {
                     $q->where('name', 'like', "%{$search}%")
-                      ->orWhere('code', 'like', "%{$search}%");
+                        ->orWhere('code', 'like', "%{$search}%");
                 });
             })
             ->when($request->type, function ($query, $type) {
@@ -81,20 +88,18 @@ class MaintenanceController extends Controller
 
         // Log activity
         $filters = [];
-        if ($request->status) $filters[] = 'status: ' . $request->status;
-        if ($request->search) $filters[] = 'pencarian: ' . $request->search;
-        if ($request->type) $filters[] = 'tipe: ' . $request->type;
+        if ($request->status)
+            $filters[] = 'status: ' . $request->status;
+        if ($request->search)
+            $filters[] = 'pencarian: ' . $request->search;
+        if ($request->type)
+            $filters[] = 'tipe: ' . $request->type;
         $filterDescription = !empty($filters) ? 'Export PDF maintenance dengan filter: ' . implode(', ', $filters) : 'Export PDF semua maintenance';
-        \App\Models\ActivityLog::log('export', 'maintenance', $filterDescription . ' (' . $maintenances->count() . ' maintenance)');
+        ActivityLog::log('export', 'maintenance', $filterDescription . ' (' . $maintenances->count() . ' maintenance)');
 
         // Generate PDF
-        if (class_exists('\PDF')) {
-            $pdf = \PDF::loadView('maintenances.pdf', compact('maintenances'));
-            return $pdf->download('riwayat-pemeliharaan-' . date('Y-m-d') . '.pdf');
-        } else {
-            return redirect()->route('maintenances.index')
-                ->with('error', 'Export PDF tidak tersedia. Silakan install package PDF terlebih dahulu.');
-        }
+        $pdf = Pdf::loadView('maintenances.pdf', compact('maintenances'));
+        return $pdf->download('riwayat-pemeliharaan-' . date('Y-m-d') . '.pdf');
     }
 
     /**
@@ -104,9 +109,9 @@ class MaintenanceController extends Controller
     {
         $items = Item::where('status', Item::STATUS_MAINTENANCE)
             ->orWhere('condition', '!=', 'Baik')
-                    ->orderBy('name')
-                    ->get();
-                    
+            ->orderBy('name')
+            ->get();
+
         // Prepare items data for JavaScript
         $itemsWithCondition = $items->keyBy('id')->map(function ($item) {
             return ['condition' => $item->condition];
@@ -116,7 +121,7 @@ class MaintenanceController extends Controller
         $selectedItem = request('item_id');
 
         // Log activity
-        \App\Models\ActivityLog::log('view', 'maintenance', 'Akses halaman tambah maintenance baru');
+        ActivityLog::log('view', 'maintenance', 'Akses halaman tambah maintenance baru');
 
         return view('maintenances.create', compact('items', 'itemsWithCondition', 'selectedItem'));
     }
@@ -124,25 +129,15 @@ class MaintenanceController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(StoreMaintenanceRequest $request)
     {
-        $validated = $request->validate([
-            'item_id' => 'required|exists:items,id',
-            'type' => 'required|string|in:Perawatan,Perbaikan,Penggantian',
-            'title' => 'required|string|max:255',
-            'notes' => 'nullable|string',
-            'cost' => 'nullable|numeric|min:0',
-            'start_date' => 'required|date',
-            'completion_date' => 'nullable|date|after_or_equal:start_date',
-            'update_condition' => 'nullable|string|in:Baik,Rusak Ringan,Rusak Berat',
-            'update_item_status' => 'nullable|string|in:Tersedia,Perlu Servis,Rusak,Perlu Ganti',
-        ]);
+        $validated = $request->validated();
 
         try {
             DB::beginTransaction();
 
             $item = Item::findOrFail($validated['item_id']);
-            
+
             // Buat catatan perawatan
             $maintenance = Maintenance::create([
                 'item_id' => $validated['item_id'],
@@ -174,7 +169,7 @@ class MaintenanceController extends Controller
 
             DB::commit();
 
-            \App\Models\ActivityLog::log('create', 'maintenance', 'Menambah perawatan untuk item: ' . $item->name . ' (Maint. ID: ' . $maintenance->id . ')');
+            ActivityLog::log('create', 'maintenance', 'Menambah perawatan untuk item: ' . $item->name . ' (Maint. ID: ' . $maintenance->id . ')');
 
             return redirect()->route('maintenances.show', $maintenance)
                 ->with('success', 'Data pemeliharaan berhasil ditambahkan.');
@@ -191,10 +186,10 @@ class MaintenanceController extends Controller
     public function show(Maintenance $maintenance)
     {
         $maintenance->load(['item', 'user']);
-        
+
         // Log activity
-        \App\Models\ActivityLog::log('view', 'maintenance', 'Lihat detail maintenance: ' . $maintenance->title . ' (ID: ' . $maintenance->id . ')');
-        
+        ActivityLog::log('view', 'maintenance', 'Lihat detail maintenance: ' . $maintenance->title . ' (ID: ' . $maintenance->id . ')');
+
         return view('maintenances.show', compact('maintenance'));
     }
 
@@ -204,46 +199,42 @@ class MaintenanceController extends Controller
     public function edit(Maintenance $maintenance)
     {
         $maintenance->load(['item', 'user']);
-        
+
         // Log activity
-        \App\Models\ActivityLog::log('view', 'maintenance', 'Akses halaman edit maintenance: ' . $maintenance->title . ' (ID: ' . $maintenance->id . ')');
-        
+        ActivityLog::log('view', 'maintenance', 'Akses halaman edit maintenance: ' . $maintenance->title . ' (ID: ' . $maintenance->id . ')');
+
         return view('maintenances.edit', compact('maintenance'));
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Maintenance $maintenance)
+    public function update(UpdateMaintenanceRequest $request, Maintenance $maintenance)
     {
-        $validated = $request->validate([
-            'completion_date' => 'nullable|date|after_or_equal:start_date',
-            'notes' => 'nullable|string',
-            'update_condition' => 'nullable|string|in:Baik,Rusak Ringan,Rusak Berat',
-        ]);
-        
+        $validated = $request->validated();
+
         try {
             DB::beginTransaction();
-            
+
             $maintenance->update([
                 'completion_date' => $validated['completion_date'] ?? $maintenance->completion_date,
                 'notes' => $validated['notes'] ?? $maintenance->notes,
             ]);
-            
+
             // Jika menyelesaikan perawatan dan ada update kondisi
             if (!empty($validated['completion_date']) && isset($validated['update_condition'])) {
                 $item = $maintenance->item;
                 // Update kondisi, yang akan mengupdate status otomatis
                 $item->updateCondition($validated['update_condition']);
             }
-            
+
             DB::commit();
 
-            \App\Models\ActivityLog::log('update', 'maintenance', 'Memperbarui perawatan: ' . $maintenance->title . ' (Maint. ID: ' . $maintenance->id . ')');
+            ActivityLog::log('update', 'maintenance', 'Memperbarui perawatan: ' . $maintenance->title . ' (Maint. ID: ' . $maintenance->id . ')');
 
             return redirect()->route('maintenances.show', $maintenance)
                 ->with('success', 'Data pemeliharaan berhasil diperbarui.');
-                
+
         } catch (\Exception $e) {
             DB::rollBack();
             return back()->withInput()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
@@ -258,7 +249,7 @@ class MaintenanceController extends Controller
         $maintenanceName = $maintenance->title;
         $maintenanceId = $maintenance->id;
         $maintenance->delete();
-        \App\Models\ActivityLog::log('delete', 'maintenance', 'Menghapus perawatan: ' . $maintenanceName . ' (Maint. ID: ' . $maintenanceId . ')');
+        ActivityLog::log('delete', 'maintenance', 'Menghapus perawatan: ' . $maintenanceName . ' (Maint. ID: ' . $maintenanceId . ')');
         return redirect()->route('maintenances.index')->with('success', 'Data pemeliharaan berhasil dihapus.');
     }
 }
