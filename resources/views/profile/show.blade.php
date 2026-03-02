@@ -20,7 +20,7 @@
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900 dark:text-gray-100">
                     <div class="mb-4">
-                        <a href="{{ route('profile.index') }}" class="inline-block bg-gray-100 text-gray-800 px-4 py-2 rounded-md hover:bg-gray-200">
+                        <a href="{{ route('profile.index') }}" class="inline-block bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 px-4 py-2 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
                             Kembali ke Daftar Profil
                         </a>
                     </div>

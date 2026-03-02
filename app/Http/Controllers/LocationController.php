@@ -12,11 +12,11 @@ class LocationController extends Controller
      */
     public function index()
     {
-        $locations = Location::withCount('items')->orderBy('name')->get();
-        
+        $locations = Location::withCount('items')->orderBy('name')->paginate(10);
+
         // Log activity
-        \App\Models\ActivityLog::log('view', 'location', 'Lihat daftar lokasi (' . $locations->count() . ' lokasi)');
-        
+        \App\Models\ActivityLog::log('view', 'location', 'Lihat daftar lokasi (' . $locations->total() . ' lokasi)');
+
         return view('locations.index', compact('locations'));
     }
 
@@ -27,7 +27,7 @@ class LocationController extends Controller
     {
         // Log activity
         \App\Models\ActivityLog::log('view', 'location', 'Akses halaman tambah lokasi baru');
-        
+
         return view('locations.create');
     }
 
@@ -57,10 +57,10 @@ class LocationController extends Controller
     public function show(Location $location)
     {
         $location->load(['items.category']);
-        
+
         // Log activity
         \App\Models\ActivityLog::log('view', 'location', 'Lihat detail lokasi: ' . $location->name);
-        
+
         return view('locations.show', compact('location'));
     }
 
@@ -71,7 +71,7 @@ class LocationController extends Controller
     {
         // Log activity
         \App\Models\ActivityLog::log('view', 'location', 'Akses halaman edit lokasi: ' . $location->name);
-        
+
         return view('locations.edit', compact('location'));
     }
 

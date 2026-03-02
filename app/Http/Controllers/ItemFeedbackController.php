@@ -4,6 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Borrow;
 use App\Models\ItemFeedback;
+use App\Models\ActivityLog;
+use App\Http\Requests\StoreItemFeedbackRequest;
+use App\Http\Requests\UpdateItemFeedbackRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -17,25 +20,25 @@ class ItemFeedbackController extends Controller
         $user = Auth::user();
         $query = ItemFeedback::with(['user', 'item']);
         $borrowsTanpaFeedback = null;
-        
+
         // Jika user biasa, hanya tampilkan feedback miliknya
         if ($user->isUser()) {
             $query->where('user_id', $user->id);
             // Ambil daftar peminjaman yang sudah selesai, belum diberi feedback
-            $borrowsTanpaFeedback = \App\Models\Borrow::where('user_id', $user->id)
+            $borrowsTanpaFeedback = Borrow::where('user_id', $user->id)
                 ->where('status', 'returned')
                 ->whereDoesntHave('feedback')
                 ->with('item')
                 ->orderBy('borrow_date', 'desc')
                 ->get();
         }
-        
+
         $feedbacks = $query->orderBy('created_at', 'desc')->paginate(10);
-        
+
         // Log activity
         $filterDescription = $user->isUser() ? 'Lihat daftar feedback sendiri' : 'Lihat daftar feedback semua user';
-        \App\Models\ActivityLog::log('view', 'feedback', $filterDescription . ' (' . $feedbacks->total() . ' feedback)');
-        
+        ActivityLog::log('view', 'feedback', $filterDescription . ' (' . $feedbacks->total() . ' feedback)');
+
         return view('feedbacks.index', compact('feedbacks', 'borrowsTanpaFeedback'));
     }
 
@@ -48,41 +51,26 @@ class ItemFeedbackController extends Controller
         if ($borrow->user_id !== Auth::id()) {
             abort(403);
         }
-        
+
         // Log activity
-        \App\Models\ActivityLog::log('view', 'feedback', 'Akses halaman buat feedback untuk peminjaman ID: ' . $borrow->id);
-        
+        ActivityLog::log('view', 'feedback', 'Akses halaman buat feedback untuk peminjaman ID: ' . $borrow->id);
+
         // Pastikan peminjaman sudah dikembalikan dan belum ada feedback
         if (!$borrow->canSubmitFeedback()) {
             return redirect()->route('borrows.show', $borrow)
                 ->with('error', 'Anda tidak dapat memberikan feedback untuk peminjaman ini.');
         }
-        
+
         return view('feedbacks.create', compact('borrow'));
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request, Borrow $borrow)
+    public function store(StoreItemFeedbackRequest $request, Borrow $borrow)
     {
-        // Validasi
-        $request->validate([
-            'rating' => 'required|integer|min:1|max:5',
-            'comment' => 'nullable|string',
-        ]);
-        
-        // Pastikan user hanya bisa memberikan feedback untuk peminjaman miliknya
-        if ($borrow->user_id !== Auth::id()) {
-            abort(403);
-        }
-        
-        // Pastikan peminjaman sudah dikembalikan dan belum ada feedback
-        if (!$borrow->canSubmitFeedback()) {
-            return redirect()->route('borrows.show', $borrow)
-                ->with('error', 'Anda tidak dapat memberikan feedback untuk peminjaman ini.');
-        }
-        
+        // Authorization handled by StoreItemFeedbackRequest
+
         // Simpan feedback
         $feedback = ItemFeedback::create([
             'borrow_id' => $borrow->id,
@@ -91,8 +79,8 @@ class ItemFeedbackController extends Controller
             'rating' => $request->rating,
             'comment' => $request->comment,
         ]);
-        \App\Models\ActivityLog::log('create', 'item_feedback', 'Memberikan feedback untuk peminjaman ID: ' . $borrow->id . ' (Feedback ID: ' . $feedback->id . ')');
-        
+        ActivityLog::log('create', 'item_feedback', 'Memberikan feedback untuk peminjaman ID: ' . $borrow->id . ' (Feedback ID: ' . $feedback->id . ')');
+
         return redirect()->route('borrows.show', $borrow)
             ->with('success', 'Terima kasih atas feedback Anda.');
     }
@@ -103,15 +91,15 @@ class ItemFeedbackController extends Controller
     public function show(ItemFeedback $feedback)
     {
         $user = Auth::user();
-        
+
         // Pastikan hanya user pemilik, admin, atau petugas yang dapat melihat feedback
         if (!$user->isAdmin() && !$user->isPetugas() && $feedback->user_id !== $user->id) {
             abort(403);
         }
-        
+
         // Log activity
-        \App\Models\ActivityLog::log('view', 'feedback', 'Lihat detail feedback ID: ' . $feedback->id);
-        
+        ActivityLog::log('view', 'feedback', 'Lihat detail feedback ID: ' . $feedback->id);
+
         return view('feedbacks.show', compact('feedback'));
     }
 
@@ -124,36 +112,27 @@ class ItemFeedbackController extends Controller
         if ($feedback->user_id !== Auth::id()) {
             abort(403);
         }
-        
+
         // Log activity
-        \App\Models\ActivityLog::log('view', 'feedback', 'Akses halaman edit feedback ID: ' . $feedback->id);
-        
+        ActivityLog::log('view', 'feedback', 'Akses halaman edit feedback ID: ' . $feedback->id);
+
         return view('feedbacks.edit', compact('feedback'));
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, ItemFeedback $feedback)
+    public function update(UpdateItemFeedbackRequest $request, ItemFeedback $feedback)
     {
-        // Validasi
-        $request->validate([
-            'rating' => 'required|integer|min:1|max:5',
-            'comment' => 'nullable|string',
-        ]);
-        
-        // Pastikan hanya user pemilik yang dapat update feedback
-        if ($feedback->user_id !== Auth::id()) {
-            abort(403);
-        }
-        
+        // Authorization handled by UpdateItemFeedbackRequest
+
         // Update feedback
         $feedback->update([
             'rating' => $request->rating,
             'comment' => $request->comment,
         ]);
-        \App\Models\ActivityLog::log('update', 'item_feedback', 'Memperbarui feedback ID: ' . $feedback->id);
-        
+        ActivityLog::log('update', 'item_feedback', 'Memperbarui feedback ID: ' . $feedback->id);
+
         return redirect()->route('feedbacks.show', $feedback)
             ->with('success', 'Feedback berhasil diperbarui.');
     }
@@ -168,11 +147,11 @@ class ItemFeedbackController extends Controller
         if (!$user->isAdmin() && $feedback->user_id !== $user->id) {
             abort(403);
         }
-        
+
         $feedbackId = $feedback->id;
         $feedback->delete();
-        \App\Models\ActivityLog::log('delete', 'item_feedback', 'Menghapus feedback ID: ' . $feedbackId);
-        
+        ActivityLog::log('delete', 'item_feedback', 'Menghapus feedback ID: ' . $feedbackId);
+
         return redirect()->route('feedbacks.index')
             ->with('success', 'Feedback berhasil dihapus.');
     }
