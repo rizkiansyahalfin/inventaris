@@ -13,13 +13,14 @@
         "axios": "^1.7.4",
         "concurrently": "^9.0.1",
         "laravel-vite-plugin": "^1.2.0",
-        "postcss": "^8.4.31"
+        "postcss": "^8.4.31",
+        "vercel": "^50.25.4"
     },
     "dependencies": {
         "@tailwindcss/vite": "^4.1.10",
         "tailwindcss": "^4.1.10"
     },
     "engines": {
-        "node": "18.x"
+        "node": "24.x"
     }
 }

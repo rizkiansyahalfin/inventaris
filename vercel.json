@@ -1,15 +1,36 @@
 {
     "version": 2,
-    "regions": ["fra1"],
+    "framework": null,
     "functions": {
-      "api/index.php": {
-        "runtime": "vercel-php@0.7.1"
-      }
+        "api/index.php": { "runtime": "vercel-php@0.7.1" }
     },
     "routes": [
-      { "src": "/build/(.*)", "dest": "/build/$1" },
-      { "src": "/(.*)", "dest": "/api/index.php" }
+        { "src": "/build/(.*)", "dest": "/public/build/$1" },
+        { "src": "/(favicon.ico|robots.txt|test.txt)", "dest": "/public/$1" },
+        { "src": "/(.*)", "dest": "/api/index.php" }
     ],
-    "outputDirectory": "public"
-  }
+    "env": {
+        "APP_ENV": "production",
+        "APP_DEBUG": "true",
+        "APP_URL": "https://inventaris-one.vercel.app",
+
+        "APP_CONFIG_CACHE": "/tmp/config.php",
+        "APP_EVENTS_CACHE": "/tmp/events.php",
+        "APP_PACKAGES_CACHE": "/tmp/packages.php",
+        "APP_ROUTES_CACHE": "/tmp/routes.php",
+        "APP_SERVICES_CACHE": "/tmp/services.php",
+        "VIEW_COMPILED_PATH": "/tmp",
+
+        "CACHE_DRIVER": "array",
+        "LOG_CHANNEL": "stderr",
+        "SESSION_DRIVER": "cookie",
+        "DB_CONNECTION": "pgsql",
+        "DB_HOST": "ep-jolly-wind-a155z0y5.ap-southeast-1.aws.neon.tech",
+        "DB_PORT": "5432",
+        "DB_DATABASE": "neondb",
+        "DB_USERNAME": "neondb_owner",
+        "DB_PASSWORD": "npg_CJyB9hiLdT1p",
+        "DB_SSLMODE": "require"
+    }
+}
   

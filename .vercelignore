@@ -1,1 +1,12 @@
+/node_modules
 /vendor
+/.git
+/.vercel
+/tests
+/phpunit.xml
+/storage/*.key
+/storage/framework/cache/data/*
+/storage/framework/sessions/*
+/storage/framework/views/*
+/storage/logs/*
+!/public/build
